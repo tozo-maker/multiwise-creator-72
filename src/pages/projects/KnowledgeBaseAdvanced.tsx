@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -9,7 +8,7 @@ import { KnowledgeBaseUpload } from '@/components/knowledge/KnowledgeBaseUpload'
 import { KnowledgeBaseCategories, KBCategory } from '@/components/knowledge/KnowledgeBaseCategories';
 import { KnowledgeBaseAnalytics } from '@/components/knowledge/KnowledgeBaseAnalytics';
 import { KnowledgeBaseTagInput } from '@/components/knowledge/KnowledgeBaseTagInput';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
@@ -22,15 +21,16 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from '@/components/ui/drawer';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const KnowledgeBaseAdvanced = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { toast } = useToast();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   // Mock project data
   const project = {

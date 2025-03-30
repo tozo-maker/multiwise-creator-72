@@ -25,6 +25,8 @@ export interface KBFile {
   fileType: string;
   size: string;
   uploadDate: string;
+  category?: string;
+  tags?: string[];
 }
 
 interface KnowledgeBaseFileListProps {
