@@ -2,6 +2,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { UserHelp } from "@/components/help/UserHelp";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Dashboard } from "./pages/dashboard/Dashboard";
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <UserHelp />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
