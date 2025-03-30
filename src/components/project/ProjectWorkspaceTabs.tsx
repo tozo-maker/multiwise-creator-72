@@ -34,17 +34,18 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
     { id: 'enhancements', label: 'Enhancements', path: `/projects/${projectId}/enhancements` },
     { id: 'knowledge-base', label: 'Knowledge Base', path: `/projects/${projectId}/knowledge-base` },
     { id: 'configuration', label: 'Configuration', path: `/projects/${projectId}/configuration` },
+    { id: 'snapshots', label: 'Snapshots', path: `/projects/${projectId}/snapshots` },
   ];
   
   return (
-    <div className="border-b border-slate-200 mt-2">
+    <div className="border-b border-slate-200 mt-2 overflow-x-auto">
       <nav className="-mb-px flex space-x-8">
         {tabs.map((tab) => (
           <Link
             key={tab.id}
             to={tab.path}
             className={cn(
-              "inline-flex items-center border-b-2 py-4 px-1 text-sm font-medium",
+              "inline-flex items-center border-b-2 py-4 px-1 text-sm font-medium whitespace-nowrap",
               isTabActive(tab.id)
                 ? "border-brand-500 text-brand-600"
                 : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700"
