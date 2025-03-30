@@ -1,0 +1,115 @@
+
+import React from 'react';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { ProjectList } from '@/components/projects/ProjectList';
+import { NewProjectButton } from '@/components/projects/NewProjectButton';
+import { Search, Filter, ArrowUpDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+
+export const Dashboard = () => {
+  // Mock project data
+  const projects = [
+    {
+      id: '1',
+      name: 'Spanish Language Textbook',
+      targetLanguage: 'Spanish',
+      type: 'Textbook',
+      lastModified: '2 hours ago',
+      progress: 65
+    },
+    {
+      id: '2',
+      name: 'French Beginner Workbook',
+      targetLanguage: 'French',
+      type: 'Workbook',
+      lastModified: '3 days ago',
+      progress: 90
+    },
+    {
+      id: '3',
+      name: 'Chinese Characters Guide',
+      targetLanguage: 'Chinese',
+      type: 'Reference',
+      lastModified: '1 week ago',
+      progress: 45
+    },
+    {
+      id: '4',
+      name: 'German Grammar Worksheets',
+      targetLanguage: 'German',
+      type: 'Worksheet',
+      lastModified: '2 weeks ago',
+      progress: 80
+    },
+    {
+      id: '5',
+      name: 'English Teaching Guide',
+      targetLanguage: 'English',
+      type: 'Teacher Guide',
+      lastModified: '3 weeks ago',
+      progress: 25
+    }
+  ];
+
+  return (
+    <MainLayout>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+        <p className="text-slate-500 mt-2">
+          Manage your educational content projects
+        </p>
+      </div>
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input placeholder="Search projects" className="pl-8" />
+        </div>
+        
+        <div className="flex gap-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 gap-1">
+                <Filter className="h-4 w-4" />
+                Filter
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>All Projects</DropdownMenuItem>
+              <DropdownMenuItem>Recent</DropdownMenuItem>
+              <DropdownMenuItem>By Language</DropdownMenuItem>
+              <DropdownMenuItem>By Type</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 gap-1">
+                <ArrowUpDown className="h-4 w-4" />
+                Sort
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Newest First</DropdownMenuItem>
+              <DropdownMenuItem>Oldest First</DropdownMenuItem>
+              <DropdownMenuItem>Name (A-Z)</DropdownMenuItem>
+              <DropdownMenuItem>Name (Z-A)</DropdownMenuItem>
+              <DropdownMenuItem>Progress (High-Low)</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <NewProjectButton />
+        </div>
+      </div>
+      
+      <ProjectList projects={projects} />
+    </MainLayout>
+  );
+};
