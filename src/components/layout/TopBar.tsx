@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Bell, ChevronDown, Search, Moon, Sun, HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, ChevronDown, Search, Moon, Sun, HelpCircle, LogOut, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MobileNavigation } from './MobileNavigation';
@@ -15,9 +15,85 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from '@/components/ui/use-toast';
+
+interface Notification {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  read: boolean;
+}
 
 export const TopBar = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      title: 'Content generation complete',
+      description: 'Your Spanish vocabulary list has been generated.',
+      time: '5 minutes ago',
+      read: false
+    },
+    {
+      id: '2',
+      title: 'New feature available',
+      description: 'Try our improved knowledge base organization tools.',
+      time: '2 hours ago',
+      read: false
+    },
+    {
+      id: '3',
+      title: 'Project shared with you',
+      description: 'Maria shared "French Curriculum" with you.',
+      time: '1 day ago',
+      read: true
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+    // In a real app, you would apply the theme change to the document
+    toast({
+      title: `${theme === 'light' ? 'Dark' : 'Light'} theme activated`,
+      description: `App theme has been changed to ${theme === 'light' ? 'dark' : 'light'} mode.`
+    });
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+    toast({
+      title: "All notifications marked as read",
+      duration: 2000,
+    });
+  };
+
+  const markAsRead = (id: string) => {
+    setNotifications(notifications.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    ));
+  };
+
+  const handleLogout = () => {
+    // In a real app, we'd call a logout API
+    localStorage.removeItem('isAuthenticated');
+    window.location.href = '/';
+  };
 
   return (
     <header className="h-16 border-b border-slate-200 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-10">
@@ -39,12 +115,13 @@ export const TopBar = () => {
           variant="ghost" 
           size="icon" 
           className="hidden sm:flex"
-          onClick={() => {
-            // Toggle theme (would be implemented with a theme provider)
-          }}
+          onClick={toggleTheme}
         >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          {theme === 'light' ? (
+            <Moon className="h-5 w-5" />
+          ) : (
+            <Sun className="h-5 w-5" />
+          )}
           <span className="sr-only">Toggle theme</span>
         </Button>
         
@@ -53,16 +130,77 @@ export const TopBar = () => {
           size="icon" 
           className="hidden sm:flex"
           onClick={() => {
-            // Open help panel
+            toast({
+              title: "Help panel opened",
+              description: "Here you can find helpful tips and guides.",
+            });
           }}
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
 
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-500"></span>
-        </Button>
+        <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-500"></span>
+              )}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Notifications</DialogTitle>
+              <DialogDescription>
+                Stay updated with project changes and announcements
+              </DialogDescription>
+            </DialogHeader>
+            <div className="max-h-[60vh] overflow-y-auto">
+              {notifications.length > 0 ? (
+                <>
+                  <div className="flex justify-between items-center py-2 px-1">
+                    <span className="text-sm font-medium text-slate-700">
+                      {unreadCount} unread notification{unreadCount !== 1 && 's'}
+                    </span>
+                    {unreadCount > 0 && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 text-xs"
+                        onClick={markAllAsRead}
+                      >
+                        Mark all as read
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-2 mt-2">
+                    {notifications.map((notification) => (
+                      <div 
+                        key={notification.id}
+                        className={`p-3 rounded-md transition-colors ${notification.read ? 'bg-white' : 'bg-brand-50'}`}
+                        onClick={() => markAsRead(notification.id)}
+                      >
+                        <div className="flex justify-between">
+                          <h4 className={`text-sm ${notification.read ? 'font-normal' : 'font-medium'}`}>
+                            {notification.title}
+                          </h4>
+                          <span className="text-xs text-slate-500">{notification.time}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1">
+                          {notification.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8 text-slate-500">
+                  <p>No notifications</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -71,8 +209,12 @@ export const TopBar = () => {
                 <AvatarImage src="/placeholder.svg" />
                 <AvatarFallback className="bg-brand-100 text-brand-700">JD</AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium hidden sm:inline">John Doe</span>
-              <ChevronDown className="h-4 w-4 text-slate-500" />
+              {!isMobile && (
+                <>
+                  <span className="text-sm font-medium hidden sm:inline">John Doe</span>
+                  <ChevronDown className="h-4 w-4 text-slate-500" />
+                </>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -80,20 +222,33 @@ export const TopBar = () => {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => navigate('/settings')}>
+                <User className="mr-2 h-4 w-4" />
                 Profile Settings
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/settings?tab=account')}>
+                <Settings className="mr-2 h-4 w-4" />
                 Account Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/settings?tab=preferences')}>
-                Preferences
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Help Center</DropdownMenuItem>
-            <DropdownMenuItem>Documentation</DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleTheme}>
+              {theme === 'light' ? (
+                <Moon className="mr-2 h-4 w-4" />
+              ) : (
+                <Sun className="mr-2 h-4 w-4" />
+              )}
+              {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <HelpCircle className="mr-2 h-4 w-4" />
+              Help Center
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">
+            <DropdownMenuItem 
+              className="text-red-600"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
