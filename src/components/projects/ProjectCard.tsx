@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MoreVertical, Calendar, Translate, BookText } from 'lucide-react';
+import { MoreVertical, Calendar, BookText, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -59,7 +59,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         
         <div className="mt-4 flex flex-wrap gap-2">
           <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
-            <Translate className="h-3 w-3" />
+            <Globe className="h-3 w-3" />
             {targetLanguage}
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
