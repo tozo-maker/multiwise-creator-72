@@ -1,87 +1,60 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  BookText, 
-  LineChart, 
-  Sparkles, 
-  FileBox, 
-  Settings 
-} from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface ProjectWorkspaceTabsProps {
   projectId: string;
+  activeTab?: string;
 }
 
-export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({ projectId }) => {
-  const navigate = useNavigate();
+export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({ 
+  projectId,
+  activeTab 
+}) => {
   const location = useLocation();
+  const currentPath = location.pathname;
   
-  const tabs = [
-    {
-      name: 'Overview',
-      path: `/projects/${projectId}`,
-      icon: <LayoutDashboard className="h-5 w-5" />
-    },
-    {
-      name: 'Content',
-      path: `/projects/${projectId}/content`,
-      icon: <BookText className="h-5 w-5" />
-    },
-    {
-      name: 'Analysis',
-      path: `/projects/${projectId}/analysis`,
-      icon: <LineChart className="h-5 w-5" />
-    },
-    {
-      name: 'Enhancements',
-      path: `/projects/${projectId}/enhancements`,
-      icon: <Sparkles className="h-5 w-5" />
-    },
-    {
-      name: 'Knowledge Base',
-      path: `/projects/${projectId}/knowledge-base`,
-      icon: <FileBox className="h-5 w-5" />
-    },
-    {
-      name: 'Configuration',
-      path: `/projects/${projectId}/configuration`,
-      icon: <Settings className="h-5 w-5" />
+  const isTabActive = (tabPath: string) => {
+    if (activeTab) {
+      return activeTab === tabPath;
     }
-  ];
-  
-  const isActive = (path: string) => {
-    if (path === `/projects/${projectId}`) {
-      return location.pathname === path;
+    
+    if (tabPath === 'overview' && currentPath === `/projects/${projectId}`) {
+      return true;
     }
-    return location.pathname.startsWith(path);
+    
+    return currentPath.includes(`/projects/${projectId}/${tabPath}`);
   };
   
+  const tabs = [
+    { id: 'overview', label: 'Overview', path: `/projects/${projectId}` },
+    { id: 'content', label: 'Content', path: `/projects/${projectId}/content` },
+    { id: 'analysis', label: 'Analysis', path: `/projects/${projectId}/analysis` },
+    { id: 'enhancements', label: 'Enhancements', path: `/projects/${projectId}/enhancements` },
+    { id: 'knowledge-base', label: 'Knowledge Base', path: `/projects/${projectId}/knowledge-base` },
+    { id: 'configuration', label: 'Configuration', path: `/projects/${projectId}/configuration` },
+  ];
+  
   return (
-    <div className="border-b border-slate-200 mb-6">
-      <div className="flex space-x-4">
+    <div className="border-b border-slate-200 mt-2">
+      <nav className="-mb-px flex space-x-8">
         {tabs.map((tab) => (
-          <button
-            key={tab.name}
+          <Link
+            key={tab.id}
+            to={tab.path}
             className={cn(
-              "flex items-center space-x-2 py-3 px-2 text-sm font-medium border-b-2 transition-colors",
-              isActive(tab.path)
-                ? "border-brand-500 text-brand-700"
-                : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+              "inline-flex items-center border-b-2 py-4 px-1 text-sm font-medium",
+              isTabActive(tab.id)
+                ? "border-brand-500 text-brand-600"
+                : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700"
             )}
-            onClick={() => navigate(tab.path)}
+            aria-current={isTabActive(tab.id) ? "page" : undefined}
           >
-            <span className={cn(
-              isActive(tab.path) ? "text-brand-600" : "text-slate-500"
-            )}>
-              {tab.icon}
-            </span>
-            <span>{tab.name}</span>
-          </button>
+            {tab.label}
+          </Link>
         ))}
-      </div>
+      </nav>
     </div>
   );
 };
