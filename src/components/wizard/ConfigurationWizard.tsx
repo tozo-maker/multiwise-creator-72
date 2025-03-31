@@ -1,8 +1,6 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { 
   Card, 
   CardContent,
@@ -19,10 +17,11 @@ import { LanguageConfigStep } from './steps/LanguageConfigStep';
 import { DocumentUploadStep } from './steps/DocumentUploadStep';
 import { SummaryStep } from './steps/SummaryStep';
 import { useToast } from '@/hooks/use-toast';
+import { useWizardForm } from '@/hooks/useWizardForm';
+import { WizardStepIndicator, WizardStep } from './WizardStepIndicator';
+import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
-type StepType = { id: number; name: string };
-
-const steps: StepType[] = [
+const WIZARD_STEPS: WizardStep[] = [
   { id: 0, name: 'Project Info' },
   { id: 1, name: 'System Config' },
   { id: 2, name: 'Project Config' },
@@ -30,8 +29,6 @@ const steps: StepType[] = [
   { id: 4, name: 'Documents' },
   { id: 5, name: 'Summary' }
 ];
-
-type DisplayStepType = StepType | { hidden: true; id?: number; name?: string };
 
 interface ConfigData {
   name: string;
@@ -66,39 +63,48 @@ interface ConfigData {
 export const ConfigurationWizard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [configData, setConfigData] = useState<ConfigData>({
-    name: '',
-    quickStart: 'custom',
-    interfaceLanguage: 'English',
-    experienceLevel: 'Intermediate',
-    interactionMode: 'Guided',
-    outputDetail: 'Detailed',
-    systemBehavior: 'Balanced',
-    projectType: 'Textbook',
-    subjects: [],
-    levels: [],
-    pedagogy: 'Standard',
-    wordCount: 5000,
-    targetLanguage: 'Spanish',
-    goal: 'Teaching',
-    complexity: 'Intermediate',
-    culturalIntegration: 'Moderate',
-    terminology: 'Standard',
-    markers: 'Standard',
-    standards: 'Default',
-    structure: 'Default',
-    formatting: 'Default',
-    uploadedDocuments: [],
-    needsDocumentUpload: false
+  
+  const {
+    currentStep,
+    formData,
+    updateFormData,
+    nextStep,
+    prevStep,
+    goToStep,
+    isFirstStep,
+    isLastStep
+  } = useWizardForm<ConfigData>({
+    initialData: {
+      name: '',
+      quickStart: 'custom',
+      interfaceLanguage: 'English',
+      experienceLevel: 'Intermediate',
+      interactionMode: 'Guided',
+      outputDetail: 'Detailed',
+      systemBehavior: 'Balanced',
+      projectType: 'Textbook',
+      subjects: [],
+      levels: [],
+      pedagogy: 'Standard',
+      wordCount: 5000,
+      targetLanguage: 'Spanish',
+      goal: 'Teaching',
+      complexity: 'Intermediate',
+      culturalIntegration: 'Moderate',
+      terminology: 'Standard',
+      markers: 'Standard',
+      standards: 'Default',
+      structure: 'Default',
+      formatting: 'Default',
+      uploadedDocuments: [],
+      needsDocumentUpload: false
+    },
+    steps: WIZARD_STEPS.length,
+    saveKey: 'project-creation'
   });
 
-  const updateConfigData = (data: Partial<ConfigData>) => {
-    setConfigData({ ...configData, ...data });
-  };
-
-  const nextStep = () => {
-    if (currentStep === 0 && !configData.name.trim()) {
+  const handleStepNavigation = () => {
+    if (currentStep === 0 && !formData.name.trim()) {
       toast({
         title: "Project name required",
         description: "Please provide a name for your project.",
@@ -109,38 +115,42 @@ export const ConfigurationWizard = () => {
 
     // Check if documents should be collected (custom options selected or Custom project type)
     if (currentStep === 3) {
-      const needsDocuments = configData.standards === 'Custom' || 
-                             configData.projectType.startsWith('Custom:') ||
-                             configData.terminology.startsWith('Custom:') ||
-                             configData.markers.startsWith('Custom:') ||
-                             configData.structure.startsWith('Custom:');
+      const needsDocuments = formData.standards === 'Custom' || 
+                            formData.projectType.startsWith('Custom:') ||
+                            formData.terminology.startsWith('Custom:') ||
+                            formData.markers.startsWith('Custom:') ||
+                            formData.structure.startsWith('Custom:');
       
-      updateConfigData({ needsDocumentUpload: needsDocuments });
-      setCurrentStep(needsDocuments ? 4 : 5);
-    } else if (currentStep === 4) {
-      setCurrentStep(5);
+      updateFormData({ needsDocumentUpload: needsDocuments });
+      
+      if (needsDocuments) {
+        nextStep();
+      } else {
+        // Skip documents step
+        goToStep(5);
+      }
     } else {
-      setCurrentStep(prev => prev + 1);
+      nextStep();
     }
   };
 
-  const prevStep = () => {
-    if (currentStep === 5 && configData.needsDocumentUpload) {
-      setCurrentStep(4);
-    } else if (currentStep === 5 && !configData.needsDocumentUpload) {
-      setCurrentStep(3);
-    } else if (currentStep === 4) {
-      setCurrentStep(3);
+  const handlePrevStep = () => {
+    if (currentStep === 5 && !formData.needsDocumentUpload) {
+      // Skip back over the documents step
+      goToStep(3);
     } else {
-      setCurrentStep(prev => prev - 1);
+      prevStep();
     }
   };
 
   const handleComplete = () => {
     toast({
       title: "Project created successfully",
-      description: `Your project "${configData.name}" has been created.`,
+      description: `Your project "${formData.name}" has been created.`,
     });
+    
+    // Clear saved form data
+    localStorage.removeItem('wizard-form-project-creation');
     
     // Simulate project creation
     setTimeout(() => {
@@ -151,39 +161,63 @@ export const ConfigurationWizard = () => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return <ProjectNameStep data={configData} updateData={updateConfigData} />;
+        return <ProjectNameStep data={formData} updateData={updateFormData} />;
       case 1:
-        return <SystemConfigStep data={configData} updateData={updateConfigData} />;
+        return <SystemConfigStep data={formData} updateData={updateFormData} />;
       case 2:
-        return <ProjectConfigStep data={configData} updateData={updateConfigData} />;
+        return <ProjectConfigStep data={formData} updateData={updateFormData} />;
       case 3:
-        return <LanguageConfigStep data={configData} updateData={updateConfigData} />;
+        return <LanguageConfigStep data={formData} updateData={updateFormData} />;
       case 4:
-        return <DocumentUploadStep data={configData} updateData={updateConfigData} />;
+        return <DocumentUploadStep data={formData} updateData={updateFormData} />;
       case 5:
-        return <SummaryStep data={configData} />;
+        return <SummaryStep data={formData} />;
       default:
         return null;
     }
   };
 
-  // Fix for TypeScript error - properly type-check for hidden property
-  const getDisplayStep = (stepId: number): DisplayStepType => {
-    if (stepId === 4 && !configData.needsDocumentUpload) {
-      return { hidden: true };
+  // Get visible steps (hiding document step if not needed)
+  const getVisibleSteps = () => {
+    return WIZARD_STEPS.map(step => ({
+      ...step,
+      hidden: step.id === 4 && !formData.needsDocumentUpload
+    }));
+  };
+  
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 0: return "Project Information";
+      case 1: return "System Configuration";
+      case 2: return "Project Configuration";
+      case 3: return "Language & Content Configuration";
+      case 4: return "Upload Project Documents";
+      case 5: return "Review & Create";
+      default: return "";
     }
-    if (stepId === 5 && !configData.needsDocumentUpload) {
-      return { id: 4, name: steps[5].name };
-    }
-    return steps[stepId];
   };
 
-  const visibleSteps = steps.filter((_, index) => 
-    !(index === 4 && !configData.needsDocumentUpload)
-  );
+  const getStepDescription = () => {
+    switch (currentStep) {
+      case 0: return "Name your project and choose a starting point.";
+      case 1: return "Configure how you want to interact with the system.";
+      case 2: return "Define the educational project specifications.";
+      case 3: return "Set language preferences and content parameters.";
+      case 4: return "Upload documents needed for your custom configuration.";
+      case 5: return "Review your configuration and create your project.";
+      default: return "";
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
+      <PageBreadcrumbs 
+        items={[
+          { label: 'Projects', path: '/projects' },
+          { label: 'Create New Project' }
+        ]}
+      />
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Create New Project</h1>
         <p className="text-slate-500 mt-2">
@@ -191,58 +225,16 @@ export const ConfigurationWizard = () => {
         </p>
       </div>
       
-      <div className="flex justify-center mb-8">
-        <div className="flex">
-          {visibleSteps.map((step) => {
-            const displayStep = getDisplayStep(step.id);
-            
-            if ('hidden' in displayStep && displayStep.hidden) return null;
-            
-            return (
-              <div 
-                key={step.id}
-                className={cn(
-                  "step-item",
-                  { "active": currentStep === step.id },
-                  { "complete": currentStep > step.id }
-                )}
-              >
-                <div className={cn(
-                  "step",
-                  { "active": currentStep === step.id },
-                  { "complete": currentStep > step.id }
-                )}>
-                  {currentStep > step.id ? (
-                    <Check className="h-5 w-5 step-icon" />
-                  ) : (
-                    step.id + 1
-                  )}
-                </div>
-                <p className="step-label">{('name' in displayStep) ? displayStep.name : ''}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <WizardStepIndicator 
+        steps={getVisibleSteps()}
+        currentStep={currentStep}
+        className="mb-8"
+      />
       
       <Card className="border-slate-200 shadow-sm">
         <CardHeader>
-          <CardTitle>
-            {currentStep === 0 && "Project Information"}
-            {currentStep === 1 && "System Configuration"}
-            {currentStep === 2 && "Project Configuration"}
-            {currentStep === 3 && "Language & Content Configuration"}
-            {currentStep === 4 && "Upload Project Documents"}
-            {currentStep === 5 && "Review & Create"}
-          </CardTitle>
-          <CardDescription>
-            {currentStep === 0 && "Name your project and choose a starting point."}
-            {currentStep === 1 && "Configure how you want to interact with the system."}
-            {currentStep === 2 && "Define the educational project specifications."}
-            {currentStep === 3 && "Set language preferences and content parameters."}
-            {currentStep === 4 && "Upload documents needed for your custom configuration."}
-            {currentStep === 5 && "Review your configuration and create your project."}
-          </CardDescription>
+          <CardTitle>{getStepTitle()}</CardTitle>
+          <CardDescription>{getStepDescription()}</CardDescription>
         </CardHeader>
         
         <CardContent>
@@ -252,17 +244,17 @@ export const ConfigurationWizard = () => {
         <CardFooter className="flex justify-between border-t border-slate-200 pt-4">
           <Button 
             variant="outline" 
-            onClick={prevStep} 
-            disabled={currentStep === 0}
+            onClick={handlePrevStep} 
+            disabled={isFirstStep}
           >
             Back
           </Button>
           
           <div>
-            {currentStep < 5 ? (
+            {!isLastStep ? (
               <Button 
                 className="bg-brand-500 hover:bg-brand-600 text-white"
-                onClick={nextStep}
+                onClick={handleStepNavigation}
               >
                 Continue
               </Button>
