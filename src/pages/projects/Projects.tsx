@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
@@ -8,47 +7,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProjectCardProps } from '@/components/projects/ProjectCard';
 
-// Sample project data
-const sampleProjects = [
+// Sample project data - updated to match ProjectCardProps interface
+const sampleProjects: ProjectCardProps[] = [
   {
     id: '1',
-    title: 'AP Spanish Curriculum',
+    name: 'AP Spanish Curriculum',
+    targetLanguage: 'Spanish',
     type: 'Textbook',
-    subjects: ['Spanish', 'Language Arts'],
-    levels: ['High School', 'AP'],
     lastModified: '2023-10-15T14:30:00Z',
-    status: 'In Progress',
     progress: 75
   },
   {
     id: '2',
-    title: 'Elementary Science',
+    name: 'Elementary Science',
+    targetLanguage: 'English',
     type: 'Lesson Plan',
-    subjects: ['Science', 'Biology'],
-    levels: ['Elementary', 'Grade 3-5'],
     lastModified: '2023-09-22T10:15:00Z',
-    status: 'Completed',
     progress: 100
   },
   {
     id: '3',
-    title: 'Algebra Fundamentals',
+    name: 'Algebra Fundamentals',
+    targetLanguage: 'English',
     type: 'Workbook',
-    subjects: ['Mathematics', 'Algebra'],
-    levels: ['Middle School', 'Grade 7-8'],
     lastModified: '2023-11-05T09:45:00Z',
-    status: 'In Progress',
     progress: 40
   },
   {
     id: '4',
-    title: 'World History Guide',
+    name: 'World History Guide',
+    targetLanguage: 'English',
     type: 'Teacher Guide',
-    subjects: ['History', 'Social Studies'],
-    levels: ['High School'],
     lastModified: '2023-10-30T16:20:00Z',
-    status: 'Draft',
     progress: 15
   }
 ];
@@ -62,14 +54,17 @@ export const Projects = () => {
   const filteredProjects = sampleProjects.filter(project => {
     // Search filter
     const matchesSearch = searchQuery === '' || 
-      project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.subjects.some(subject => subject.toLowerCase().includes(searchQuery.toLowerCase()));
+      project.name.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Type filter
     const matchesType = filterType === 'all' || project.type === filterType;
     
-    // Status filter
-    const matchesStatus = filterStatus === 'all' || project.status === filterStatus;
+    // Status filter - determine status based on progress
+    let status = 'Draft';
+    if (project.progress === 100) status = 'Completed';
+    else if (project.progress > 20) status = 'In Progress';
+    
+    const matchesStatus = filterStatus === 'all' || status === filterStatus;
     
     return matchesSearch && matchesType && matchesStatus;
   });
