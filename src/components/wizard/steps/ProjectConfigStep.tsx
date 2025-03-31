@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,6 +6,7 @@ import { HelpCircle, Plus, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ProjectConfigProps {
   data: {
@@ -26,8 +26,10 @@ interface ProjectConfigProps {
 }
 
 export const ProjectConfigStep: React.FC<ProjectConfigProps> = ({ data, updateData }) => {
-  const [newSubject, setNewSubject] = React.useState('');
-  const [newLevel, setNewLevel] = React.useState('');
+  const [newSubject, setNewSubject] = useState('');
+  const [newLevel, setNewLevel] = useState('');
+  const [customProjectType, setCustomProjectType] = useState('');
+  const [customPedagogy, setCustomPedagogy] = useState('');
 
   const addSubject = () => {
     if (newSubject.trim() !== '' && !data.subjects.includes(newSubject.trim())) {
@@ -51,6 +53,30 @@ export const ProjectConfigStep: React.FC<ProjectConfigProps> = ({ data, updateDa
     updateData({ levels: data.levels.filter(l => l !== level) });
   };
 
+  const handleProjectTypeChange = (value: string) => {
+    updateData({ projectType: value });
+    if (value !== 'Custom') {
+      setCustomProjectType('');
+    }
+  };
+
+  const handlePedagogyChange = (value: string) => {
+    updateData({ pedagogy: value });
+    if (value !== 'Custom') {
+      setCustomPedagogy('');
+    }
+  };
+
+  const handleCustomProjectTypeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCustomProjectType(e.target.value);
+    updateData({ projectType: 'Custom: ' + e.target.value });
+  };
+
+  const handleCustomPedagogyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCustomPedagogy(e.target.value);
+    updateData({ pedagogy: 'Custom: ' + e.target.value });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -68,8 +94,8 @@ export const ProjectConfigStep: React.FC<ProjectConfigProps> = ({ data, updateDa
           </TooltipProvider>
         </div>
         <Select 
-          value={data.projectType} 
-          onValueChange={(value) => updateData({ projectType: value })}
+          value={data.projectType.startsWith('Custom:') ? 'Custom' : data.projectType} 
+          onValueChange={handleProjectTypeChange}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select project type" />
@@ -83,6 +109,19 @@ export const ProjectConfigStep: React.FC<ProjectConfigProps> = ({ data, updateDa
             <SelectItem value="Custom">Custom</SelectItem>
           </SelectContent>
         </Select>
+        
+        {data.projectType === 'Custom' || data.projectType.startsWith('Custom:') ? (
+          <div className="mt-2">
+            <Label htmlFor="customProjectType" className="text-sm">Specify Custom Project Type</Label>
+            <Textarea 
+              id="customProjectType"
+              placeholder="Describe your custom project type..."
+              value={customProjectType}
+              onChange={handleCustomProjectTypeChange}
+              className="mt-1"
+            />
+          </div>
+        ) : null}
       </div>
       
       <div className="space-y-2">
@@ -198,8 +237,8 @@ export const ProjectConfigStep: React.FC<ProjectConfigProps> = ({ data, updateDa
           </TooltipProvider>
         </div>
         <Select 
-          value={data.pedagogy} 
-          onValueChange={(value) => updateData({ pedagogy: value })}
+          value={data.pedagogy.startsWith('Custom:') ? 'Custom' : data.pedagogy} 
+          onValueChange={handlePedagogyChange}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select pedagogical approach" />
@@ -213,6 +252,19 @@ export const ProjectConfigStep: React.FC<ProjectConfigProps> = ({ data, updateDa
             <SelectItem value="Custom">Custom</SelectItem>
           </SelectContent>
         </Select>
+        
+        {data.pedagogy === 'Custom' || data.pedagogy.startsWith('Custom:') ? (
+          <div className="mt-2">
+            <Label htmlFor="customPedagogy" className="text-sm">Specify Custom Pedagogical Approach</Label>
+            <Textarea 
+              id="customPedagogy"
+              placeholder="Describe your custom pedagogical approach..."
+              value={customPedagogy}
+              onChange={handleCustomPedagogyChange}
+              className="mt-1"
+            />
+          </div>
+        ) : null}
       </div>
       
       <div className="space-y-2">

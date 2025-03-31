@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface LanguageConfigProps {
   data: {
@@ -34,6 +35,24 @@ interface LanguageConfigProps {
 
 export const LanguageConfigStep: React.FC<LanguageConfigProps> = ({ data, updateData }) => {
   const showDocumentUploadAlert = data.standards === 'Custom';
+  const [customTerminology, setCustomTerminology] = useState('');
+  const [customMarkers, setCustomMarkers] = useState('');
+  const [customStructure, setCustomStructure] = useState('');
+
+  const handleCustomTerminologyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCustomTerminology(e.target.value);
+    updateData({ terminology: 'Custom: ' + e.target.value });
+  };
+
+  const handleCustomMarkersChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCustomMarkers(e.target.value);
+    updateData({ markers: 'Custom: ' + e.target.value });
+  };
+
+  const handleCustomStructureChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCustomStructure(e.target.value);
+    updateData({ structure: 'Custom: ' + e.target.value });
+  };
 
   return (
     <div className="space-y-6">
@@ -163,6 +182,96 @@ export const LanguageConfigStep: React.FC<LanguageConfigProps> = ({ data, update
         </Select>
       </div>
       
+      {/* New Terminology Section */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="terminology">Terminology</Label>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <HelpCircle className="h-4 w-4 text-slate-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="w-80">The type of vocabulary and terminology to use</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <Select 
+          value={data.terminology.startsWith('Custom:') ? 'Custom' : data.terminology} 
+          onValueChange={(value) => updateData({ terminology: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select terminology type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Standard">Standard</SelectItem>
+            <SelectItem value="Technical">Technical</SelectItem>
+            <SelectItem value="Simplified">Simplified</SelectItem>
+            <SelectItem value="Academic">Academic</SelectItem>
+            <SelectItem value="Custom">Custom</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        {(data.terminology === 'Custom' || data.terminology.startsWith('Custom:')) && (
+          <div className="mt-2">
+            <Label htmlFor="customTerminology" className="text-sm">Specify Custom Terminology</Label>
+            <Textarea 
+              id="customTerminology"
+              placeholder="Describe your custom terminology requirements..."
+              value={customTerminology}
+              onChange={handleCustomTerminologyChange}
+              className="mt-1"
+            />
+          </div>
+        )}
+      </div>
+      
+      {/* New Markers Section */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="markers">Language Markers</Label>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <HelpCircle className="h-4 w-4 text-slate-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="w-80">Special language elements like idioms, regional expressions, etc.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <Select 
+          value={data.markers.startsWith('Custom:') ? 'Custom' : data.markers} 
+          onValueChange={(value) => updateData({ markers: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select language markers" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Standard">Standard</SelectItem>
+            <SelectItem value="Formal">Formal</SelectItem>
+            <SelectItem value="Conversational">Conversational</SelectItem>
+            <SelectItem value="Regional">Regional</SelectItem>
+            <SelectItem value="Custom">Custom</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        {(data.markers === 'Custom' || data.markers.startsWith('Custom:')) && (
+          <div className="mt-2">
+            <Label htmlFor="customMarkers" className="text-sm">Specify Custom Language Markers</Label>
+            <Textarea 
+              id="customMarkers"
+              placeholder="Describe your custom language marker requirements..."
+              value={customMarkers}
+              onChange={handleCustomMarkersChange}
+              className="mt-1"
+            />
+          </div>
+        )}
+      </div>
+      
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Label htmlFor="standards">Educational Standards</Label>
@@ -200,6 +309,51 @@ export const LanguageConfigStep: React.FC<LanguageConfigProps> = ({ data, update
               You will be prompted to upload your custom standards document in the next step.
             </AlertDescription>
           </Alert>
+        )}
+      </div>
+      
+      {/* New Structure Section */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="structure">Content Structure</Label>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <HelpCircle className="h-4 w-4 text-slate-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="w-80">The organization and layout of your content</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <Select 
+          value={data.structure.startsWith('Custom:') ? 'Custom' : data.structure} 
+          onValueChange={(value) => updateData({ structure: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select content structure" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Default">Default</SelectItem>
+            <SelectItem value="Sequential">Sequential</SelectItem>
+            <SelectItem value="Hierarchical">Hierarchical</SelectItem>
+            <SelectItem value="Topic-based">Topic-based</SelectItem>
+            <SelectItem value="Custom">Custom</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        {(data.structure === 'Custom' || data.structure.startsWith('Custom:')) && (
+          <div className="mt-2">
+            <Label htmlFor="customStructure" className="text-sm">Specify Custom Content Structure</Label>
+            <Textarea 
+              id="customStructure"
+              placeholder="Describe your custom content structure requirements..."
+              value={customStructure}
+              onChange={handleCustomStructureChange}
+              className="mt-1"
+            />
+          </div>
         )}
       </div>
       

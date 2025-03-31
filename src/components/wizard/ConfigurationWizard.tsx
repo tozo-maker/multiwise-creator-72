@@ -18,13 +18,15 @@ import { ProjectConfigStep } from './steps/ProjectConfigStep';
 import { LanguageConfigStep } from './steps/LanguageConfigStep';
 import { DocumentUploadStep } from './steps/DocumentUploadStep';
 import { SummaryStep } from './steps/SummaryStep';
+import { useToast } from '@/components/ui/use-toast';
 
 const steps = [
   { id: 0, name: 'Project Info' },
   { id: 1, name: 'System Config' },
   { id: 2, name: 'Project Config' },
   { id: 3, name: 'Language Config' },
-  { id: 4, name: 'Summary' }
+  { id: 4, name: 'Documents' },
+  { id: 5, name: 'Summary' }
 ];
 
 interface ConfigData {
@@ -59,6 +61,7 @@ interface ConfigData {
 
 export const ConfigurationWizard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [configData, setConfigData] = useState<ConfigData>({
     name: '',
@@ -91,21 +94,38 @@ export const ConfigurationWizard = () => {
   };
 
   const nextStep = () => {
-    // If standards are custom in step 3, add the document upload step
-    if (currentStep === 3 && configData.standards === 'Custom') {
-      updateConfigData({ needsDocumentUpload: true });
-      setCurrentStep(3.5);
-    } else if (currentStep === 3.5) {
-      setCurrentStep(4);
+    if (currentStep === 0 && !configData.name.trim()) {
+      toast({
+        title: "Project name required",
+        description: "Please provide a name for your project.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if documents should be collected (custom options selected or Custom project type)
+    if (currentStep === 3) {
+      const needsDocuments = configData.standards === 'Custom' || 
+                             configData.projectType.startsWith('Custom:') ||
+                             configData.terminology.startsWith('Custom:') ||
+                             configData.markers.startsWith('Custom:') ||
+                             configData.structure.startsWith('Custom:');
+      
+      updateConfigData({ needsDocumentUpload: needsDocuments });
+      setCurrentStep(needsDocuments ? 4 : 5);
+    } else if (currentStep === 4) {
+      setCurrentStep(5);
     } else {
       setCurrentStep(prev => prev + 1);
     }
   };
 
   const prevStep = () => {
-    if (currentStep === 4 && configData.needsDocumentUpload) {
-      setCurrentStep(3.5);
-    } else if (currentStep === 3.5) {
+    if (currentStep === 5 && configData.needsDocumentUpload) {
+      setCurrentStep(4);
+    } else if (currentStep === 5 && !configData.needsDocumentUpload) {
+      setCurrentStep(3);
+    } else if (currentStep === 4) {
       setCurrentStep(3);
     } else {
       setCurrentStep(prev => prev - 1);
@@ -113,9 +133,14 @@ export const ConfigurationWizard = () => {
   };
 
   const handleComplete = () => {
+    toast({
+      title: "Project created successfully",
+      description: `Your project "${configData.name}" has been created.`,
+    });
+    
     // Simulate project creation
     setTimeout(() => {
-      navigate('/dashboard');
+      navigate('/projects');
     }, 1000);
   };
 
@@ -129,14 +154,29 @@ export const ConfigurationWizard = () => {
         return <ProjectConfigStep data={configData} updateData={updateConfigData} />;
       case 3:
         return <LanguageConfigStep data={configData} updateData={updateConfigData} />;
-      case 3.5:
-        return <DocumentUploadStep data={configData} updateData={updateConfigData} />;
       case 4:
+        return <DocumentUploadStep data={configData} updateData={updateConfigData} />;
+      case 5:
         return <SummaryStep data={configData} />;
       default:
         return null;
     }
   };
+
+  // Adjust the step display logic for document uploads
+  const getDisplayStep = (stepId: number) => {
+    if (stepId === 4 && !configData.needsDocumentUpload) {
+      return { hidden: true };
+    }
+    if (stepId === 5 && !configData.needsDocumentUpload) {
+      return { id: 4, name: steps[5].name };
+    }
+    return steps[stepId];
+  };
+
+  const visibleSteps = steps.filter((_, index) => 
+    !(index === 4 && !configData.needsDocumentUpload)
+  );
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -150,29 +190,34 @@ export const ConfigurationWizard = () => {
       {/* Progress Stepper */}
       <div className="flex justify-center mb-8">
         <div className="flex">
-          {steps.map((step) => (
-            <div 
-              key={step.id}
-              className={cn(
-                "step-item",
-                { "active": currentStep === step.id },
-                { "complete": currentStep > step.id }
-              )}
-            >
-              <div className={cn(
-                "step",
-                { "active": currentStep === step.id },
-                { "complete": currentStep > step.id }
-              )}>
-                {currentStep > step.id ? (
-                  <Check className="h-5 w-5 step-icon" />
-                ) : (
-                  step.id + 1
+          {visibleSteps.map((step) => {
+            const displayStep = getDisplayStep(step.id);
+            if (displayStep.hidden) return null;
+            
+            return (
+              <div 
+                key={step.id}
+                className={cn(
+                  "step-item",
+                  { "active": currentStep === step.id },
+                  { "complete": currentStep > step.id }
                 )}
+              >
+                <div className={cn(
+                  "step",
+                  { "active": currentStep === step.id },
+                  { "complete": currentStep > step.id }
+                )}>
+                  {currentStep > step.id ? (
+                    <Check className="h-5 w-5 step-icon" />
+                  ) : (
+                    step.id + 1
+                  )}
+                </div>
+                <p className="step-label">{step.name}</p>
               </div>
-              <p className="step-label">{step.name}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       
@@ -183,16 +228,16 @@ export const ConfigurationWizard = () => {
             {currentStep === 1 && "System Configuration"}
             {currentStep === 2 && "Project Configuration"}
             {currentStep === 3 && "Language & Content Configuration"}
-            {currentStep === 3.5 && "Upload Core Documents"}
-            {currentStep === 4 && "Review & Create"}
+            {currentStep === 4 && "Upload Project Documents"}
+            {currentStep === 5 && "Review & Create"}
           </CardTitle>
           <CardDescription>
             {currentStep === 0 && "Name your project and choose a starting point."}
             {currentStep === 1 && "Configure how you want to interact with the system."}
             {currentStep === 2 && "Define the educational project specifications."}
             {currentStep === 3 && "Set language preferences and content parameters."}
-            {currentStep === 3.5 && "Upload key documents needed for your project."}
-            {currentStep === 4 && "Review your configuration and create your project."}
+            {currentStep === 4 && "Upload documents needed for your custom configuration."}
+            {currentStep === 5 && "Review your configuration and create your project."}
           </CardDescription>
         </CardHeader>
         
@@ -210,7 +255,7 @@ export const ConfigurationWizard = () => {
           </Button>
           
           <div>
-            {currentStep < 4 ? (
+            {currentStep < 5 ? (
               <Button onClick={nextStep}>
                 Continue
               </Button>

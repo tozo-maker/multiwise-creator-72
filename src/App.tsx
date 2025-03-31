@@ -7,6 +7,7 @@ import { ContextualHelp } from "@/components/help/ContextualHelp";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Dashboard } from "./pages/dashboard/Dashboard";
+import { Projects } from "./pages/projects/Projects";
 import { CreateProject } from "./pages/projects/CreateProject";
 import { ProjectWorkspace } from "./pages/projects/ProjectWorkspace";
 import { ContentWorkspace } from "./pages/projects/ContentWorkspace";
@@ -18,6 +19,7 @@ import { ContentCreation } from "./pages/projects/ContentCreation";
 import { ConfigurationWorkspace } from "./pages/projects/ConfigurationWorkspace";
 import { SnapshotsWorkspace } from "./pages/projects/SnapshotsWorkspace";
 import { Settings } from "./pages/settings/Settings";
+import { Help } from "./pages/help/Help";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/auth/LandingPage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -97,6 +99,7 @@ const App = () => {
             
             {/* Protected routes */}
             <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth/login" />} />
+            <Route path="/projects" element={isAuthenticated ? <Projects /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/new" element={isAuthenticated ? <CreateProject /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId" element={isAuthenticated ? <ProjectWorkspace /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId/knowledge-base" element={isAuthenticated ? <KnowledgeBase /> : <Navigate to="/auth/login" />} />
@@ -107,6 +110,7 @@ const App = () => {
             <Route path="/projects/:projectId/enhancements" element={isAuthenticated ? <EnhancementsWorkspace /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId/configuration" element={isAuthenticated ? <ConfigurationWorkspace /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId/snapshots" element={isAuthenticated ? <SnapshotsWorkspace /> : <Navigate to="/auth/login" />} />
+            <Route path="/help" element={isAuthenticated ? <Help /> : <Navigate to="/auth/login" />} />
             <Route path="/settings" element={isAuthenticated ? <Settings /> : <Navigate to="/auth/login" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
