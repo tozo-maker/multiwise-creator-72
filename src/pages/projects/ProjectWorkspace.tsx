@@ -8,6 +8,7 @@ import { ProjectOverviewCards } from '@/components/project/ProjectOverviewCards'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { ChevronRight, Plus, LineChart, Sparkles } from 'lucide-react';
+import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
 export const ProjectWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -22,8 +23,17 @@ export const ProjectWorkspace = () => {
     progress: 65
   };
   
+  const breadcrumbItems = [
+    { label: 'Projects', path: '/projects' },
+    { label: project.name }
+  ];
+  
   return (
     <MainLayout>
+      <div className="container mx-auto py-6">
+        <PageBreadcrumbs items={breadcrumbItems} />
+      </div>
+      
       <ProjectWorkspaceHeader 
         projectName={project.name}
         projectType={project.type}
@@ -48,7 +58,7 @@ export const ProjectWorkspace = () => {
                 Start creating chapters, sections or other content units.
               </p>
               
-              <Button className="gap-2 w-full justify-between bg-brand-500 hover:bg-brand-600">
+              <Button className="gap-2 w-full justify-between bg-brand-500 hover:bg-brand-600 text-white">
                 <div className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
                   Create New Content
@@ -72,7 +82,7 @@ export const ProjectWorkspace = () => {
                 Upload curriculum standards, style guides, and other context materials.
               </p>
               
-              <Button className="gap-2 w-full justify-between" variant="outline">
+              <Button className="gap-2 w-full justify-between bg-brand-500 hover:bg-brand-600 text-white" variant="outline">
                 <div className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
                   Add Files to Knowledge Base
@@ -96,7 +106,7 @@ export const ProjectWorkspace = () => {
                 Get insights into readability, alignment with standards, and more.
               </p>
               
-              <Button className="gap-2 w-full justify-between" variant="outline">
+              <Button className="gap-2 w-full justify-between bg-brand-500 hover:bg-brand-600 text-white" variant="outline">
                 <div className="flex items-center gap-2">
                   <LineChart className="h-4 w-4" />
                   Run Analysis
@@ -120,7 +130,7 @@ export const ProjectWorkspace = () => {
                 Get suggestions for improvements and enhancements to your content.
               </p>
               
-              <Button className="gap-2 w-full justify-between" variant="outline">
+              <Button className="gap-2 w-full justify-between bg-brand-500 hover:bg-brand-600 text-white" variant="outline">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" />
                   Generate Enhancements

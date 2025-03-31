@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Filter, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProjectCardProps } from '@/components/projects/ProjectCard';
+import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
 // Sample project data - updated to match ProjectCardProps interface
 const sampleProjects: ProjectCardProps[] = [
@@ -69,9 +71,15 @@ export const Projects = () => {
     return matchesSearch && matchesType && matchesStatus;
   });
   
+  const breadcrumbItems = [
+    { label: 'Projects', path: '/projects' }
+  ];
+  
   return (
     <MainLayout>
       <div className="container mx-auto py-8">
+        <PageBreadcrumbs items={breadcrumbItems} />
+        
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">My Projects</h1>

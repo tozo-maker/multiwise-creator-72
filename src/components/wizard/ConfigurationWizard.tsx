@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
@@ -17,9 +18,11 @@ import { ProjectConfigStep } from './steps/ProjectConfigStep';
 import { LanguageConfigStep } from './steps/LanguageConfigStep';
 import { DocumentUploadStep } from './steps/DocumentUploadStep';
 import { SummaryStep } from './steps/SummaryStep';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
-const steps = [
+type StepType = { id: number; name: string };
+
+const steps: StepType[] = [
   { id: 0, name: 'Project Info' },
   { id: 1, name: 'System Config' },
   { id: 2, name: 'Project Config' },
@@ -28,7 +31,6 @@ const steps = [
   { id: 5, name: 'Summary' }
 ];
 
-type StepType = { id: number; name: string };
 type DisplayStepType = StepType | { hidden: true; id?: number; name?: string };
 
 interface ConfigData {
@@ -165,6 +167,7 @@ export const ConfigurationWizard = () => {
     }
   };
 
+  // Fix for TypeScript error - properly type-check for hidden property
   const getDisplayStep = (stepId: number): DisplayStepType => {
     if (stepId === 4 && !configData.needsDocumentUpload) {
       return { hidden: true };
@@ -257,12 +260,15 @@ export const ConfigurationWizard = () => {
           
           <div>
             {currentStep < 5 ? (
-              <Button onClick={nextStep}>
+              <Button 
+                className="bg-brand-500 hover:bg-brand-600 text-white"
+                onClick={nextStep}
+              >
                 Continue
               </Button>
             ) : (
               <Button 
-                className="bg-brand-500 hover:bg-brand-600"
+                className="bg-brand-500 hover:bg-brand-600 text-white"
                 onClick={handleComplete}
               >
                 Create Project

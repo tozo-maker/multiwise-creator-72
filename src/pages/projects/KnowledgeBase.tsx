@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
 export const KnowledgeBase = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -151,8 +152,18 @@ export const KnowledgeBase = () => {
     });
   };
   
+  const breadcrumbItems = [
+    { label: 'Projects', path: '/projects' },
+    { label: project.name, path: `/projects/${project.id}` },
+    { label: 'Knowledge Base' }
+  ];
+  
   return (
     <MainLayout>
+      <div className="container mx-auto py-6">
+        <PageBreadcrumbs items={breadcrumbItems} />
+      </div>
+      
       <ProjectWorkspaceHeader 
         projectName={project.name}
         projectType={project.type}
@@ -213,7 +224,10 @@ export const KnowledgeBase = () => {
             >
               Cancel
             </Button>
-            <Button onClick={saveDescription}>
+            <Button 
+              className="bg-brand-500 hover:bg-brand-600 text-white"
+              onClick={saveDescription}
+            >
               Save Changes
             </Button>
           </DialogFooter>
