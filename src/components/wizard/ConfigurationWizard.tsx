@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
@@ -28,6 +27,9 @@ const steps = [
   { id: 4, name: 'Documents' },
   { id: 5, name: 'Summary' }
 ];
+
+type StepType = { id: number; name: string };
+type DisplayStepType = StepType | { hidden: true; id?: number; name?: string };
 
 interface ConfigData {
   name: string;
@@ -163,8 +165,7 @@ export const ConfigurationWizard = () => {
     }
   };
 
-  // Adjust the step display logic for document uploads
-  const getDisplayStep = (stepId: number) => {
+  const getDisplayStep = (stepId: number): DisplayStepType => {
     if (stepId === 4 && !configData.needsDocumentUpload) {
       return { hidden: true };
     }
@@ -187,12 +188,12 @@ export const ConfigurationWizard = () => {
         </p>
       </div>
       
-      {/* Progress Stepper */}
       <div className="flex justify-center mb-8">
         <div className="flex">
           {visibleSteps.map((step) => {
             const displayStep = getDisplayStep(step.id);
-            if (displayStep.hidden) return null;
+            
+            if ('hidden' in displayStep && displayStep.hidden) return null;
             
             return (
               <div 
@@ -214,7 +215,7 @@ export const ConfigurationWizard = () => {
                     step.id + 1
                   )}
                 </div>
-                <p className="step-label">{step.name}</p>
+                <p className="step-label">{('name' in displayStep) ? displayStep.name : ''}</p>
               </div>
             );
           })}
