@@ -23,6 +23,7 @@ import LandingPage from "./pages/auth/LandingPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import { useState, useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -37,11 +38,49 @@ const App = () => {
     setIsAuthenticated(hasAuth);
   }, []);
   
-  // For demo purposes, we can let users "log in" and "log out"
-  // This would be replaced with actual auth logic in a real app
+  // For demo purposes, we can add login and logout functions
+  const login = () => {
+    localStorage.setItem('isAuthenticated', 'true');
+    setIsAuthenticated(true);
+    toast({
+      title: "Logged in successfully",
+      description: "Welcome to MultiGuide!",
+    });
+  };
+  
+  const logout = () => {
+    localStorage.setItem('isAuthenticated', 'false');
+    setIsAuthenticated(false);
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully.",
+    });
+  };
+
+  // For demo purposes, let's add these functions to the window object so login/logout buttons can access them
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // @ts-ignore
+      window.handleLogin = login;
+      // @ts-ignore
+      window.handleLogout = logout;
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        // @ts-ignore
+        delete window.handleLogin;
+        // @ts-ignore
+        delete window.handleLogout;
+      }
+    };
+  }, []);
+  
+  // Still loading auth state
   if (isAuthenticated === null) {
-    // Still loading auth state
-    return null;
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
+    </div>;
   }
 
   return (
@@ -53,8 +92,8 @@ const App = () => {
           <Routes>
             {/* Public routes */}
             <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
-            <Route path="/auth/login" element={<LoginPage />} />
-            <Route path="/auth/register" element={<RegisterPage />} />
+            <Route path="/auth/login" element={<LoginPage onLoginSuccess={login} />} />
+            <Route path="/auth/register" element={<RegisterPage onRegisterSuccess={login} />} />
             
             {/* Protected routes */}
             <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth/login" />} />

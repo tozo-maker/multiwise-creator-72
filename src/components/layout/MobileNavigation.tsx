@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { 
   Home,
   BookText,
@@ -33,10 +33,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useToast } from '@/components/ui/use-toast';
 
 export const MobileNavigation = () => {
   const location = useLocation();
   const params = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const projectId = params.projectId;
   
   const isActive = (path: string) => {
@@ -44,6 +47,24 @@ export const MobileNavigation = () => {
       return true;
     }
     return location.pathname.startsWith(path);
+  };
+
+  const handleLogout = () => {
+    // In a real app, this would call an API to logout
+    localStorage.setItem('isAuthenticated', 'false');
+    
+    // Use the window.handleLogout if it exists (from App.tsx)
+    if (typeof window !== 'undefined' && window.handleLogout) {
+      // @ts-ignore
+      window.handleLogout();
+    }
+    
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account.",
+    });
+    
+    navigate('/');
   };
 
   const mainNavItems = [
@@ -189,18 +210,16 @@ export const MobileNavigation = () => {
               </Button>
             </SheetClose>
             
-            <Button 
-              variant="outline" 
-              className="w-full justify-start gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-              onClick={() => {
-                // In a real app, we'd call a logout function
-                localStorage.removeItem('isAuthenticated');
-                window.location.href = '/';
-              }}
-            >
-              <LogOut className="h-4 w-4" />
-              Log Out
-            </Button>
+            <SheetClose asChild>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4" />
+                Log Out
+              </Button>
+            </SheetClose>
           </SheetFooter>
         </SheetContent>
       </Sheet>

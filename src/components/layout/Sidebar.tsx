@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   BookOpen, 
@@ -14,15 +14,36 @@ import {
   BookText 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/use-toast';
 
 export const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   const isActive = (path: string) => {
     if (path === '/dashboard' && location.pathname === '/') {
       return true;
     }
     return location.pathname.startsWith(path);
+  };
+
+  const handleLogout = () => {
+    // In a real app, this would call an API to logout
+    localStorage.setItem('isAuthenticated', 'false');
+    
+    // Use the window.handleLogout if it exists (from App.tsx)
+    if (typeof window !== 'undefined' && window.handleLogout) {
+      // @ts-ignore
+      window.handleLogout();
+    }
+    
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account.",
+    });
+    
+    navigate('/');
   };
 
   return (
@@ -83,7 +104,10 @@ export const Sidebar = () => {
       
       {/* Footer */}
       <div className="p-4 border-t border-slate-200">
-        <button className="flex items-center space-x-2 text-slate-600 hover:text-slate-900 w-full px-3 py-2 transition-colors rounded-md">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center space-x-2 text-slate-600 hover:text-slate-900 w-full px-3 py-2 transition-colors rounded-md"
+        >
           <LogOut className="h-5 w-5" />
           <span>Logout</span>
         </button>

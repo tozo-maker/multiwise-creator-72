@@ -8,7 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/components/ui/use-toast";
 
-export const RegisterPage = () => {
+interface RegisterPageProps {
+  onRegisterSuccess?: () => void;
+}
+
+export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,10 +30,19 @@ export const RegisterPage = () => {
       
       // In a real app, you would register the user with an auth service
       if (name && email && password) {
+        // Set auth state in localStorage
+        localStorage.setItem('isAuthenticated', 'true');
+        
+        // Call the success callback if provided
+        if (onRegisterSuccess) {
+          onRegisterSuccess();
+        }
+        
         toast({
           title: "Account created",
           description: "You've successfully signed up for MultiGuide!",
         });
+        
         navigate('/dashboard');
       } else {
         toast({

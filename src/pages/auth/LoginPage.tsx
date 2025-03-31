@@ -8,7 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/components/ui/use-toast";
 
-export const LoginPage = () => {
+interface LoginPageProps {
+  onLoginSuccess?: () => void;
+}
+
+export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,11 +29,19 @@ export const LoginPage = () => {
       
       // In a real app, you would verify credentials with an auth service
       if (email && password) {
-        // For demo purposes, we'll just proceed
+        // Set auth state in localStorage
+        localStorage.setItem('isAuthenticated', 'true');
+        
+        // Call the success callback if provided
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        }
+        
         toast({
           title: "Logged in successfully",
           description: "Welcome back to MultiGuide!",
         });
+        
         navigate('/dashboard');
       } else {
         toast({
@@ -45,10 +57,20 @@ export const LoginPage = () => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
+      
+      // Set auth state in localStorage
+      localStorage.setItem('isAuthenticated', 'true');
+      
+      // Call the success callback if provided
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
+      
       toast({
         title: "Demo account accessed",
         description: "You're now using the demo account.",
       });
+      
       navigate('/dashboard');
     }, 1000);
   };
