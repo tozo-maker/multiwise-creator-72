@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -55,7 +54,6 @@ export const MobileNavigation = () => {
     
     // Use the window.handleLogout if it exists (from App.tsx)
     if (typeof window !== 'undefined' && window.handleLogout) {
-      // @ts-ignore
       window.handleLogout();
     }
     
