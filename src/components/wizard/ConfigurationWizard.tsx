@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -72,7 +71,8 @@ export const ConfigurationWizard = () => {
     prevStep,
     goToStep,
     isFirstStep,
-    isLastStep
+    isLastStep,
+    hasVisited
   } = useWizardForm<ConfigData>({
     initialData: {
       name: '',
@@ -228,6 +228,7 @@ export const ConfigurationWizard = () => {
       <WizardStepIndicator 
         steps={getVisibleSteps()}
         currentStep={currentStep}
+        hasVisited={hasVisited}
         className="mb-8"
       />
       
