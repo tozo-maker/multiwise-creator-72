@@ -76,7 +76,7 @@ export const Projects = () => {
   ];
   
   return (
-    <MainLayout>
+    <MainLayout contentWidth="wide">
       <div className="container mx-auto py-8">
         <PageBreadcrumbs items={breadcrumbItems} />
         

@@ -78,7 +78,7 @@ export const Help = () => {
   );
   
   return (
-    <MainLayout>
+    <MainLayout contentWidth="wide">
       <div className="container mx-auto py-8">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-slate-900">Help Center</h1>

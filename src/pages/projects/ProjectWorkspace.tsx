@@ -29,7 +29,7 @@ export const ProjectWorkspace = () => {
   ];
   
   return (
-    <MainLayout>
+    <MainLayout contentWidth="wide">
       <div className="container mx-auto py-6">
         <PageBreadcrumbs items={breadcrumbItems} />
       </div>
