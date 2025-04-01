@@ -77,10 +77,12 @@ export const Projects = () => {
   
   return (
     <MainLayout contentWidth="wide">
-      <div className="container mx-auto py-8">
-        <PageBreadcrumbs items={breadcrumbItems} />
+      <div className="space-y-6">
+        <div className="py-4">
+          <PageBreadcrumbs items={breadcrumbItems} />
+        </div>
         
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">My Projects</h1>
             <p className="text-slate-500 mt-1">Manage and create educational content projects</p>
@@ -88,7 +90,7 @@ export const Projects = () => {
           <NewProjectButton />
         </div>
         
-        <Card className="mb-8">
+        <Card className="mb-6">
           <CardHeader className="pb-3">
             <CardTitle>Project Filters</CardTitle>
             <CardDescription>Find your projects quickly with filters</CardDescription>

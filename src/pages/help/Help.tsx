@@ -79,15 +79,15 @@ export const Help = () => {
   
   return (
     <MainLayout contentWidth="wide">
-      <div className="container mx-auto py-8">
-        <div className="text-center mb-12">
+      <div className="space-y-6">
+        <div className="text-center py-6">
           <h1 className="text-3xl font-bold text-slate-900">Help Center</h1>
           <p className="text-slate-500 mt-2 max-w-2xl mx-auto">
             Find answers to common questions, watch tutorial videos, and learn how to get the most out of MultiGuide.
           </p>
         </div>
         
-        <div className="max-w-2xl mx-auto mb-12">
+        <div className="max-w-2xl mx-auto mb-8">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
             <Input 
@@ -99,7 +99,7 @@ export const Help = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center gap-2">
               <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center">
@@ -156,7 +156,7 @@ export const Help = () => {
         </div>
         
         <Tabs defaultValue="faqs" className="max-w-4xl mx-auto">
-          <TabsList className="mb-8 w-full justify-start border-b rounded-none bg-transparent h-auto p-0">
+          <TabsList className="mb-6 w-full justify-start border-b rounded-none bg-transparent h-auto p-0">
             <TabsTrigger value="faqs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-brand-500 data-[state=active]:bg-transparent">
               Frequently Asked Questions
             </TabsTrigger>
@@ -246,7 +246,7 @@ export const Help = () => {
           </TabsContent>
         </Tabs>
         
-        <div className="max-w-2xl mx-auto mt-16 text-center">
+        <div className="max-w-2xl mx-auto mt-12 text-center mb-6">
           <h2 className="text-xl font-semibold mb-4">Still need help?</h2>
           <p className="text-slate-600 mb-6">
             Our support team is ready to assist you with any questions or issues you might have.

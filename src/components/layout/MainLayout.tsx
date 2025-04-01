@@ -11,7 +11,7 @@ interface MainLayoutProps {
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ 
   children, 
-  contentWidth = 'wide' // Changed default from 'default' to 'wide'
+  contentWidth = 'wide' 
 }) => {
   // Map contentWidth to appropriate max-width classes
   const getMaxWidthClass = () => {
@@ -22,7 +22,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         return 'max-w-6xl';
       case 'wide':
       default:
-        return 'max-w-full px-4 md:px-6'; // Add horizontal padding for wide layout
+        return 'max-w-full px-4 md:px-6';
     }
   };
 
