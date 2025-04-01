@@ -8,7 +8,7 @@ import { Info } from 'lucide-react';
 
 export const CreateProject = () => {
   return (
-    <MainLayout contentWidth="narrow">
+    <MainLayout contentWidth="wide">
       <div className="space-y-6 w-full">
         <div className="mb-6">
           <Alert variant="default" className="bg-brand-50 border-brand-200">

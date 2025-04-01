@@ -118,7 +118,7 @@ export const Dashboard = () => {
   }, [searchTerm]);
 
   return (
-    <MainLayout>
+    <MainLayout contentWidth="wide">
       <div className="space-y-6">
         {/* Welcome Card */}
         <DashboardWelcome 
