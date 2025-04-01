@@ -63,7 +63,14 @@ export function useWizardForm<T extends Record<string, any>>({
     }
   };
 
-  const hasVisited = (step: number) => visitedSteps.has(step);
+  // Ensure this function always returns a boolean
+  const hasVisited = (step: number): boolean => {
+    if (typeof step !== 'number') {
+      console.warn('Invalid step provided to hasVisited:', step);
+      return false;
+    }
+    return visitedSteps.has(step);
+  };
 
   return {
     currentStep,

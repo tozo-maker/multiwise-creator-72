@@ -24,10 +24,13 @@ export const WizardStepIndicator: React.FC<WizardStepIndicatorProps> = ({
   onStepClick,
   className
 }) => {
+  // Ensure steps is an array before filtering
+  const validSteps = Array.isArray(steps) ? steps.filter(step => !step?.hidden) : [];
+  
   return (
     <div className={cn("w-full py-4 px-2 overflow-x-auto", className)}>
       <div className="flex justify-between">
-        {steps.filter(step => !step.hidden).map((step) => {
+        {validSteps.map((step) => {
           const isActive = currentStep === step.id;
           const isComplete = hasVisited(step.id) && currentStep > step.id;
           const isClickable = hasVisited(step.id) && onStepClick;

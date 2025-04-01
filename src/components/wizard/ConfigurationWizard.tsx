@@ -178,7 +178,12 @@ export const ConfigurationWizard = () => {
   };
 
   // Get visible steps (hiding document step if not needed)
-  const getVisibleSteps = () => {
+  const getVisibleSteps = (): WizardStep[] => {
+    if (!WIZARD_STEPS || !Array.isArray(WIZARD_STEPS)) {
+      console.error('WIZARD_STEPS is not properly defined');
+      return [];
+    }
+    
     return WIZARD_STEPS.map(step => ({
       ...step,
       hidden: step.id === 4 && !formData.needsDocumentUpload
