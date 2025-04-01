@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -215,7 +216,7 @@ export const ConfigurationWizard = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full">
       <PageBreadcrumbs 
         items={[
           { label: 'Projects', path: '/projects' },
