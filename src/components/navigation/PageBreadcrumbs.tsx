@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -31,7 +31,6 @@ export const PageBreadcrumbs: React.FC<PageBreadcrumbsProps> = ({
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link to={homeLink}>
-              <Home className="h-4 w-4 mr-1" />
               Home
             </Link>
           </BreadcrumbLink>

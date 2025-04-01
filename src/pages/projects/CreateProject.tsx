@@ -10,7 +10,7 @@ export const CreateProject = () => {
   return (
     <MainLayout contentWidth="wide">
       <div className="space-y-6">
-        <div className="mb-6">
+        <div className="mb-8">
           <Alert variant="default" className="bg-brand-50 border-brand-200">
             <Info className="h-4 w-4 text-brand-500" />
             <AlertDescription>

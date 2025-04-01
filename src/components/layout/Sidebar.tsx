@@ -25,6 +25,20 @@ export const Sidebar = () => {
     if (path === '/dashboard' && location.pathname === '/') {
       return true;
     }
+    
+    // Exact match for project creation path to avoid confusion with projects path
+    if (path === '/projects/new') {
+      return location.pathname === '/projects/new';
+    }
+    
+    // For other paths, check if the location starts with the path
+    // But exclude /projects/new from being active when on /projects
+    if (path === '/projects' && location.pathname.startsWith('/projects')) {
+      return location.pathname === '/projects' || 
+        (location.pathname.startsWith('/projects/') && 
+         !location.pathname.startsWith('/projects/new'));
+    }
+    
     return location.pathname.startsWith(path);
   };
 

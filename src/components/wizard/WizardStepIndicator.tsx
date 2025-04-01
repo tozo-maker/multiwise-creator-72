@@ -29,7 +29,7 @@ export const WizardStepIndicator: React.FC<WizardStepIndicatorProps> = ({
   
   return (
     <div className={cn("w-full py-4 px-2 overflow-x-auto", className)}>
-      <div className="flex justify-between">
+      <div className="flex items-center justify-between">
         {validSteps.map((step) => {
           const isActive = currentStep === step.id;
           const isComplete = hasVisited(step.id) && currentStep > step.id;
@@ -39,7 +39,7 @@ export const WizardStepIndicator: React.FC<WizardStepIndicatorProps> = ({
             <div 
               key={`step-${step.id}`}
               className={cn(
-                "step-item",
+                "flex flex-col items-center",
                 isActive && "active",
                 isComplete && "complete"
               )}
@@ -48,22 +48,22 @@ export const WizardStepIndicator: React.FC<WizardStepIndicatorProps> = ({
                 type="button"
                 disabled={!isClickable}
                 className={cn(
-                  "step",
-                  isActive && "active",
-                  isComplete && "complete",
-                  isClickable ? "cursor-pointer" : "cursor-default"
+                  "flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 bg-white text-sm font-medium text-slate-700",
+                  isActive && "border-brand-500 text-brand-500",
+                  isComplete && "border-brand-500 bg-brand-500 text-white",
+                  isClickable ? "cursor-pointer hover:bg-slate-50" : "cursor-default"
                 )}
                 onClick={() => isClickable && onStepClick && onStepClick(step.id)}
                 aria-current={isActive ? "step" : undefined}
                 aria-label={`Step ${step.id + 1}: ${step.name}`}
               >
                 {isComplete ? (
-                  <Check className="h-5 w-5 step-icon" />
+                  <Check className="h-5 w-5" />
                 ) : (
                   step.id + 1
                 )}
               </button>
-              <div className="step-label">{step.name}</div>
+              <div className="mt-2 text-xs text-slate-600">{step.name}</div>
             </div>
           );
         })}
