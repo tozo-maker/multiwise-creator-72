@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProjectWorkspaceTabsProps {
   projectId: string;
@@ -38,24 +39,26 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
   ];
   
   return (
-    <div className="border-b border-slate-200 mt-2 overflow-x-auto">
-      <nav className="-mb-px flex space-x-8">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.id}
-            to={tab.path}
-            className={cn(
-              "inline-flex items-center border-b-2 py-4 px-1 text-sm font-medium whitespace-nowrap",
-              isTabActive(tab.id)
-                ? "border-brand-500 text-brand-600"
-                : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700"
-            )}
-            aria-current={isTabActive(tab.id) ? "page" : undefined}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
+    <div className="border-b border-slate-200 mb-8 overflow-x-auto">
+      <Tabs defaultValue={tabs.find(tab => isTabActive(tab.id))?.id || 'overview'} className="w-full">
+        <TabsList className="bg-transparent h-auto p-0 w-full flex justify-start space-x-4">
+          {tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className={cn(
+                "h-12 px-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 rounded-none",
+                isTabActive(tab.id)
+                  ? "border-brand-500 text-brand-600 font-medium"
+                  : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+              )}
+              asChild
+            >
+              <Link to={tab.path}>{tab.label}</Link>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
     </div>
   );
 };
