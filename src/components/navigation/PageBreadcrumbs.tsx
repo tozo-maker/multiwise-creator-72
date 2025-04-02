@@ -30,9 +30,7 @@ export const PageBreadcrumbs: React.FC<PageBreadcrumbsProps> = ({
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link to={homeLink}>
-              Home
-            </Link>
+            <Link to={homeLink}>Dashboard</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         

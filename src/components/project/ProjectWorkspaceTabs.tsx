@@ -39,22 +39,23 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
   ];
   
   return (
-    <div className="border-b border-slate-200 mb-8 overflow-x-auto">
+    <div className="border-b border-slate-200 mb-6 overflow-x-auto">
       <Tabs defaultValue={tabs.find(tab => isTabActive(tab.id))?.id || 'overview'} className="w-full">
-        <TabsList className="bg-transparent h-auto p-0 w-full flex justify-start space-x-4">
+        <TabsList className="bg-transparent h-auto p-0 w-full flex justify-start space-x-2">
           {tabs.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
               className={cn(
-                "h-12 px-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none border-b-2 rounded-none",
+                "h-10 px-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none",
+                "border-b-2 transition-colors font-medium",
                 isTabActive(tab.id)
-                  ? "border-brand-500 text-brand-600 font-medium"
+                  ? "border-brand-500 text-brand-600"
                   : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
               )}
               asChild
             >
-              <Link to={tab.path}>{tab.label}</Link>
+              <Link to={tab.path} className="flex items-center">{tab.label}</Link>
             </TabsTrigger>
           ))}
         </TabsList>
