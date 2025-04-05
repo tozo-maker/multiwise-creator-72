@@ -2,6 +2,7 @@
 import React from 'react';
 import { ProjectCard, ProjectCardProps } from './ProjectCard';
 import { NewProjectButton } from './NewProjectButton';
+import { Button } from '@/components/ui/button';
 
 interface ProjectListProps {
   projects: ProjectCardProps[];
