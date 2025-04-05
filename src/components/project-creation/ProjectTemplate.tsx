@@ -50,7 +50,7 @@ export const ProjectTemplate: React.FC<ProjectTemplateProps> = ({
 
   return (
     <Card className={cn(
-      "h-full transition-all duration-200 hover:shadow-md overflow-hidden",
+      "h-full flex flex-col transition-all duration-200 hover:shadow-md overflow-hidden",
       isSelected ? "ring-2 ring-brand-500 shadow-md" : "hover:border-brand-200"
     )}>
       <CardHeader className="pb-2">
@@ -66,7 +66,7 @@ export const ProjectTemplate: React.FC<ProjectTemplateProps> = ({
         <CardDescription>{template.description}</CardDescription>
       </CardHeader>
       
-      <CardContent className="pb-0">
+      <CardContent className="pb-0 flex-grow">
         <ul className="space-y-1">
           {template.features.map((feature, index) => (
             <li key={index} className="text-sm text-gray-600 flex items-center">
@@ -77,7 +77,7 @@ export const ProjectTemplate: React.FC<ProjectTemplateProps> = ({
         </ul>
       </CardContent>
       
-      <CardFooter className="pt-4">
+      <CardFooter className="pt-4 mt-auto">
         <Button 
           className="w-full bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200"
           variant="outline"
