@@ -8,7 +8,7 @@ import { DashboardActivityTimeline } from '@/components/dashboard/DashboardActiv
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
 import { InteractiveHelp } from '@/components/dashboard/InteractiveHelp';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { DashboardProvider } from '@/contexts/DashboardContext';
+import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -24,9 +24,7 @@ export const Dashboard = () => {
 
 // Separated component to use hooks within the DashboardProvider context
 const DashboardContent = () => {
-  const { isFirstVisit, isLoading } = React.useContext(
-    require('@/contexts/DashboardContext').DashboardContext
-  );
+  const { isFirstVisit, isLoading } = useDashboard();
 
   if (isLoading) {
     return (
