@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MoreVertical, Calendar, BookText, Globe } from 'lucide-react';
+import { MoreVertical, Calendar, BookText, Globe, Users, Briefcase, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export interface ProjectCardProps {
@@ -30,6 +31,9 @@ export interface ProjectCardProps {
   type: string;
   lastModified: string;
   progress: number;
+  description?: string;
+  collaborators?: number;
+  totalMaterials?: number;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -38,7 +42,10 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   targetLanguage,
   type,
   lastModified,
-  progress
+  progress,
+  description = "No description provided for this project",
+  collaborators = 0,
+  totalMaterials = 0
 }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -51,61 +58,81 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <>
-      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-        <div className="p-5">
-          <div className="flex justify-between items-start">
-            <Link to={`/projects/${id}`} className="hover:underline">
-              <h3 className="font-semibold text-lg text-slate-900 line-clamp-1">{name}</h3>
-            </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Link to={`/projects/${id}`} className="flex w-full">Open Project</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to={`/projects/${id}/configuration`} className="flex w-full">Edit Configuration</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to={`/projects/${id}/knowledge-base`} className="flex w-full">Manage Knowledge Base</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="text-red-600"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                >
-                  Delete Project
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+      <Card className="overflow-hidden hover:shadow-md transition-shadow">
+        <CardContent className="p-0">
+          <div className="relative h-3 w-full">
+            <div 
+              className="absolute inset-0 bg-brand-500" 
+              style={{ width: `${progress}%` }}
+            />
           </div>
-          
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
-              <Globe className="h-3 w-3" />
-              {targetLanguage}
-            </Badge>
-            <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
-              <BookText className="h-3 w-3" />
-              {type}
-            </Badge>
-          </div>
-        </div>
-        
-        <div className="px-5 pb-4">
-          <div className="flex justify-between items-center text-xs text-slate-500 mb-2">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {lastModified}
+          <div className="p-5">
+            <div className="flex justify-between items-start">
+              <Link to={`/projects/${id}`} className="group">
+                <h3 className="font-semibold text-lg text-slate-900 line-clamp-1 group-hover:text-brand-600 transition-colors">{name}</h3>
+                <p className="text-sm text-slate-500 mt-1 line-clamp-2">{description}</p>
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>
+                    <Link to={`/projects/${id}`} className="flex w-full">Open Project</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to={`/projects/${id}/configuration`} className="flex w-full">Edit Configuration</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to={`/projects/${id}/knowledge-base`} className="flex w-full">Manage Knowledge Base</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="text-red-600"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    Delete Project
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            <span>{progress}% Complete</span>
+            
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
+                <Globe className="h-3 w-3" />
+                {targetLanguage}
+              </Badge>
+              <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
+                <BookText className="h-3 w-3" />
+                {type}
+              </Badge>
+              {collaborators > 0 && (
+                <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
+                  <Users className="h-3 w-3" />
+                  {collaborators} {collaborators === 1 ? 'collaborator' : 'collaborators'}
+                </Badge>
+              )}
+              {totalMaterials > 0 && (
+                <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
+                  <Briefcase className="h-3 w-3" />
+                  {totalMaterials} {totalMaterials === 1 ? 'material' : 'materials'}
+                </Badge>
+              )}
+            </div>
           </div>
-          <Progress value={progress} className="h-1.5" />
-        </div>
-      </div>
+        </CardContent>
+        
+        <CardFooter className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+          <div className="flex items-center gap-1 text-xs text-slate-500">
+            <Clock className="h-3 w-3" />
+            <span>Updated {lastModified}</span>
+          </div>
+          <div className="text-xs font-medium text-slate-700">
+            {progress}% Complete
+          </div>
+        </CardFooter>
+      </Card>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>

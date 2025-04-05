@@ -1,12 +1,16 @@
 
 import React from 'react';
 import { ProjectCard, ProjectCardProps } from './ProjectCard';
+import { NewProjectButton } from './NewProjectButton';
 
 interface ProjectListProps {
   projects: ProjectCardProps[];
 }
 
 export const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
+  // Show 6 projects if available, or show "No projects" state
+  const displayProjects = projects.slice(0, 6);
+  
   if (projects.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-lg border border-dashed border-slate-300">
@@ -28,15 +32,30 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
         </div>
         <h3 className="text-lg font-medium text-slate-900 mb-1">No projects yet</h3>
         <p className="text-slate-500 mb-4">Get started by creating your first educational project</p>
+        <div className="flex justify-center">
+          <NewProjectButton />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {projects.map(project => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {displayProjects.map(project => (
         <ProjectCard key={project.id} {...project} />
       ))}
+      
+      {projects.length > 6 && (
+        <div className="col-span-full mt-4 text-center">
+          <Button 
+            variant="outline" 
+            className="border-dashed border-slate-300"
+            onClick={() => window.location.href = '/projects'}
+          >
+            View all {projects.length} projects
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
