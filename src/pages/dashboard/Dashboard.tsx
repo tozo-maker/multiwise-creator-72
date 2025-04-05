@@ -38,7 +38,7 @@ const DashboardContent = () => {
   }
 
   return (
-    <DashboardLayout>
+    <div className="space-y-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -91,6 +91,6 @@ const DashboardContent = () => {
           </div>
         </motion.div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };

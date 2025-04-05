@@ -5,9 +5,13 @@ import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  showBreadcrumbs?: boolean;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
+  children,
+  showBreadcrumbs = true
+}) => {
   const containerAnimation = {
     hidden: { opacity: 0 },
     show: {
@@ -31,11 +35,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
       initial="hidden"
       animate="show"
     >
-      <motion.div variants={itemAnimation}>
-        <PageBreadcrumbs 
-          items={[{ label: 'Dashboard', path: '/dashboard' }]} 
-        />
-      </motion.div>
+      {showBreadcrumbs && (
+        <motion.div variants={itemAnimation}>
+          <PageBreadcrumbs 
+            items={[{ label: 'Dashboard', path: '/dashboard' }]} 
+          />
+        </motion.div>
+      )}
       
       {children}
     </motion.div>

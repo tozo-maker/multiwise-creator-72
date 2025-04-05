@@ -29,13 +29,17 @@ export const PageBreadcrumbs: React.FC<PageBreadcrumbsProps> = ({
   className
 }) => {
   const location = useLocation();
-  const isProjectRoute = location.pathname.includes('/projects/');
+  const currentPath = location.pathname;
   
-  // Ensure breadcrumbs are always shown on project routes
-  React.useEffect(() => {
-    // This effect ensures breadcrumbs are maintained across project tab navigation
-    // No action needed as we'll handle it via static rendering
-  }, [location.pathname]);
+  // Don't show breadcrumbs on the dashboard itself to avoid duplication
+  if (currentPath === '/dashboard') {
+    return null;
+  }
+  
+  // Filter out any duplicate items
+  const uniqueItems = items.filter((item, index, self) => 
+    index === self.findIndex((t) => t.label === item.label)
+  );
 
   return (
     <motion.div
@@ -55,12 +59,14 @@ export const PageBreadcrumbs: React.FC<PageBreadcrumbsProps> = ({
             </BreadcrumbLink>
           </BreadcrumbItem>
           
-          <BreadcrumbSeparator aria-hidden>
-            <ChevronRight className="h-4 w-4 text-slate-400" />
-          </BreadcrumbSeparator>
+          {uniqueItems.length > 0 && (
+            <BreadcrumbSeparator aria-hidden>
+              <ChevronRight className="h-4 w-4 text-slate-400" />
+            </BreadcrumbSeparator>
+          )}
           
-          {items.map((item, index) => {
-            const isLast = index === items.length - 1;
+          {uniqueItems.map((item, index) => {
+            const isLast = index === uniqueItems.length - 1;
             
             return (
               <React.Fragment key={index}>
