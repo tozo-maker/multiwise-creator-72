@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { DashboardProvider } from '@/contexts/DashboardContext';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
 interface DashboardLayoutProps {
@@ -26,21 +25,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   };
 
   return (
-    <DashboardProvider>
-      <motion.div 
-        className="space-y-8"
-        variants={containerAnimation}
-        initial="hidden"
-        animate="show"
-      >
-        <motion.div variants={itemAnimation}>
-          <PageBreadcrumbs 
-            items={[{ label: 'Dashboard', path: '/dashboard' }]} 
-          />
-        </motion.div>
-        
-        {children}
+    <motion.div 
+      className="space-y-8"
+      variants={containerAnimation}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div variants={itemAnimation}>
+        <PageBreadcrumbs 
+          items={[{ label: 'Dashboard', path: '/dashboard' }]} 
+        />
       </motion.div>
-    </DashboardProvider>
+      
+      {children}
+    </motion.div>
   );
 };
