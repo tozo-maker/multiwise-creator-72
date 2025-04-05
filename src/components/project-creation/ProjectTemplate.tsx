@@ -1,64 +1,91 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, BookOpen, CheckCircle2 } from 'lucide-react';
+import { 
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, BookOpen, Languages, ClipboardCheck, ArrowRight } from 'lucide-react';
+import { Languages, ClipboardCheck } from '@/components/ui/icons';
+import { cn } from '@/lib/utils';
 
-interface ProjectTemplateProps {
-  template: {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    features: string[];
-  };
-  onSelect: () => void;
+interface Template {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  features: string[];
 }
 
-export function ProjectTemplate({ template, onSelect }: ProjectTemplateProps) {
+interface ProjectTemplateProps {
+  template: Template;
+  onSelect: () => void;
+  isSelected?: boolean;
+}
+
+export const ProjectTemplate: React.FC<ProjectTemplateProps> = ({ 
+  template,
+  onSelect,
+  isSelected = false,
+}) => {
   const getIcon = () => {
     switch (template.icon) {
+      case 'file-text':
+        return <FileText className="h-8 w-8 text-brand-500" />;
       case 'book-open':
         return <BookOpen className="h-8 w-8 text-brand-500" />;
       case 'languages':
         return <Languages className="h-8 w-8 text-brand-500" />;
       case 'clipboard-check':
         return <ClipboardCheck className="h-8 w-8 text-brand-500" />;
-      case 'file-text':
       default:
         return <FileText className="h-8 w-8 text-brand-500" />;
     }
   };
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-md hover:border-brand-300 hover:-translate-y-1">
-      <CardHeader className="pb-3">
-        <div className="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center mb-2">
+    <Card className={cn(
+      "h-full transition-all duration-200 hover:shadow-md overflow-hidden",
+      isSelected ? "ring-2 ring-brand-500 shadow-md" : "hover:border-brand-200"
+    )}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
           {getIcon()}
+          {isSelected && (
+            <Badge className="bg-brand-500">
+              <CheckCircle2 className="h-3 w-3 mr-1" /> Selected
+            </Badge>
+          )}
         </div>
-        <CardTitle className="text-xl">{template.name}</CardTitle>
+        <CardTitle className="text-lg mt-2">{template.name}</CardTitle>
         <CardDescription>{template.description}</CardDescription>
       </CardHeader>
-      <CardContent className="pb-4">
+      
+      <CardContent className="pb-0">
         <ul className="space-y-1">
-          {template.features.map((feature, i) => (
-            <li key={i} className="flex items-center text-sm">
-              <div className="h-1.5 w-1.5 rounded-full bg-brand-500 mr-2"></div>
+          {template.features.map((feature, index) => (
+            <li key={index} className="text-sm text-gray-600 flex items-center">
+              <CheckCircle2 className="h-3.5 w-3.5 mr-2 text-brand-500" />
               {feature}
             </li>
           ))}
         </ul>
       </CardContent>
-      <CardFooter>
+      
+      <CardFooter className="pt-4">
         <Button 
-          className="w-full bg-brand-500 hover:bg-brand-600" 
+          className="w-full bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200"
+          variant="outline"
           onClick={onSelect}
         >
-          Select Template
-          <ArrowRight className="ml-2 h-4 w-4" />
+          {isSelected ? "Selected" : "Choose template"}
         </Button>
       </CardFooter>
     </Card>
   );
-}
+};

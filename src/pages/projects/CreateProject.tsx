@@ -116,15 +116,11 @@ export const CreateProject = () => {
           </AlertDescription>
         </Alert>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PROJECT_TEMPLATES.map((template) => (
-            <ProjectTemplate 
-              key={template.id}
-              template={template}
-              onSelect={() => handleTemplateSelect(template.id)}
-            />
-          ))}
-        </div>
+        <ProjectTemplateGallery 
+          templates={PROJECT_TEMPLATES} 
+          onSelect={handleTemplateSelect}
+          selectedTemplate={selectedTemplate ?? undefined}
+        />
         
         {/* Create project wizard - Desktop drawer */}
         <Drawer open={open && !isMobile} onOpenChange={setOpen}>
