@@ -8,16 +8,14 @@ import { DashboardActivityTimeline } from '@/components/dashboard/DashboardActiv
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
 import { InteractiveHelp } from '@/components/dashboard/InteractiveHelp';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
+import { useDashboard } from '@/contexts/DashboardContext';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Dashboard = () => {
   return (
     <MainLayout contentWidth="wide">
-      <DashboardProvider>
-        <DashboardContent />
-      </DashboardProvider>
+      <DashboardContent />
     </MainLayout>
   );
 };

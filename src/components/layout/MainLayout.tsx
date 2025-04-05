@@ -3,6 +3,7 @@ import React from 'react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { cn } from '@/lib/utils';
+import { DashboardProvider } from '@/contexts/DashboardContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -29,14 +30,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
       <Sidebar />
-      <div className="flex flex-col flex-1 w-full">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className={cn("mx-auto", getMaxWidthClass())}>
-            {children}
-          </div>
-        </main>
-      </div>
+      <DashboardProvider>
+        <div className="flex flex-col flex-1 w-full">
+          <TopBar />
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className={cn("mx-auto", getMaxWidthClass())}>
+              {children}
+            </div>
+          </main>
+        </div>
+      </DashboardProvider>
     </div>
   );
 };
