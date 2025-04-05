@@ -3,62 +3,18 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
-  CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
-  CardTitle 
+  CardTitle,
+  CardDescription 
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ProjectNameStep } from './steps/ProjectNameStep';
-import { SystemConfigStep } from './steps/SystemConfigStep';
-import { ProjectConfigStep } from './steps/ProjectConfigStep';
-import { LanguageConfigStep } from './steps/LanguageConfigStep';
-import { DocumentUploadStep } from './steps/DocumentUploadStep';
-import { SummaryStep } from './steps/SummaryStep';
 import { useToast } from '@/hooks/use-toast';
 import { useWizardForm } from '@/hooks/useWizardForm';
-import { WizardStepIndicator, WizardStep } from './WizardStepIndicator';
+import { WizardStepIndicator } from './WizardStepIndicator';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
-
-const WIZARD_STEPS: WizardStep[] = [
-  { id: 0, name: 'Project Info' },
-  { id: 1, name: 'System Config' },
-  { id: 2, name: 'Project Config' },
-  { id: 3, name: 'Language Config' },
-  { id: 4, name: 'Documents' },
-  { id: 5, name: 'Summary' }
-];
-
-interface ConfigData {
-  name: string;
-  quickStart: string;
-  // System Config
-  interfaceLanguage: string;
-  experienceLevel: string;
-  interactionMode: string;
-  outputDetail: string;
-  systemBehavior: string;
-  // Project Config
-  projectType: string;
-  subjects: string[];
-  levels: string[];
-  pedagogy: string;
-  wordCount: number;
-  // Language Config
-  targetLanguage: string;
-  goal: string;
-  complexity: string;
-  culturalIntegration: string;
-  terminology: string;
-  markers: string;
-  standards: string;
-  structure: string;
-  formatting: string;
-  // Documents
-  uploadedDocuments: { name: string; description: string; }[];
-  needsDocumentUpload: boolean;
-}
+import { WizardContent } from './WizardContent';
+import { WizardFooter } from './WizardFooter';
+import { WIZARD_STEPS, getStepTitle, getStepDescription } from './wizardSteps';
+import { ConfigData } from './types';
 
 export const ConfigurationWizard = () => {
   const navigate = useNavigate();
@@ -159,27 +115,8 @@ export const ConfigurationWizard = () => {
     }, 1000);
   };
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return <ProjectNameStep data={formData} updateData={updateFormData} />;
-      case 1:
-        return <SystemConfigStep data={formData} updateData={updateFormData} />;
-      case 2:
-        return <ProjectConfigStep data={formData} updateData={updateFormData} />;
-      case 3:
-        return <LanguageConfigStep data={formData} updateData={updateFormData} />;
-      case 4:
-        return <DocumentUploadStep data={formData} updateData={updateFormData} />;
-      case 5:
-        return <SummaryStep data={formData} />;
-      default:
-        return null;
-    }
-  };
-
   // Get visible steps (hiding document step if not needed)
-  const getVisibleSteps = (): WizardStep[] => {
+  const getVisibleSteps = () => {
     if (!WIZARD_STEPS || !Array.isArray(WIZARD_STEPS)) {
       console.error('WIZARD_STEPS is not properly defined');
       return [];
@@ -189,30 +126,6 @@ export const ConfigurationWizard = () => {
       ...step,
       hidden: step.id === 4 && !formData.needsDocumentUpload
     }));
-  };
-  
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 0: return "Project Information";
-      case 1: return "System Configuration";
-      case 2: return "Project Configuration";
-      case 3: return "Language & Content Configuration";
-      case 4: return "Upload Project Documents";
-      case 5: return "Review & Create";
-      default: return "";
-    }
-  };
-
-  const getStepDescription = () => {
-    switch (currentStep) {
-      case 0: return "Name your project and choose a starting point.";
-      case 1: return "Configure how you want to interact with the system.";
-      case 2: return "Define the educational project specifications.";
-      case 3: return "Set language preferences and content parameters.";
-      case 4: return "Upload documents needed for your custom configuration.";
-      case 5: return "Review your configuration and create your project.";
-      default: return "";
-    }
   };
 
   return (
@@ -240,41 +153,23 @@ export const ConfigurationWizard = () => {
       
       <Card className="border-slate-200 shadow-sm">
         <CardHeader>
-          <CardTitle>{getStepTitle()}</CardTitle>
-          <CardDescription>{getStepDescription()}</CardDescription>
+          <CardTitle>{getStepTitle(currentStep)}</CardTitle>
+          <CardDescription>{getStepDescription(currentStep)}</CardDescription>
         </CardHeader>
         
-        <CardContent>
-          {renderStepContent()}
-        </CardContent>
+        <WizardContent 
+          currentStep={currentStep}
+          formData={formData}
+          updateFormData={updateFormData}
+        />
         
-        <CardFooter className="flex justify-between border-t border-slate-200 pt-4">
-          <Button 
-            variant="outline" 
-            onClick={handlePrevStep} 
-            disabled={isFirstStep}
-          >
-            Back
-          </Button>
-          
-          <div>
-            {!isLastStep ? (
-              <Button 
-                className="bg-brand-500 hover:bg-brand-600 text-white"
-                onClick={handleStepNavigation}
-              >
-                Continue
-              </Button>
-            ) : (
-              <Button 
-                className="bg-brand-500 hover:bg-brand-600 text-white"
-                onClick={handleComplete}
-              >
-                Create Project
-              </Button>
-            )}
-          </div>
-        </CardFooter>
+        <WizardFooter
+          isFirstStep={isFirstStep}
+          isLastStep={isLastStep}
+          onPrev={handlePrevStep}
+          onNext={handleStepNavigation}
+          onComplete={handleComplete}
+        />
       </Card>
     </div>
   );
