@@ -40,10 +40,13 @@ export const ConfigurationWizard = () => {
       outputDetail: 'Detailed',
       systemBehavior: 'Balanced',
       projectType: 'Textbook',
+      customProjectType: '',
       subjects: [],
       levels: [],
       pedagogy: 'Standard',
       wordCount: 5000,
+      wordDistribution: 'balanced',
+      wordEnforcement: 'flexible',
       targetLanguage: 'Spanish',
       goal: 'Teaching',
       complexity: 'Intermediate',
@@ -54,7 +57,9 @@ export const ConfigurationWizard = () => {
       structure: 'Default',
       formatting: 'Default',
       uploadedDocuments: [],
-      needsDocumentUpload: false
+      needsDocumentUpload: false,
+      createdDate: new Date().toISOString(),
+      lastModified: new Date().toISOString()
     },
     steps: WIZARD_STEPS.length,
     saveKey: 'project-creation'
@@ -73,7 +78,7 @@ export const ConfigurationWizard = () => {
     // Check if documents should be collected (custom options selected or Custom project type)
     if (currentStep === 3) {
       const needsDocuments = formData.standards === 'Custom' || 
-                            formData.projectType.startsWith('Custom:') ||
+                            formData.projectType === 'Custom' ||
                             formData.terminology.startsWith('Custom:') ||
                             formData.markers.startsWith('Custom:') ||
                             formData.structure.startsWith('Custom:');
@@ -101,6 +106,11 @@ export const ConfigurationWizard = () => {
   };
 
   const handleComplete = () => {
+    // Update last modified timestamp before completing
+    updateFormData({
+      lastModified: new Date().toISOString()
+    });
+    
     toast({
       title: "Project created successfully",
       description: `Your project "${formData.name}" has been created.`,

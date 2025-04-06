@@ -10,10 +10,13 @@ export interface ConfigData {
   systemBehavior: string;
   // Project Config
   projectType: string;
+  customProjectType?: string;
   subjects: string[];
   levels: string[];
   pedagogy: string;
   wordCount: number;
+  wordDistribution?: string;
+  wordEnforcement?: string;
   // Language Config
   targetLanguage: string;
   goal: string;
@@ -27,4 +30,7 @@ export interface ConfigData {
   // Documents
   uploadedDocuments: { name: string; description: string; }[];
   needsDocumentUpload: boolean;
+  // Project meta
+  createdDate?: string;
+  lastModified?: string;
 }
