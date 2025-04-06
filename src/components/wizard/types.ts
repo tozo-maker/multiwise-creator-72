@@ -1,28 +1,25 @@
 
+// Define the configuration data interface
 export interface ConfigData {
-  // Project Info
   name: string;
   quickStart: string;
-  
-  // System Config
+  // System Configuration
   interfaceLanguage: string;
   experienceLevel: string;
   interactionMode: string;
   outputDetail: string;
   systemBehavior: string;
-  
-  // Project Config
+  // Project Configuration
   projectType: string;
-  customProjectType?: string;
+  customProjectType: string;
   subjects: string[];
   levels: string[];
   pedagogy: string;
-  customPedagogy?: string;
+  customPedagogy: string;
   wordCount: number;
-  wordDistribution?: string;
-  wordEnforcement?: string;
-  
-  // Language Config
+  wordDistribution: string;
+  wordEnforcement: string;
+  // Language Configuration
   targetLanguage: string;
   goal: string;
   complexity: string;
@@ -30,21 +27,13 @@ export interface ConfigData {
   terminology: string;
   markers: string;
   standards: string[];
-  customStandards?: string[];
+  customStandards: string[];
   structure: string;
   formatting: string;
-  scriptType?: string;
-  
   // Documents
-  uploadedDocuments: { 
-    name: string; 
-    description: string;
-    category?: string; 
-    url?: string;
-  }[];
+  uploadedDocuments: string[];
   needsDocumentUpload: boolean;
-  
-  // Project meta
-  createdDate?: string;
-  lastModified?: string;
+  // Metadata
+  createdDate: string;
+  lastModified: string;
 }
