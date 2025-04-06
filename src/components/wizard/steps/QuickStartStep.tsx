@@ -76,6 +76,7 @@ export const QuickStartStep: React.FC<QuickStartStepProps> = ({ data, updateData
       
       <RadioGroup
         value={data.quickStart}
+        onValueChange={(value) => updateData({ quickStart: value })}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
         {templates.map((template) => (

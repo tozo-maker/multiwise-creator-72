@@ -2,67 +2,54 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { RadioGroupItem } from '@/components/ui/radio-group';
-import { Badge } from '@/components/ui/badge';
 import { LucideIcon } from 'lucide-react';
 
+interface TemplateProps {
+  id: string;
+  name: string;
+  description: string;
+  icon: LucideIcon;
+  targetLanguage?: string;
+}
+
 interface TemplateCardProps {
-  template: {
-    id: string;
-    name: string;
-    description: string;
-    icon: LucideIcon;
-    targetLanguage: string;
-  };
+  template: TemplateProps;
   isSelected: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (templateId: string) => void;
 }
 
 export const TemplateCard: React.FC<TemplateCardProps> = ({
   template,
   isSelected,
-  onSelect
+  onSelect,
 }) => {
-  const { id, name, description, icon: Icon, targetLanguage } = template;
+  const Icon = template.icon;
   
   return (
     <Card 
-      className={`relative overflow-hidden cursor-pointer transition-all
-        ${isSelected 
-          ? 'border-2 border-brand-500 shadow-md' 
-          : 'hover:border-brand-200 hover:bg-slate-50'
-        }`}
-      onClick={() => onSelect(id)}
+      className={`border-2 ${
+        isSelected ? 'border-brand-500 bg-brand-50' : 'border-slate-200'
+      } p-0 cursor-pointer transition-all hover:border-brand-300 hover:bg-slate-50`}
+      onClick={() => onSelect(template.id)}
     >
-      <CardContent className="p-6">
-        <div className="absolute top-4 left-4">
-          <RadioGroupItem value={id} id={id} className="sr-only" />
-        </div>
-        
-        <div className="flex items-start mb-4">
-          <div 
-            className={`rounded-full p-2 mr-4 
-              ${isSelected ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-700'}`}
-          >
-            <Icon className="h-6 w-6" />
-          </div>
+      <CardContent className="p-0">
+        <label className="flex items-start space-x-3 p-4 cursor-pointer">
+          <RadioGroupItem value={template.id} id={template.id} />
           <div className="flex-1">
-            <div className="font-medium text-lg">{name}</div>
-            <p className="text-muted-foreground text-sm mt-1">{description}</p>
+            <div className="flex items-center gap-2">
+              <Icon className="h-5 w-5 text-brand-600" />
+              <p className="font-medium">{template.name}</p>
+            </div>
+            <p className="text-sm text-slate-500 mt-1">{template.description}</p>
+            {template.targetLanguage && template.id !== 'custom' && (
+              <div className="mt-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-brand-100 text-brand-800">
+                  {template.targetLanguage}
+                </span>
+              </div>
+            )}
           </div>
-        </div>
-        
-        <div className="flex items-center justify-between mt-4">
-          <Badge variant="outline" className="text-xs font-normal">
-            {id === 'custom' ? 'Customizable' : 'Pre-configured'}
-          </Badge>
-          
-          <Badge 
-            variant={isSelected ? "default" : "secondary"}
-            className="text-xs"
-          >
-            {targetLanguage}
-          </Badge>
-        </div>
+        </label>
       </CardContent>
     </Card>
   );
