@@ -11,6 +11,7 @@ import { ProjectConfigStep } from '@/components/wizard/steps/ProjectConfigStep';
 import { SystemConfigStep } from '@/components/wizard/steps/SystemConfigStep';
 import { LanguageConfigStep } from '@/components/wizard/steps/LanguageConfigStep';
 import { useToast } from '@/hooks/use-toast';
+import { ConfigData } from '@/components/wizard/types';
 
 export const ConfigurationWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -27,19 +28,27 @@ export const ConfigurationWorkspace = () => {
   };
   
   // Mock configuration data that would be retrieved from the backend
-  const [configData, setConfigData] = useState({
+  const [configData, setConfigData] = useState<ConfigData>({
+    // Project Info
+    name: 'Spanish Language Textbook',
+    quickStart: 'custom',
+    
     // System Config
     interfaceLanguage: 'English',
     experienceLevel: 'Intermediate',
     interactionMode: 'Guided',
     outputDetail: 'Detailed',
     systemBehavior: 'Balanced',
+    
     // Project Config
     projectType: 'Textbook',
     subjects: ['Spanish', 'Language Arts'],
     levels: ['Secondary', 'High School'],
     pedagogy: 'Standard',
     wordCount: 5000,
+    wordDistribution: 'balanced',
+    wordEnforcement: 'flexible',
+    
     // Language Config
     targetLanguage: 'Spanish',
     goal: 'Teaching',
@@ -47,12 +56,17 @@ export const ConfigurationWorkspace = () => {
     culturalIntegration: 'Moderate',
     terminology: 'Standard',
     markers: 'Standard',
-    standards: 'Default',
+    standards: [],
+    customStandards: [],
     structure: 'Default',
-    formatting: 'Default'
+    formatting: 'Default',
+    
+    // Documents
+    uploadedDocuments: [],
+    needsDocumentUpload: false
   });
 
-  const updateConfigData = (data: Partial<typeof configData>) => {
+  const updateConfigData = (data: Partial<ConfigData>) => {
     setConfigData({ ...configData, ...data });
   };
 
