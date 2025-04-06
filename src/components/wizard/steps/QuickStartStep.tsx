@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { RadioGroup } from '@/components/ui/radio-group';
 import { 
   BookOpen, 
   GraduationCap, 
@@ -74,21 +73,16 @@ export const QuickStartStep: React.FC<QuickStartStepProps> = ({ data, updateData
         Choose a starting point for your educational content project. You can customize all settings later.
       </div>
       
-      <RadioGroup
-        value={data.quickStart || ''}
-        onValueChange={(value) => updateData({ quickStart: value })}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
-      >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {templates.map((template) => (
-          <div key={template.id}>
-            <TemplateCard
-              template={template}
-              isSelected={data.quickStart === template.id}
-              onSelect={handleSelectTemplate}
-            />
-          </div>
+          <TemplateCard
+            key={template.id}
+            template={template}
+            isSelected={data.quickStart === template.id}
+            onSelect={handleSelectTemplate}
+          />
         ))}
-      </RadioGroup>
+      </div>
     </div>
   );
 };

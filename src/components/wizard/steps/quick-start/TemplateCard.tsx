@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { RadioGroupItem } from '@/components/ui/radio-group';
 import { LucideIcon } from 'lucide-react';
 
 interface TemplateProps {
@@ -35,7 +34,15 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
       <CardContent className="p-0">
         <div className="flex items-start space-x-3 p-4">
           <div className="flex items-center justify-center h-5">
-            <RadioGroupItem value={template.id} id={template.id} className="data-[state=checked]:border-brand-500 data-[state=checked]:bg-brand-500" />
+            <div className={`h-4 w-4 rounded-full border ${
+              isSelected 
+                ? 'border-brand-500 bg-brand-500' 
+                : 'border-primary'
+            }`}>
+              {isSelected && (
+                <div className="h-2.5 w-2.5 rounded-full bg-white m-auto mt-0.75"></div>
+              )}
+            </div>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
