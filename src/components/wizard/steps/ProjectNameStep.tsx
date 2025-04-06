@@ -2,7 +2,6 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -58,53 +57,89 @@ export const ProjectNameStep: React.FC<ProjectNameStepProps> = ({ data, updateDa
             </Tooltip>
           </TooltipProvider>
         </div>
-        <RadioGroup 
-          value={data.quickStart}
-          onValueChange={(value) => updateData({ quickStart: value })}
-          className="grid grid-cols-1 gap-4"
-        >
-          <Card className={`border-2 ${data.quickStart === 'template' ? 'border-brand-500' : 'border-brand-100'} p-0 cursor-pointer`}>
+        
+        <div className="grid grid-cols-1 gap-4">
+          <Card 
+            className={`border-2 ${data.quickStart === 'template' ? 'border-brand-500' : 'border-brand-100'} p-0 cursor-pointer`}
+            onClick={() => updateData({ quickStart: 'template' })}
+          >
             <CardContent className="p-0">
-              <label className="flex items-start space-x-3 p-4 cursor-pointer">
-                <RadioGroupItem value="template" id="template" className="mt-1" />
+              <div className="flex items-start space-x-3 p-4">
+                <div className="flex items-center justify-center h-5 mt-1">
+                  <div className={`h-4 w-4 rounded-full border ${
+                    data.quickStart === 'template' 
+                      ? 'border-brand-500 bg-brand-500' 
+                      : 'border-primary'
+                  }`}>
+                    {data.quickStart === 'template' && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-white m-auto mt-0.75"></div>
+                    )}
+                  </div>
+                </div>
                 <div>
                   <p className="font-medium">Start with a Template</p>
                   <p className="text-sm text-slate-500">
                     Choose from pre-configured templates for common educational materials.
                   </p>
                 </div>
-              </label>
+              </div>
             </CardContent>
           </Card>
           
-          <Card className={`border-2 ${data.quickStart === 'custom' ? 'border-brand-500' : 'border-brand-100'} p-0 cursor-pointer`}>
+          <Card 
+            className={`border-2 ${data.quickStart === 'custom' ? 'border-brand-500' : 'border-brand-100'} p-0 cursor-pointer`}
+            onClick={() => updateData({ quickStart: 'custom' })}
+          >
             <CardContent className="p-0">
-              <label className="flex items-start space-x-3 p-4 cursor-pointer">
-                <RadioGroupItem value="custom" id="custom" className="mt-1" />
+              <div className="flex items-start space-x-3 p-4">
+                <div className="flex items-center justify-center h-5 mt-1">
+                  <div className={`h-4 w-4 rounded-full border ${
+                    data.quickStart === 'custom' 
+                      ? 'border-brand-500 bg-brand-500' 
+                      : 'border-primary'
+                  }`}>
+                    {data.quickStart === 'custom' && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-white m-auto mt-0.75"></div>
+                    )}
+                  </div>
+                </div>
                 <div>
                   <p className="font-medium">Custom Configuration</p>
                   <p className="text-sm text-slate-500">
                     Configure your project from scratch with full control over all settings.
                   </p>
                 </div>
-              </label>
+              </div>
             </CardContent>
           </Card>
           
-          <Card className={`border-2 ${data.quickStart === 'duplicate' ? 'border-brand-500' : 'border-brand-100'} p-0 cursor-pointer`}>
+          <Card 
+            className={`border-2 ${data.quickStart === 'duplicate' ? 'border-brand-500' : 'border-brand-100'} p-0 cursor-pointer`}
+            onClick={() => updateData({ quickStart: 'duplicate' })}
+          >
             <CardContent className="p-0">
-              <label className="flex items-start space-x-3 p-4 cursor-pointer">
-                <RadioGroupItem value="duplicate" id="duplicate" className="mt-1" />
+              <div className="flex items-start space-x-3 p-4">
+                <div className="flex items-center justify-center h-5 mt-1">
+                  <div className={`h-4 w-4 rounded-full border ${
+                    data.quickStart === 'duplicate' 
+                      ? 'border-brand-500 bg-brand-500' 
+                      : 'border-primary'
+                  }`}>
+                    {data.quickStart === 'duplicate' && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-white m-auto mt-0.75"></div>
+                    )}
+                  </div>
+                </div>
                 <div>
                   <p className="font-medium">Duplicate Existing Project</p>
                   <p className="text-sm text-slate-500">
                     Clone an existing project as a starting point.
                   </p>
                 </div>
-              </label>
+              </div>
             </CardContent>
           </Card>
-        </RadioGroup>
+        </div>
       </div>
     </div>
   );
