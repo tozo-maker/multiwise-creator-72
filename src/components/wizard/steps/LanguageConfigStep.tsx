@@ -135,24 +135,57 @@ export const LanguageConfigStep: React.FC<LanguageConfigProps> = ({ data, update
               onValueChange={(value) => updateData({ goal: value })}
               className="grid grid-cols-1 sm:grid-cols-3 gap-4"
             >
-              <OptionCard
-                value="Teaching"
-                label="Content Delivery"
-                description="Focus on delivering educational content"
-                isSelected={data.goal === 'Teaching'}
-              />
-              <OptionCard
-                value="Cultural"
-                label="Cultural Education"
-                description="Emphasize cultural context and nuances"
-                isSelected={data.goal === 'Cultural'}
-              />
-              <OptionCard
-                value="Balanced"
-                label="Balanced"
-                description="Equal focus on content and cultural elements"
-                isSelected={data.goal === 'Balanced'}
-              />
+              {/* Using proper onClick handler instead of directly clicking on Label */}
+              <div
+                className={`
+                  flex flex-col items-center p-4 rounded-md border cursor-pointer
+                  ${data.goal === 'Teaching' 
+                    ? 'bg-brand-50 border-brand-500' 
+                    : 'border-slate-200 hover:bg-slate-50'
+                  }
+                `}
+                onClick={() => updateData({ goal: 'Teaching' })}
+              >
+                <RadioGroupItem value="Teaching" id="goal-Teaching" className="sr-only" />
+                <Label htmlFor="goal-Teaching" className="cursor-pointer text-center">
+                  <div className="font-medium">Content Delivery</div>
+                  <div className="text-xs text-muted-foreground mt-1">Focus on delivering educational content</div>
+                </Label>
+              </div>
+              
+              <div
+                className={`
+                  flex flex-col items-center p-4 rounded-md border cursor-pointer
+                  ${data.goal === 'Cultural' 
+                    ? 'bg-brand-50 border-brand-500' 
+                    : 'border-slate-200 hover:bg-slate-50'
+                  }
+                `}
+                onClick={() => updateData({ goal: 'Cultural' })}
+              >
+                <RadioGroupItem value="Cultural" id="goal-Cultural" className="sr-only" />
+                <Label htmlFor="goal-Cultural" className="cursor-pointer text-center">
+                  <div className="font-medium">Cultural Education</div>
+                  <div className="text-xs text-muted-foreground mt-1">Emphasize cultural context and nuances</div>
+                </Label>
+              </div>
+              
+              <div
+                className={`
+                  flex flex-col items-center p-4 rounded-md border cursor-pointer
+                  ${data.goal === 'Balanced' 
+                    ? 'bg-brand-50 border-brand-500' 
+                    : 'border-slate-200 hover:bg-slate-50'
+                  }
+                `}
+                onClick={() => updateData({ goal: 'Balanced' })}
+              >
+                <RadioGroupItem value="Balanced" id="goal-Balanced" className="sr-only" />
+                <Label htmlFor="goal-Balanced" className="cursor-pointer text-center">
+                  <div className="font-medium">Balanced</div>
+                  <div className="text-xs text-muted-foreground mt-1">Equal focus on content and cultural elements</div>
+                </Label>
+              </div>
             </RadioGroup>
           </div>
         </CardContent>
@@ -181,45 +214,53 @@ export const LanguageConfigStep: React.FC<LanguageConfigProps> = ({ data, update
               onValueChange={(value) => updateData({ complexity: value })}
               className="grid grid-cols-1 sm:grid-cols-5 gap-2"
             >
-              <OptionCard
-                value="Basic"
-                label="Basic"
-                description="Simple vocabulary and grammar"
-                isSelected={data.complexity === 'Basic'}
-              />
-              <OptionCard
-                value="Elementary"
-                label="Elementary"
-                description="Foundational language"
-                isSelected={data.complexity === 'Elementary'}
-              />
-              <OptionCard
-                value="Intermediate"
-                label="Intermediate"
-                description="Moderate complexity"
-                isSelected={data.complexity === 'Intermediate'}
-              />
-              <OptionCard
-                value="Advanced"
-                label="Advanced"
-                description="Complex language"
-                isSelected={data.complexity === 'Advanced'}
-              />
-              <OptionCard
-                value="Expert"
-                label="Expert"
-                description="Sophisticated language"
-                isSelected={data.complexity === 'Expert'}
-              />
+              {/* Fixed complexity options */}
+              {['Basic', 'Elementary', 'Intermediate', 'Advanced', 'Expert'].map((level) => (
+                <div
+                  key={level}
+                  className={`
+                    flex flex-col items-center justify-center p-3 rounded-md border cursor-pointer
+                    transition-all duration-200 hover:border-brand-300 hover:bg-brand-50
+                    ${data.complexity === level ? 'border-brand-500 bg-brand-50' : 'border-slate-200'}
+                  `}
+                  onClick={() => updateData({ complexity: level })}
+                >
+                  <RadioGroupItem value={level} id={`complexity-${level}`} className="sr-only" />
+                  <Label htmlFor={`complexity-${level}`} className="cursor-pointer text-center">
+                    <span className="font-medium text-sm">{level}</span>
+                    <span className="text-xs text-muted-foreground mt-1 block">
+                      {level === 'Basic' && "Simple vocabulary and grammar"}
+                      {level === 'Elementary' && "Foundational language"}
+                      {level === 'Intermediate' && "Moderate complexity"}
+                      {level === 'Advanced' && "Complex language"}
+                      {level === 'Expert' && "Sophisticated language"}
+                    </span>
+                  </Label>
+                </div>
+              ))}
             </RadioGroup>
             
-            <OptionCard
-              value="AI-Adapted"
-              label="AI-Adapted"
-              description="Automatically adjusted based on context and subject"
-              isSelected={data.complexity === 'AI-Adapted'}
-              className="mt-2"
-            />
+            {/* AI-Adapted option outside the grid */}
+            <RadioGroup value={data.complexity === 'AI-Adapted' ? 'AI-Adapted' : ''} onValueChange={(value) => {
+              if (value) updateData({ complexity: value });
+            }} className="mt-2">
+              <div
+                className={`
+                  flex flex-col items-center justify-center p-3 rounded-md border cursor-pointer
+                  transition-all duration-200 hover:border-brand-300 hover:bg-brand-50
+                  ${data.complexity === 'AI-Adapted' ? 'border-brand-500 bg-brand-50' : 'border-slate-200'}
+                `}
+                onClick={() => updateData({ complexity: 'AI-Adapted' })}
+              >
+                <RadioGroupItem value="AI-Adapted" id="complexity-AI-Adapted" className="sr-only" />
+                <Label htmlFor="complexity-AI-Adapted" className="cursor-pointer text-center">
+                  <span className="font-medium text-sm">AI-Adapted</span>
+                  <span className="text-xs text-muted-foreground mt-1 block">
+                    Automatically adjusted based on context and subject
+                  </span>
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
         </CardContent>
       </Card>
@@ -362,30 +403,5 @@ export const LanguageConfigStep: React.FC<LanguageConfigProps> = ({ data, update
         </CardContent>
       </Card>
     </div>
-  );
-};
-
-// Helper component for radio options
-const OptionCard = ({ value, label, description, isSelected, className = '' }: { 
-  value: string;
-  label: string;
-  description: string;
-  isSelected: boolean;
-  className?: string;
-}) => {
-  return (
-    <Label
-      htmlFor={value}
-      className={`
-        flex flex-col items-center justify-center p-3 rounded-md border cursor-pointer
-        transition-all duration-200 hover:border-brand-300 hover:bg-brand-50
-        ${isSelected ? 'border-brand-500 bg-brand-50' : 'border-slate-200'}
-        ${className}
-      `}
-    >
-      <RadioGroupItem value={value} id={value} className="sr-only" />
-      <span className="font-medium text-sm">{label}</span>
-      <span className="text-xs text-muted-foreground mt-1 text-center">{description}</span>
-    </Label>
   );
 };
