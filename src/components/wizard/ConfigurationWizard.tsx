@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -14,6 +15,7 @@ import { WizardContent } from './WizardContent';
 import { WizardFooter } from './WizardFooter';
 import { WIZARD_STEPS, getStepTitle, getStepDescription } from './wizardSteps';
 import { ConfigData } from './types';
+import { MainLayout } from '@/components/layout/MainLayout';
 
 export const ConfigurationWizard = () => {
   const navigate = useNavigate();
@@ -154,49 +156,51 @@ export const ConfigurationWizard = () => {
   };
 
   return (
-    <div className="w-full">
-      <PageBreadcrumbs 
-        items={[
-          { label: 'Projects', path: '/projects' },
-          { label: 'Create New Project' }
-        ]}
-      />
-      
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Create New Project</h1>
-        <p className="text-slate-500 mt-2">
-          Configure your educational content project by following these steps.
-        </p>
-      </div>
-      
-      <WizardStepIndicator 
-        steps={getVisibleSteps()}
-        currentStep={currentStep}
-        hasVisited={hasVisited}
-        className="mb-8"
-      />
-      
-      <Card className="border-slate-200 shadow-sm">
-        <CardHeader>
-          <CardTitle>{getStepTitle(currentStep)}</CardTitle>
-          <CardDescription>{getStepDescription(currentStep)}</CardDescription>
-        </CardHeader>
+    <MainLayout contentWidth="default">
+      <div className="w-full">
+        <PageBreadcrumbs 
+          items={[
+            { label: 'Projects', path: '/projects' },
+            { label: 'Create New Project' }
+          ]}
+        />
         
-        <WizardContent 
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900">Create New Project</h1>
+          <p className="text-slate-500 mt-2">
+            Configure your educational content project by following these steps.
+          </p>
+        </div>
+        
+        <WizardStepIndicator 
+          steps={getVisibleSteps()}
           currentStep={currentStep}
-          formData={formData}
-          updateFormData={updateFormData}
+          hasVisited={hasVisited}
+          className="mb-8"
         />
         
-        <WizardFooter
-          isFirstStep={isFirstStep}
-          isLastStep={isLastStep}
-          onPrev={handlePrevStep}
-          onNext={handleStepNavigation}
-          onComplete={handleComplete}
-        />
-      </Card>
-    </div>
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader>
+            <CardTitle>{getStepTitle(currentStep)}</CardTitle>
+            <CardDescription>{getStepDescription(currentStep)}</CardDescription>
+          </CardHeader>
+          
+          <WizardContent 
+            currentStep={currentStep}
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+          
+          <WizardFooter
+            isFirstStep={isFirstStep}
+            isLastStep={isLastStep}
+            onPrev={handlePrevStep}
+            onNext={handleStepNavigation}
+            onComplete={handleComplete}
+          />
+        </Card>
+      </div>
+    </MainLayout>
   );
 };
 
