@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle } from 'lucide-react';
 import { ConfigData } from '../types';
+import { RadioGroup } from '@/components/ui/radio-group';
 
 interface ProjectNameStepProps {
   data: Pick<ConfigData, 'name' | 'quickStart'>;
@@ -59,6 +60,7 @@ export const ProjectNameStep: React.FC<ProjectNameStepProps> = ({ data, updateDa
         </div>
         
         <div className="grid grid-cols-1 gap-4">
+          {/* Using custom approach selection cards with proper onClick handlers instead of RadioGroupItems */}
           <Card 
             className={`border-2 ${data.quickStart === 'template' ? 'border-brand-500' : 'border-brand-100'} p-0 cursor-pointer`}
             onClick={() => updateData({ quickStart: 'template' })}
