@@ -36,26 +36,28 @@ export const ConfigurationWizard = () => {
       quickStart: 'custom',
       interfaceLanguage: 'English',
       experienceLevel: 'Intermediate',
-      interactionMode: 'Guided',
-      outputDetail: 'Detailed',
-      systemBehavior: 'Balanced',
+      interactionMode: 'Conversational',
+      outputDetail: 'Balanced',
+      systemBehavior: 'Collaborative',
       projectType: 'Textbook',
       customProjectType: '',
       subjects: [],
       levels: [],
       pedagogy: 'Standard',
+      customPedagogy: '',
       wordCount: 5000,
       wordDistribution: 'balanced',
       wordEnforcement: 'flexible',
-      targetLanguage: 'Spanish',
+      targetLanguage: 'English',
       goal: 'Teaching',
       complexity: 'Intermediate',
-      culturalIntegration: 'Moderate',
-      terminology: 'Standard',
-      markers: 'Standard',
-      standards: 'Default',
-      structure: 'Default',
-      formatting: 'Default',
+      culturalIntegration: 'Standard',
+      terminology: 'Content-Language',
+      markers: 'Headings',
+      standards: [],
+      customStandards: [],
+      structure: 'Traditional',
+      formatting: 'Standard',
       uploadedDocuments: [],
       needsDocumentUpload: false,
       createdDate: new Date().toISOString(),
@@ -75,31 +77,43 @@ export const ConfigurationWizard = () => {
       return;
     }
 
-    // Check if documents should be collected (custom options selected or Custom project type)
-    if (currentStep === 3) {
-      const needsDocuments = formData.standards === 'Custom' || 
-                            formData.projectType === 'Custom' ||
-                            formData.terminology.startsWith('Custom:') ||
-                            formData.markers.startsWith('Custom:') ||
-                            formData.structure.startsWith('Custom:');
+    // Skip system config if using a template
+    if (currentStep === 1 && formData.quickStart !== 'custom') {
+      // Could apply template presets here
+      goToStep(6); // Skip to summary for quick start templates
+      return;
+    }
+
+    // Check if documents should be collected
+    if (currentStep === 4) {
+      const needsDocuments = 
+        formData.standards.includes('custom') || 
+        formData.customStandards.length > 0 ||
+        formData.projectType === 'Custom' ||
+        formData.pedagogy === 'Custom' ||
+        formData.terminology === 'Custom' ||
+        formData.markers === 'Custom' ||
+        formData.structure === 'Custom';
       
       updateFormData({ needsDocumentUpload: needsDocuments });
       
-      if (needsDocuments) {
-        nextStep();
-      } else {
+      if (!needsDocuments) {
         // Skip documents step
-        goToStep(5);
+        goToStep(6);
+        return;
       }
-    } else {
-      nextStep();
     }
+    
+    nextStep();
   };
 
   const handlePrevStep = () => {
-    if (currentStep === 5 && !formData.needsDocumentUpload) {
+    if (currentStep === 6 && !formData.needsDocumentUpload) {
       // Skip back over the documents step
-      goToStep(3);
+      goToStep(4);
+    } else if (currentStep === 6 && formData.quickStart !== 'custom') {
+      // If using template, go back to quick start
+      goToStep(1);
     } else {
       prevStep();
     }
@@ -134,7 +148,11 @@ export const ConfigurationWizard = () => {
     
     return WIZARD_STEPS.map(step => ({
       ...step,
-      hidden: step.id === 4 && !formData.needsDocumentUpload
+      // Hide document step if not needed
+      hidden: step.id === 5 && !formData.needsDocumentUpload,
+      // Hide system/project/language config if using template
+      hidden: (step.id === 2 || step.id === 3 || step.id === 4 || step.id === 5) && 
+              formData.quickStart !== 'custom'
     }));
   };
 

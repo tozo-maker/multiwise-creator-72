@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,22 +8,33 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 interface ProjectTypeSelectorProps {
   projectType: string;
+  customProjectType?: string;
   onProjectTypeChange: (value: string) => void;
+  onCustomProjectTypeChange: (value: string) => void;
 }
 
 export const ProjectTypeSelector: React.FC<ProjectTypeSelectorProps> = ({
   projectType,
-  onProjectTypeChange
+  customProjectType = '',
+  onProjectTypeChange,
+  onCustomProjectTypeChange
 }) => {
-  const [customProjectType, setCustomProjectType] = useState('');
+  const [localCustomValue, setLocalCustomValue] = useState(customProjectType || '');
+  
+  useEffect(() => {
+    if (projectType === 'Custom' && !customProjectType) {
+      onCustomProjectTypeChange('');
+    }
+  }, [projectType, customProjectType, onCustomProjectTypeChange]);
 
   const handleProjectTypeChange = (value: string) => {
     onProjectTypeChange(value);
   };
 
   const handleCustomProjectTypeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setCustomProjectType(e.target.value);
-    onProjectTypeChange('Custom: ' + e.target.value);
+    const value = e.target.value;
+    setLocalCustomValue(value);
+    onCustomProjectTypeChange(value);
   };
 
   return (
@@ -42,7 +53,7 @@ export const ProjectTypeSelector: React.FC<ProjectTypeSelectorProps> = ({
         </TooltipProvider>
       </div>
       <Select 
-        value={projectType.startsWith('Custom:') ? 'Custom' : projectType} 
+        value={projectType} 
         onValueChange={handleProjectTypeChange}
       >
         <SelectTrigger>
@@ -50,26 +61,29 @@ export const ProjectTypeSelector: React.FC<ProjectTypeSelectorProps> = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="Textbook">Textbook</SelectItem>
-          <SelectItem value="Lesson Plan">Lesson Plan</SelectItem>
+          <SelectItem value="Lesson-Plan">Lesson Plan</SelectItem>
           <SelectItem value="Workbook">Workbook</SelectItem>
-          <SelectItem value="Teacher Guide">Teacher Guide</SelectItem>
+          <SelectItem value="Teacher-Guide">Teacher Guide</SelectItem>
           <SelectItem value="Assessment">Assessment</SelectItem>
+          <SelectItem value="Curriculum">Full Curriculum</SelectItem>
+          <SelectItem value="Course">Online Course</SelectItem>
+          <SelectItem value="Tutorial">Tutorial</SelectItem>
           <SelectItem value="Custom">Custom</SelectItem>
         </SelectContent>
       </Select>
       
-      {projectType === 'Custom' || projectType.startsWith('Custom:') ? (
+      {projectType === 'Custom' && (
         <div className="mt-2">
           <Label htmlFor="customProjectType" className="text-sm">Specify Custom Project Type</Label>
           <Textarea 
             id="customProjectType"
             placeholder="Describe your custom project type..."
-            value={customProjectType}
+            value={localCustomValue}
             onChange={handleCustomProjectTypeChange}
             className="mt-1"
           />
         </div>
-      ) : null}
+      )}
     </div>
   );
 };

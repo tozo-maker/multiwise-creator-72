@@ -10,12 +10,12 @@ export const NewProjectButton = () => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link to="/projects/new">
-            <Button className="gap-2 bg-brand-500 hover:bg-brand-600 transition-all duration-300">
+          <Button className="gap-2 bg-brand-500 hover:bg-brand-600 transition-all duration-300" asChild>
+            <Link to="/projects/new">
               <Plus className="h-4 w-4" />
               New Project
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </TooltipTrigger>
         <TooltipContent>
           <p>Create a new educational content project</p>

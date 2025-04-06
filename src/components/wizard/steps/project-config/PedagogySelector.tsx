@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,22 +8,33 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 interface PedagogySelectorProps {
   pedagogy: string;
+  customPedagogy?: string;
   onPedagogyChange: (value: string) => void;
+  onCustomPedagogyChange: (value: string) => void;
 }
 
 export const PedagogySelector: React.FC<PedagogySelectorProps> = ({
   pedagogy,
-  onPedagogyChange
+  customPedagogy = '',
+  onPedagogyChange,
+  onCustomPedagogyChange
 }) => {
-  const [customPedagogy, setCustomPedagogy] = useState('');
+  const [localCustomValue, setLocalCustomValue] = useState(customPedagogy || '');
+
+  useEffect(() => {
+    if (pedagogy === 'Custom' && !customPedagogy) {
+      onCustomPedagogyChange('');
+    }
+  }, [pedagogy, customPedagogy, onCustomPedagogyChange]);
 
   const handlePedagogyChange = (value: string) => {
     onPedagogyChange(value);
   };
 
   const handleCustomPedagogyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setCustomPedagogy(e.target.value);
-    onPedagogyChange('Custom: ' + e.target.value);
+    const value = e.target.value;
+    setLocalCustomValue(value);
+    onCustomPedagogyChange(value);
   };
 
   return (
@@ -42,7 +53,7 @@ export const PedagogySelector: React.FC<PedagogySelectorProps> = ({
         </TooltipProvider>
       </div>
       <Select 
-        value={pedagogy.startsWith('Custom:') ? 'Custom' : pedagogy} 
+        value={pedagogy} 
         onValueChange={handlePedagogyChange}
       >
         <SelectTrigger>
@@ -52,24 +63,27 @@ export const PedagogySelector: React.FC<PedagogySelectorProps> = ({
           <SelectItem value="Standard">Standard</SelectItem>
           <SelectItem value="Project-Based">Project-Based Learning</SelectItem>
           <SelectItem value="Inquiry-Based">Inquiry-Based Learning</SelectItem>
-          <SelectItem value="Flipped Classroom">Flipped Classroom</SelectItem>
+          <SelectItem value="Flipped-Classroom">Flipped Classroom</SelectItem>
           <SelectItem value="Montessori">Montessori</SelectItem>
+          <SelectItem value="Universal-Design">Universal Design for Learning</SelectItem>
+          <SelectItem value="Constructivist">Constructivist</SelectItem>
+          <SelectItem value="Differentiated">Differentiated Instruction</SelectItem>
           <SelectItem value="Custom">Custom</SelectItem>
         </SelectContent>
       </Select>
       
-      {pedagogy === 'Custom' || pedagogy.startsWith('Custom:') ? (
+      {pedagogy === 'Custom' && (
         <div className="mt-2">
           <Label htmlFor="customPedagogy" className="text-sm">Specify Custom Pedagogical Approach</Label>
           <Textarea 
             id="customPedagogy"
             placeholder="Describe your custom pedagogical approach..."
-            value={customPedagogy}
+            value={localCustomValue}
             onChange={handleCustomPedagogyChange}
             className="mt-1"
           />
         </div>
-      ) : null}
+      )}
     </div>
   );
 };

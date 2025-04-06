@@ -2,6 +2,7 @@
 import React from 'react';
 import { CardContent } from '@/components/ui/card';
 import { ProjectNameStep } from './steps/ProjectNameStep';
+import { QuickStartStep } from './steps/QuickStartStep';
 import { SystemConfigStep } from './steps/SystemConfigStep';
 import { ProjectConfigStep } from './steps/ProjectConfigStep';
 import { LanguageConfigStep } from './steps/LanguageConfigStep';
@@ -25,14 +26,16 @@ export const WizardContent: React.FC<WizardContentProps> = ({
       case 0:
         return <ProjectNameStep data={formData} updateData={updateFormData} />;
       case 1:
-        return <SystemConfigStep data={formData} updateData={updateFormData} />;
+        return <QuickStartStep data={formData} updateData={updateFormData} />;
       case 2:
-        return <ProjectConfigStep data={formData} updateData={updateFormData} />;
+        return <SystemConfigStep data={formData} updateData={updateFormData} />;
       case 3:
-        return <LanguageConfigStep data={formData} updateData={updateFormData} />;
+        return <ProjectConfigStep data={formData} updateData={updateFormData} />;
       case 4:
-        return <DocumentUploadStep data={formData} updateData={updateFormData} />;
+        return <LanguageConfigStep data={formData} updateData={updateFormData} />;
       case 5:
+        return <DocumentUploadStep data={formData} updateData={updateFormData} />;
+      case 6:
         return <SummaryStep data={formData} />;
       default:
         return null;

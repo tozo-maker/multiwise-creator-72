@@ -1,177 +1,282 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Card, CardContent } from '@/components/ui/card';
+import { ConfigData } from '../types';
 
 interface SystemConfigProps {
-  data: {
-    interfaceLanguage: string;
-    experienceLevel: string;
-    interactionMode: string;
-    outputDetail: string;
-    systemBehavior: string;
-  };
-  updateData: (data: Partial<{
-    interfaceLanguage: string;
-    experienceLevel: string;
-    interactionMode: string;
-    outputDetail: string;
-    systemBehavior: string;
-  }>) => void;
+  data: Pick<ConfigData, 
+    'interfaceLanguage' | 
+    'experienceLevel' | 
+    'interactionMode' | 
+    'outputDetail' | 
+    'systemBehavior'
+  >;
+  updateData: (data: Partial<ConfigData>) => void;
 }
 
 export const SystemConfigStep: React.FC<SystemConfigProps> = ({ data, updateData }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Interface Language */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="interfaceLanguage">Interface Language</Label>
+          <Label htmlFor="interfaceLanguage" className="text-base font-medium">Interface Language</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
                 <HelpCircle className="h-4 w-4 text-slate-400" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="w-80">The language of the application interface (not the generated content)</p>
+                <p className="w-80">The language used for the MultiGuide interface itself, not the content you're creating</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Select 
-          value={data.interfaceLanguage} 
+        
+        <RadioGroup
+          value={data.interfaceLanguage}
           onValueChange={(value) => updateData({ interfaceLanguage: value })}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-2"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select interface language" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="English">English</SelectItem>
-            <SelectItem value="Spanish">Spanish</SelectItem>
-            <SelectItem value="French">French</SelectItem>
-            <SelectItem value="German">German</SelectItem>
-            <SelectItem value="Chinese">Chinese</SelectItem>
-          </SelectContent>
-        </Select>
+          <OptionCard
+            value="English"
+            label="English"
+            description="English interface"
+            isSelected={data.interfaceLanguage === 'English'}
+          />
+          <OptionCard
+            value="Bilingual"
+            label="Bilingual"
+            description="English + Content Language"
+            isSelected={data.interfaceLanguage === 'Bilingual'}
+          />
+          <OptionCard
+            value="Other"
+            label="Other"
+            description="Other supported language"
+            isSelected={data.interfaceLanguage === 'Other'}
+          />
+        </RadioGroup>
       </div>
-      
+
+      {/* Experience Level */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="experienceLevel">Your Experience Level</Label>
+          <Label htmlFor="experienceLevel" className="text-base font-medium">Experience Level</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
                 <HelpCircle className="h-4 w-4 text-slate-400" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="w-80">This helps customize the interface and guidance to your expertise level</p>
+                <p className="w-80">This helps tailor guidance and interface complexity to your comfort level</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Select 
-          value={data.experienceLevel} 
+        
+        <RadioGroup
+          value={data.experienceLevel}
           onValueChange={(value) => updateData({ experienceLevel: value })}
+          className="grid grid-cols-1 sm:grid-cols-4 gap-2"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select your experience level" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Beginner">Beginner</SelectItem>
-            <SelectItem value="Intermediate">Intermediate</SelectItem>
-            <SelectItem value="Advanced">Advanced</SelectItem>
-            <SelectItem value="Expert">Expert</SelectItem>
-          </SelectContent>
-        </Select>
+          <OptionCard
+            value="Beginner"
+            label="Beginner"
+            description="Extra guidance"
+            isSelected={data.experienceLevel === 'Beginner'}
+          />
+          <OptionCard
+            value="Intermediate"
+            label="Intermediate"
+            description="Standard help"
+            isSelected={data.experienceLevel === 'Intermediate'}
+          />
+          <OptionCard
+            value="Advanced"
+            label="Advanced"
+            description="Minimal guidance"
+            isSelected={data.experienceLevel === 'Advanced'}
+          />
+          <OptionCard
+            value="Expert"
+            label="Expert"
+            description="Technical focus"
+            isSelected={data.experienceLevel === 'Expert'}
+          />
+        </RadioGroup>
       </div>
-      
+
+      {/* Interaction Mode */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="interactionMode">Interaction Mode</Label>
+          <Label htmlFor="interactionMode" className="text-base font-medium">Interaction Mode</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
                 <HelpCircle className="h-4 w-4 text-slate-400" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="w-80">How much guidance you prefer while using the system</p>
+                <p className="w-80">How you prefer to interact with the system</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Select 
-          value={data.interactionMode} 
+        
+        <RadioGroup
+          value={data.interactionMode}
           onValueChange={(value) => updateData({ interactionMode: value })}
+          className="grid grid-cols-1 sm:grid-cols-4 gap-2"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select interaction mode" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Guided">Guided (Step-by-step assistance)</SelectItem>
-            <SelectItem value="Standard">Standard (Balanced guidance)</SelectItem>
-            <SelectItem value="Advanced">Advanced (Minimal guidance)</SelectItem>
-          </SelectContent>
-        </Select>
+          <OptionCard
+            value="Command"
+            label="Command"
+            description="Direct instructions"
+            isSelected={data.interactionMode === 'Command'}
+          />
+          <OptionCard
+            value="Conversational"
+            label="Conversational"
+            description="Natural dialogue"
+            isSelected={data.interactionMode === 'Conversational'}
+          />
+          <OptionCard
+            value="Guided"
+            label="AI-assisted"
+            description="AI suggestions"
+            isSelected={data.interactionMode === 'Guided'}
+          />
+          <OptionCard
+            value="Hybrid"
+            label="Hybrid"
+            description="Mixed approach"
+            isSelected={data.interactionMode === 'Hybrid'}
+          />
+        </RadioGroup>
       </div>
-      
+
+      {/* Output Detail Level */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="outputDetail">AI Output Detail</Label>
+          <Label htmlFor="outputDetail" className="text-base font-medium">Output Detail Level</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
                 <HelpCircle className="h-4 w-4 text-slate-400" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="w-80">Controls how detailed the AI-generated responses will be</p>
+                <p className="w-80">How comprehensive you want the system's responses to be</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Select 
-          value={data.outputDetail} 
+        
+        <RadioGroup
+          value={data.outputDetail}
           onValueChange={(value) => updateData({ outputDetail: value })}
+          className="grid grid-cols-1 sm:grid-cols-4 gap-2"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select output detail" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Concise">Concise (Brief outputs)</SelectItem>
-            <SelectItem value="Balanced">Balanced</SelectItem>
-            <SelectItem value="Detailed">Detailed (Comprehensive outputs)</SelectItem>
-          </SelectContent>
-        </Select>
+          <OptionCard
+            value="Concise"
+            label="Concise"
+            description="Brief answers"
+            isSelected={data.outputDetail === 'Concise'}
+          />
+          <OptionCard
+            value="Balanced"
+            label="Balanced"
+            description="Moderate detail"
+            isSelected={data.outputDetail === 'Balanced'}
+          />
+          <OptionCard
+            value="Detailed"
+            label="Comprehensive"
+            description="Full explanations"
+            isSelected={data.outputDetail === 'Detailed'}
+          />
+          <OptionCard
+            value="Progressive"
+            label="Progressive"
+            description="Adapts as you go"
+            isSelected={data.outputDetail === 'Progressive'}
+          />
+        </RadioGroup>
       </div>
-      
+
+      {/* System Behavior */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="systemBehavior">System Behavior</Label>
+          <Label htmlFor="systemBehavior" className="text-base font-medium">System Behavior</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
                 <HelpCircle className="h-4 w-4 text-slate-400" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="w-80">How proactive the system should be in suggesting improvements</p>
+                <p className="w-80">The overall approach the system takes when working with you</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Select 
-          value={data.systemBehavior} 
+        
+        <RadioGroup
+          value={data.systemBehavior}
           onValueChange={(value) => updateData({ systemBehavior: value })}
+          className="grid grid-cols-1 sm:grid-cols-4 gap-2"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select system behavior" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Conservative">Conservative (Minimal suggestions)</SelectItem>
-            <SelectItem value="Balanced">Balanced</SelectItem>
-            <SelectItem value="Proactive">Proactive (Frequent suggestions)</SelectItem>
-          </SelectContent>
-        </Select>
+          <OptionCard
+            value="Reactive"
+            label="Reactive"
+            description="Responds to requests"
+            isSelected={data.systemBehavior === 'Reactive'}
+          />
+          <OptionCard
+            value="Collaborative"
+            label="Collaborative"
+            description="Works with you"
+            isSelected={data.systemBehavior === 'Collaborative'}
+          />
+          <OptionCard
+            value="Analytical"
+            label="Analytical"
+            description="Focuses on details"
+            isSelected={data.systemBehavior === 'Analytical'}
+          />
+          <OptionCard
+            value="Predictive"
+            label="Predictive"
+            description="Anticipates needs"
+            isSelected={data.systemBehavior === 'Predictive'}
+          />
+        </RadioGroup>
       </div>
     </div>
+  );
+};
+
+// Helper component for radio options
+const OptionCard = ({ value, label, description, isSelected }: { 
+  value: string;
+  label: string;
+  description: string;
+  isSelected: boolean;
+}) => {
+  return (
+    <Label
+      htmlFor={value}
+      className={`
+        flex flex-col items-center justify-center p-3 rounded-md border cursor-pointer
+        transition-all duration-200 hover:border-brand-300 hover:bg-brand-50
+        ${isSelected ? 'border-brand-500 bg-brand-50' : 'border-slate-200'}
+      `}
+    >
+      <RadioGroupItem value={value} id={value} className="sr-only" />
+      <span className="font-medium text-sm">{label}</span>
+      <span className="text-xs text-muted-foreground mt-1 text-center">{description}</span>
+    </Label>
   );
 };
