@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -139,7 +138,6 @@ export const ConfigurationWizard = () => {
     }, 1000);
   };
 
-  // Get visible steps (hiding document step if not needed)
   const getVisibleSteps = () => {
     if (!WIZARD_STEPS || !Array.isArray(WIZARD_STEPS)) {
       console.error('WIZARD_STEPS is not properly defined');
@@ -148,11 +146,9 @@ export const ConfigurationWizard = () => {
     
     return WIZARD_STEPS.map(step => ({
       ...step,
-      // Hide document step if not needed
-      hidden: step.id === 5 && !formData.needsDocumentUpload,
-      // Hide system/project/language config if using template
-      hidden: (step.id === 2 || step.id === 3 || step.id === 4 || step.id === 5) && 
-              formData.quickStart !== 'custom'
+      hidden: (step.id === 5 && !formData.needsDocumentUpload) ||
+              (formData.quickStart !== 'custom' && 
+               (step.id === 2 || step.id === 3 || step.id === 4 || step.id === 5))
     }));
   };
 
@@ -202,3 +198,5 @@ export const ConfigurationWizard = () => {
     </div>
   );
 };
+
+export default ConfigurationWizard;
