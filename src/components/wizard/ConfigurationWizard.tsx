@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -58,6 +57,7 @@ export const ConfigurationWizard = () => {
       customStandards: [],
       structure: 'Traditional',
       formatting: 'Standard',
+      scriptType: 'Latin',
       uploadedDocuments: [],
       needsDocumentUpload: false,
       createdDate: new Date().toISOString(),

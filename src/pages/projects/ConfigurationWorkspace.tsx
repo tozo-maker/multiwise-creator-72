@@ -42,9 +42,11 @@ export const ConfigurationWorkspace = () => {
     
     // Project Config
     projectType: 'Textbook',
+    customProjectType: '',
     subjects: ['Spanish', 'Language Arts'],
     levels: ['Secondary', 'High School'],
     pedagogy: 'Standard',
+    customPedagogy: '',
     wordCount: 5000,
     wordDistribution: 'balanced',
     wordEnforcement: 'flexible',
@@ -60,10 +62,15 @@ export const ConfigurationWorkspace = () => {
     customStandards: [],
     structure: 'Default',
     formatting: 'Default',
+    scriptType: 'Latin',
     
     // Documents
     uploadedDocuments: [],
-    needsDocumentUpload: false
+    needsDocumentUpload: false,
+    
+    // Metadata
+    createdDate: new Date().toISOString(),
+    lastModified: new Date().toISOString()
   });
 
   const updateConfigData = (data: Partial<ConfigData>) => {

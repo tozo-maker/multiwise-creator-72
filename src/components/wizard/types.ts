@@ -30,8 +30,9 @@ export interface ConfigData {
   customStandards: string[];
   structure: string;
   formatting: string;
+  scriptType: string;
   // Documents
-  uploadedDocuments: string[];
+  uploadedDocuments: { name: string; description: string }[];
   needsDocumentUpload: boolean;
   // Metadata
   createdDate: string;

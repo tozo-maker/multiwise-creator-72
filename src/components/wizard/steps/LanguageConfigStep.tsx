@@ -76,6 +76,42 @@ export const LanguageConfigStep: React.FC<LanguageConfigProps> = ({ data, update
         </CardContent>
       </Card>
 
+      {/* Script Type - Adding the missing field */}
+      <Card className="border-slate-200">
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="scriptType" className="text-base font-medium">Script Type</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-4 w-4 text-slate-400" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="w-80">The writing system used for the content language</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            
+            <Select value={data.scriptType} onValueChange={(value) => updateData({ scriptType: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select script type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Latin">Latin</SelectItem>
+                <SelectItem value="Cyrillic">Cyrillic</SelectItem>
+                <SelectItem value="Arabic">Arabic</SelectItem>
+                <SelectItem value="Chinese">Chinese (Hanzi)</SelectItem>
+                <SelectItem value="Japanese">Japanese (Kanji & Kana)</SelectItem>
+                <SelectItem value="Korean">Korean (Hangul)</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Content Language Goal */}
       <Card className="border-slate-200">
         <CardContent className="pt-6">
