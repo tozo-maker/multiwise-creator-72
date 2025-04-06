@@ -265,7 +265,10 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({ data }) => {
                 {data.uploadedDocuments.map((doc, index) => (
                   <li key={index} className="flex items-center gap-2">
                     <FileIcon className="h-4 w-4 text-slate-500" />
-                    <span>{doc}</span>
+                    <span>{doc.name}</span>
+                    {doc.description && (
+                      <span className="text-sm text-slate-500">- {doc.description}</span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -289,3 +292,4 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({ data }) => {
     </div>
   );
 };
+
