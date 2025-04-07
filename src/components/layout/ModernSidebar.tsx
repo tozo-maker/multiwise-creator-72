@@ -33,7 +33,14 @@ export const ModernSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
+  
+  // Save sidebar state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar-state', state === 'expanded' ? 'open' : 'closed');
+    }
+  }, [state]);
   
   const isActive = (path: string) => {
     if (path === '/dashboard' && location.pathname === '/') {

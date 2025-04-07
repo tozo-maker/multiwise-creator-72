@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { ProjectOverviewCards } from '@/components/project/ProjectOverviewCards';
@@ -33,7 +33,7 @@ export const ProjectWorkspace = () => {
   ];
   
   return (
-    <MainLayout contentWidth="wide">
+    <ModernLayout contentWidth="wide">
       <div className="space-y-6">
         <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
@@ -228,6 +228,8 @@ export const ProjectWorkspace = () => {
           </Card>
         </div>
       </div>
-    </MainLayout>
+    </ModernLayout>
   );
 };
+
+export default ProjectWorkspace;

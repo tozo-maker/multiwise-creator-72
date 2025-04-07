@@ -30,25 +30,24 @@ export const CreateProject: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
+        className="space-y-6"
       >
-        <div className="pt-4 mb-6">
+        <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
         
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Create New Project</h1>
-            <p className="text-muted-foreground">
-              Set up your new educational content project.
-            </p>
-          </div>
-          
-          <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-            <ProjectCreationWizard
-              templateId="blank"
-              onComplete={handleProjectCreated}
-            />
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Create New Project</h1>
+          <p className="text-muted-foreground">
+            Set up your new educational content project.
+          </p>
+        </div>
+        
+        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+          <ProjectCreationWizard
+            templateId="blank"
+            onComplete={handleProjectCreated}
+          />
         </div>
       </motion.div>
     </ModernLayout>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ModernTopBar } from './ModernTopBar';
 import { ModernSidebar } from './ModernSidebar';
 import { cn } from '@/lib/utils';
@@ -46,7 +46,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
           <SidebarInset className="flex flex-col">
             <ModernTopBar />
             <main className="flex-1 overflow-y-auto p-4 md:p-6">
-              <div className={cn("mx-auto px-4", getMaxWidthClass())}>
+              <div className={cn("mx-auto", getMaxWidthClass())}>
                 {children}
               </div>
             </main>

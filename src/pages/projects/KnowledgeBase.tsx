@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { KnowledgeBaseFileList, KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
@@ -159,80 +159,84 @@ export const KnowledgeBase = () => {
   ];
   
   return (
-    <MainLayout>
-      <div className="container mx-auto py-6">
-        <PageBreadcrumbs items={breadcrumbItems} />
-      </div>
+    <ModernLayout contentWidth="wide">
+      <div className="space-y-6">
+        <div className="pt-4">
+          <PageBreadcrumbs items={breadcrumbItems} />
+        </div>
       
-      <ProjectWorkspaceHeader 
-        projectName={project.name}
-        projectType={project.type}
-        targetLanguage={project.targetLanguage}
-      />
-      
-      <ProjectWorkspaceTabs projectId={project.id} />
-      
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Knowledge Base</h2>
-        <p className="text-slate-500">
-          Manage files that provide context and guidance for AI content generation.
-        </p>
-      </div>
-      
-      <div className="flex justify-between items-center mb-6">
-        <div className="relative w-64">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input placeholder="Search files" className="pl-8" />
+        <ProjectWorkspaceHeader 
+          projectName={project.name}
+          projectType={project.type}
+          targetLanguage={project.targetLanguage}
+        />
+        
+        <ProjectWorkspaceTabs projectId={project.id} activeTab="knowledge-base" />
+        
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Knowledge Base</h2>
+          <p className="text-slate-500">
+            Manage files that provide context and guidance for AI content generation.
+          </p>
         </div>
         
-        <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
-      </div>
-      
-      <KnowledgeBaseFileList 
-        files={files}
-        onDelete={handleDeleteFile}
-        onEdit={handleEditDescription}
-        onPreview={handlePreviewFile}
-        onDownload={handleDownloadFile}
-      />
-      
-      {/* Edit Description Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit File Description</DialogTitle>
-            <DialogDescription>
-              Update the description for {currentEditFile?.name}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <Label htmlFor="description">Description</Label>
-            <Textarea 
-              id="description"
-              value={editedDescription}
-              onChange={(e) => setEditedDescription(e.target.value)}
-              placeholder="Enter a description for this file..."
-              className="mt-2"
-            />
+        <div className="flex justify-between items-center mb-6">
+          <div className="relative w-64">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input placeholder="Search files" className="pl-8" />
           </div>
           
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setEditDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              className="bg-brand-500 hover:bg-brand-600 text-white"
-              onClick={saveDescription}
-            >
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </MainLayout>
+          <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
+        </div>
+        
+        <KnowledgeBaseFileList 
+          files={files}
+          onDelete={handleDeleteFile}
+          onEdit={handleEditDescription}
+          onPreview={handlePreviewFile}
+          onDownload={handleDownloadFile}
+        />
+        
+        {/* Edit Description Dialog */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit File Description</DialogTitle>
+              <DialogDescription>
+                Update the description for {currentEditFile?.name}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description"
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                placeholder="Enter a description for this file..."
+                className="mt-2"
+              />
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setEditDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="bg-brand-500 hover:bg-brand-600 text-white"
+                onClick={saveDescription}
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </ModernLayout>
   );
 };
+
+export default KnowledgeBase;

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { SystemConfigStep } from '@/components/wizard/steps/SystemConfigStep';
 import { LanguageConfigStep } from '@/components/wizard/steps/LanguageConfigStep';
 import { useToast } from '@/hooks/use-toast';
 import { ConfigData } from '@/components/wizard/types';
+import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
 export const ConfigurationWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -26,6 +27,12 @@ export const ConfigurationWorkspace = () => {
     lastModified: '2 hours ago',
     progress: 65
   };
+  
+  const breadcrumbItems = [
+    { label: 'Projects', path: '/projects' },
+    { label: project.name, path: `/projects/${projectId}` },
+    { label: 'Configuration' }
+  ];
   
   // Mock configuration data that would be retrieved from the backend
   const [configData, setConfigData] = useState<ConfigData>({
@@ -86,60 +93,66 @@ export const ConfigurationWorkspace = () => {
   };
 
   return (
-    <MainLayout>
-      <ProjectWorkspaceHeader 
-        projectName={project.name}
-        projectType={project.type}
-        targetLanguage={project.targetLanguage}
-      />
+    <ModernLayout contentWidth="wide">
+      <div className="space-y-6">
+        <div className="pt-4">
+          <PageBreadcrumbs items={breadcrumbItems} />
+        </div>
       
-      <ProjectWorkspaceTabs projectId={project.id} activeTab="configuration" />
-      
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Project Configuration</CardTitle>
-          <CardDescription>
-            Edit your project settings and parameters
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="system" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="system">System</TabsTrigger>
-              <TabsTrigger value="project">Project</TabsTrigger>
-              <TabsTrigger value="language">Language & Content</TabsTrigger>
-            </TabsList>
+        <ProjectWorkspaceHeader 
+          projectName={project.name}
+          projectType={project.type}
+          targetLanguage={project.targetLanguage}
+        />
+        
+        <ProjectWorkspaceTabs projectId={project.id} activeTab="configuration" />
+        
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Project Configuration</CardTitle>
+            <CardDescription>
+              Edit your project settings and parameters
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="system" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="system">System</TabsTrigger>
+                <TabsTrigger value="project">Project</TabsTrigger>
+                <TabsTrigger value="language">Language & Content</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="system" className="space-y-6">
+                <SystemConfigStep 
+                  data={configData} 
+                  updateData={updateConfigData} 
+                />
+              </TabsContent>
+              
+              <TabsContent value="project" className="space-y-6">
+                <ProjectConfigStep 
+                  data={configData} 
+                  updateData={updateConfigData}
+                />
+              </TabsContent>
+              
+              <TabsContent value="language" className="space-y-6">
+                <LanguageConfigStep 
+                  data={configData} 
+                  updateData={updateConfigData}
+                />
+              </TabsContent>
+            </Tabs>
             
-            <TabsContent value="system" className="space-y-6">
-              <SystemConfigStep 
-                data={configData} 
-                updateData={updateConfigData} 
-              />
-            </TabsContent>
-            
-            <TabsContent value="project" className="space-y-6">
-              <ProjectConfigStep 
-                data={configData} 
-                updateData={updateConfigData}
-              />
-            </TabsContent>
-            
-            <TabsContent value="language" className="space-y-6">
-              <LanguageConfigStep 
-                data={configData} 
-                updateData={updateConfigData}
-              />
-            </TabsContent>
-          </Tabs>
-          
-          <div className="mt-8 flex justify-end">
-            <Button onClick={handleSaveChanges}>
-              Save Changes
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </MainLayout>
+            <div className="mt-8 flex justify-end">
+              <Button onClick={handleSaveChanges}>
+                Save Changes
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </ModernLayout>
   );
 };
 

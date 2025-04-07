@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { ProjectSnapshot, Snapshot } from '@/components/project/ProjectSnapshot';
@@ -21,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Plus, Search } from 'lucide-react';
 import { format } from 'date-fns';
+import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
 export const SnapshotsWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -35,6 +36,12 @@ export const SnapshotsWorkspace = () => {
     lastModified: '2 hours ago',
     progress: 65
   };
+  
+  const breadcrumbItems = [
+    { label: 'Projects', path: '/projects' },
+    { label: project.name, path: `/projects/${projectId}` },
+    { label: 'Snapshots' }
+  ];
   
   // State management
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -142,159 +149,165 @@ export const SnapshotsWorkspace = () => {
   };
   
   return (
-    <MainLayout>
-      <ProjectWorkspaceHeader 
-        projectName={project.name}
-        projectType={project.type}
-        targetLanguage={project.targetLanguage}
-      />
+    <ModernLayout contentWidth="wide">
+      <div className="space-y-6">
+        <div className="pt-4">
+          <PageBreadcrumbs items={breadcrumbItems} />
+        </div>
       
-      <ProjectWorkspaceTabs projectId={project.id} />
-      
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Project Snapshots</h2>
-        <p className="text-slate-500">
-          Save and restore project states at important milestones
-        </p>
-      </div>
-      
-      <div className="flex justify-between items-center mb-6">
-        <div className="relative w-64">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input 
-            placeholder="Search snapshots" 
-            className="pl-8" 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <ProjectWorkspaceHeader 
+          projectName={project.name}
+          projectType={project.type}
+          targetLanguage={project.targetLanguage}
+        />
+        
+        <ProjectWorkspaceTabs projectId={project.id} activeTab="snapshots" />
+        
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Project Snapshots</h2>
+          <p className="text-slate-500">
+            Save and restore project states at important milestones
+          </p>
         </div>
         
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Snapshot
-        </Button>
-      </div>
-      
-      {filteredSnapshots.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSnapshots.map((snapshot) => (
-            <ProjectSnapshot
-              key={snapshot.id}
-              snapshot={snapshot}
-              onRestore={handleRestoreSnapshot}
-              onDelete={handleDeleteSnapshot}
-              onDownload={handleDownloadSnapshot}
+        <div className="flex justify-between items-center mb-6">
+          <div className="relative w-64">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input 
+              placeholder="Search snapshots" 
+              className="pl-8" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="py-12 flex flex-col items-center justify-center text-center">
-            {searchQuery ? (
-              <>
-                <p className="text-slate-500 mb-4">No snapshots match your search criteria</p>
-                <Button variant="outline" onClick={() => setSearchQuery('')}>
-                  Clear Search
-                </Button>
-              </>
-            ) : (
-              <>
-                <Camera className="h-12 w-12 text-slate-300 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Snapshots Yet</h3>
-                <p className="text-slate-500 mb-4 max-w-md">
-                  Snapshots let you save the current state of your project 
-                  at important milestones so you can easily revert back if needed.
-                </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                  Create Your First Snapshot
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-      
-      {/* Create Snapshot Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Project Snapshot</DialogTitle>
-            <DialogDescription>
-              Save the current state of your project that you can restore later
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="snapshotName">Snapshot Name*</Label>
-              <Input 
-                id="snapshotName"
-                value={newSnapshotName}
-                onChange={(e) => setNewSnapshotName(e.target.value)}
-                placeholder="e.g., Pre-Review Draft"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="snapshotDescription">Description (Optional)</Label>
-              <Textarea 
-                id="snapshotDescription"
-                value={newSnapshotDescription}
-                onChange={(e) => setNewSnapshotDescription(e.target.value)}
-                placeholder="Briefly describe what's important about this project state..."
-                rows={3}
-              />
-            </div>
-            
-            <div className="bg-slate-50 p-3 rounded-md text-sm text-slate-600">
-              <p>Current project state as of {format(new Date(), 'PPP p')} will be saved.</p>
-            </div>
           </div>
           
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setCreateDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleCreateSnapshot}
-              disabled={!newSnapshotName.trim()}
-            >
-              Create Snapshot
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Confirm Delete Dialog */}
-      <Dialog open={confirmDeleteDialogOpen} onOpenChange={setConfirmDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this snapshot? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <DialogFooter className="mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setConfirmDeleteDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={confirmDeleteSnapshot}
-            >
-              Delete Snapshot
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </MainLayout>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Snapshot
+          </Button>
+        </div>
+        
+        {filteredSnapshots.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredSnapshots.map((snapshot) => (
+              <ProjectSnapshot
+                key={snapshot.id}
+                snapshot={snapshot}
+                onRestore={handleRestoreSnapshot}
+                onDelete={handleDeleteSnapshot}
+                onDownload={handleDownloadSnapshot}
+              />
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="py-12 flex flex-col items-center justify-center text-center">
+              {searchQuery ? (
+                <>
+                  <p className="text-slate-500 mb-4">No snapshots match your search criteria</p>
+                  <Button variant="outline" onClick={() => setSearchQuery('')}>
+                    Clear Search
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Camera className="h-12 w-12 text-slate-300 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Snapshots Yet</h3>
+                  <p className="text-slate-500 mb-4 max-w-md">
+                    Snapshots let you save the current state of your project 
+                    at important milestones so you can easily revert back if needed.
+                  </p>
+                  <Button onClick={() => setCreateDialogOpen(true)}>
+                    Create Your First Snapshot
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Create Snapshot Dialog */}
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Project Snapshot</DialogTitle>
+              <DialogDescription>
+                Save the current state of your project that you can restore later
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="snapshotName">Snapshot Name*</Label>
+                <Input 
+                  id="snapshotName"
+                  value={newSnapshotName}
+                  onChange={(e) => setNewSnapshotName(e.target.value)}
+                  placeholder="e.g., Pre-Review Draft"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="snapshotDescription">Description (Optional)</Label>
+                <Textarea 
+                  id="snapshotDescription"
+                  value={newSnapshotDescription}
+                  onChange={(e) => setNewSnapshotDescription(e.target.value)}
+                  placeholder="Briefly describe what's important about this project state..."
+                  rows={3}
+                />
+              </div>
+              
+              <div className="bg-slate-50 p-3 rounded-md text-sm text-slate-600">
+                <p>Current project state as of {format(new Date(), 'PPP p')} will be saved.</p>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setCreateDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleCreateSnapshot}
+                disabled={!newSnapshotName.trim()}
+              >
+                Create Snapshot
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Confirm Delete Dialog */}
+        <Dialog open={confirmDeleteDialogOpen} onOpenChange={setConfirmDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this snapshot? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <DialogFooter className="mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setConfirmDeleteDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={confirmDeleteSnapshot}
+              >
+                Delete Snapshot
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </ModernLayout>
   );
 };
 

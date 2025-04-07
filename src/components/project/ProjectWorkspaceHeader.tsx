@@ -24,7 +24,7 @@ export const ProjectWorkspaceHeader: React.FC<ProjectWorkspaceHeaderProps> = ({
         <Button 
           variant="ghost" 
           size="icon"
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/projects')}
           className="h-8 w-8"
         >
           <ChevronLeft className="h-5 w-5" />

@@ -1,9 +1,9 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
-import { ContentCreationForm } from '@/components/project/ContentCreationForm';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, FilePlus } from 'lucide-react';
