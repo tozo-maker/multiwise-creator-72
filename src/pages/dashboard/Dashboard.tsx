@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 import { DashboardWelcome } from '@/components/dashboard/DashboardWelcome';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { DashboardProjectSection } from '@/components/dashboard/DashboardProjectSection';
@@ -14,9 +14,9 @@ import { motion } from 'framer-motion';
 
 export const Dashboard = () => {
   return (
-    <MainLayout contentWidth="wide">
+    <ModernLayout contentWidth="wide">
       <DashboardContent />
-    </MainLayout>
+    </ModernLayout>
   );
 };
 

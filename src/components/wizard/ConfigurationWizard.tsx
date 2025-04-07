@@ -15,7 +15,7 @@ import { WizardContent } from './WizardContent';
 import { WizardFooter } from './WizardFooter';
 import { WIZARD_STEPS, getStepTitle, getStepDescription } from './wizardSteps';
 import { ConfigData } from './types';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 
 export const ConfigurationWizard = () => {
   const navigate = useNavigate();
@@ -156,7 +156,7 @@ export const ConfigurationWizard = () => {
   };
 
   return (
-    <MainLayout contentWidth="default">
+    <ModernLayout contentWidth="default">
       <div className="w-full">
         <PageBreadcrumbs 
           items={[
@@ -200,7 +200,7 @@ export const ConfigurationWizard = () => {
           />
         </Card>
       </div>
-    </MainLayout>
+    </ModernLayout>
   );
 };
 

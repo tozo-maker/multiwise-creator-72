@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,8 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
+import Analytics from "./pages/analytics/Analytics";
+import KnowledgeBasePage from "./pages/knowledge/KnowledgeBasePage";
 
 const queryClient = new QueryClient();
 
@@ -97,6 +100,8 @@ const App = () => {
             <Route path="/projects/:projectId/enhancements" element={isAuthenticated ? <EnhancementsWorkspace /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId/configuration" element={isAuthenticated ? <ConfigurationWorkspace /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId/snapshots" element={isAuthenticated ? <SnapshotsWorkspace /> : <Navigate to="/auth/login" />} />
+            <Route path="/analytics" element={isAuthenticated ? <Analytics /> : <Navigate to="/auth/login" />} />
+            <Route path="/knowledge-base" element={isAuthenticated ? <KnowledgeBasePage /> : <Navigate to="/auth/login" />} />
             <Route path="/help" element={isAuthenticated ? <Help /> : <Navigate to="/auth/login" />} />
             <Route path="/settings" element={isAuthenticated ? <Settings /> : <Navigate to="/auth/login" />} />
             <Route path="*" element={<NotFound />} />
