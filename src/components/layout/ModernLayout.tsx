@@ -5,6 +5,7 @@ import { ModernSidebar } from './ModernSidebar';
 import { cn } from '@/lib/utils';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ModernLayoutProps {
   children: React.ReactNode;
@@ -15,6 +16,8 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
   children, 
   contentWidth = 'wide' 
 }) => {
+  const { theme } = useTheme();
+  
   // Map contentWidth to appropriate max-width classes
   const getMaxWidthClass = () => {
     switch (contentWidth) {

@@ -21,14 +21,14 @@ export const DashboardWelcome = ({ userName, hasProjects, className }: Dashboard
   };
 
   return (
-    <Card className={`border-brand-200 bg-gradient-to-br from-brand-50 to-slate-50 ${className}`}>
+    <Card className={`border-brand-200 dark:border-brand-800 bg-gradient-to-br from-brand-50 to-slate-50 dark:from-brand-900/30 dark:to-slate-900/50 ${className}`}>
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
               {timeOfDay()}, {userName || 'Teacher'}!
             </h2>
-            <p className="text-slate-600 mb-4">
+            <p className="text-slate-600 dark:text-slate-300 mb-4">
               {hasProjects 
                 ? "Continue working on your educational content projects or start something new."
                 : "Ready to create your first educational content project?"}
@@ -43,7 +43,7 @@ export const DashboardWelcome = ({ userName, hasProjects, className }: Dashboard
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               )}
-              <Button variant="outline" className="gap-1">
+              <Button variant="outline" className="gap-1 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
                 <Video className="h-4 w-4" />
                 Watch Tutorial
               </Button>

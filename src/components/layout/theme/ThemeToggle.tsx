@@ -1,44 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const ThemeToggle = () => {
-  const { toast } = useToast();
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-
-  // Initialize theme from localStorage on component mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setTheme('dark');
-      document.documentElement.classList.add('dark');
-    } else {
-      setTheme('light');
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    
-    // Save theme preference to localStorage
-    localStorage.setItem('theme', newTheme);
-    
-    // Apply theme class to the document
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    
-    toast({
-      title: `${newTheme === 'dark' ? 'Dark' : 'Light'} theme activated`,
-      description: `App theme has been changed to ${newTheme} mode.`,
-    });
-  };
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <Button 

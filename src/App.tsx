@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +27,7 @@ import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import Analytics from "./pages/analytics/Analytics";
 import KnowledgeBasePage from "./pages/knowledge/KnowledgeBasePage";
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 const queryClient = new QueryClient();
 
@@ -78,43 +78,45 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
-            <Route path="/auth/login" element={<LoginPage onLoginSuccess={login} />} />
-            <Route path="/auth/register" element={<RegisterPage onRegisterSuccess={login} />} />
-            
-            <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects" element={isAuthenticated ? <Projects /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/new" element={isAuthenticated ? <ConfigurationWizard /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId" element={isAuthenticated ? <ProjectWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/knowledge-base" element={isAuthenticated ? <KnowledgeBase /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/knowledge-base/advanced" element={isAuthenticated ? <KnowledgeBaseAdvanced /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/content" element={isAuthenticated ? <ContentWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/content/new" element={isAuthenticated ? <ContentCreation /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/analysis" element={isAuthenticated ? <AnalysisWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/enhancements" element={isAuthenticated ? <EnhancementsWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/configuration" element={isAuthenticated ? <ConfigurationWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/snapshots" element={isAuthenticated ? <SnapshotsWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/analytics" element={isAuthenticated ? <Analytics /> : <Navigate to="/auth/login" />} />
-            <Route path="/knowledge-base" element={isAuthenticated ? <KnowledgeBasePage /> : <Navigate to="/auth/login" />} />
-            <Route path="/help" element={isAuthenticated ? <Help /> : <Navigate to="/auth/login" />} />
-            <Route path="/settings" element={isAuthenticated ? <Settings /> : <Navigate to="/auth/login" />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          {isAuthenticated && (
-            <>
-              <UserHelp />
-              <ContextualHelp />
-            </>
-          )}
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
+              <Route path="/auth/login" element={<LoginPage onLoginSuccess={login} />} />
+              <Route path="/auth/register" element={<RegisterPage onRegisterSuccess={login} />} />
+              
+              <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects" element={isAuthenticated ? <Projects /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/new" element={isAuthenticated ? <ConfigurationWizard /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId" element={isAuthenticated ? <ProjectWorkspace /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId/knowledge-base" element={isAuthenticated ? <KnowledgeBase /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId/knowledge-base/advanced" element={isAuthenticated ? <KnowledgeBaseAdvanced /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId/content" element={isAuthenticated ? <ContentWorkspace /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId/content/new" element={isAuthenticated ? <ContentCreation /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId/analysis" element={isAuthenticated ? <AnalysisWorkspace /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId/enhancements" element={isAuthenticated ? <EnhancementsWorkspace /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId/configuration" element={isAuthenticated ? <ConfigurationWorkspace /> : <Navigate to="/auth/login" />} />
+              <Route path="/projects/:projectId/snapshots" element={isAuthenticated ? <SnapshotsWorkspace /> : <Navigate to="/auth/login" />} />
+              <Route path="/analytics" element={isAuthenticated ? <Analytics /> : <Navigate to="/auth/login" />} />
+              <Route path="/knowledge-base" element={isAuthenticated ? <KnowledgeBasePage /> : <Navigate to="/auth/login" />} />
+              <Route path="/help" element={isAuthenticated ? <Help /> : <Navigate to="/auth/login" />} />
+              <Route path="/settings" element={isAuthenticated ? <Settings /> : <Navigate to="/auth/login" />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            {isAuthenticated && (
+              <>
+                <UserHelp />
+                <ContextualHelp />
+              </>
+            )}
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 
