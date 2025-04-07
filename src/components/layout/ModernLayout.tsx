@@ -21,15 +21,24 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
       case 'narrow':
         return 'max-w-4xl';
       case 'default':
-        return 'max-w-6xl';
+        return 'max-w-7xl'; // Increased from max-w-6xl for consistency
       case 'wide':
       default:
-        return 'max-w-7xl';
+        return 'max-w-full px-4 md:px-6'; // Changed to full width with padding
     }
   };
 
+  // Read sidebar state from localStorage on initial load
+  const defaultSidebarState = () => {
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem('sidebar-state');
+      return savedState === 'closed' ? false : true;
+    }
+    return true;
+  };
+
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={defaultSidebarState()}>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex w-full">
         <ModernSidebar />
         

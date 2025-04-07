@@ -5,6 +5,7 @@ import { ModernLayout } from '@/components/layout/ModernLayout';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 
 export const CreateProject: React.FC = () => {
   const navigate = useNavigate();
@@ -17,14 +18,23 @@ export const CreateProject: React.FC = () => {
     });
     navigate(`/projects/${projectId}`);
   };
+
+  const breadcrumbItems = [
+    { label: 'Projects', path: '/projects' },
+    { label: 'Create New Project' }
+  ];
   
   return (
-    <ModernLayout contentWidth="default">
+    <ModernLayout contentWidth="wide">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
+        <div className="pt-4 mb-6">
+          <PageBreadcrumbs items={breadcrumbItems} />
+        </div>
+        
         <div className="flex flex-col gap-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Create New Project</h1>

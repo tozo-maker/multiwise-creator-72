@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -26,12 +26,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar
 } from '@/components/ui/sidebar';
 
 export const ModernSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { state } = useSidebar();
   
   const isActive = (path: string) => {
     if (path === '/dashboard' && location.pathname === '/') {
@@ -65,10 +67,18 @@ export const ModernSidebar = () => {
       
       <SidebarHeader>
         <Link to="/" className="flex items-center gap-2 px-2 py-3">
-          <div className="h-8 w-8 rounded-md bg-brand-500 flex items-center justify-center">
-            <BookOpen className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl font-bold text-sidebar-foreground">MultiGuide</span>
+          {state === "expanded" ? (
+            <>
+              <div className="h-8 w-8 rounded-md bg-brand-500 flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-sidebar-foreground">MultiGuide</span>
+            </>
+          ) : (
+            <div className="h-8 w-8 mx-auto rounded-md bg-brand-500 flex items-center justify-center">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+          )}
         </Link>
       </SidebarHeader>
       
