@@ -24,12 +24,12 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
         return 'max-w-6xl';
       case 'wide':
       default:
-        return 'max-w-full px-4 md:px-6';
+        return 'max-w-7xl';
     }
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex w-full">
         <ModernSidebar />
         
@@ -37,7 +37,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
           <SidebarInset className="flex flex-col">
             <ModernTopBar />
             <main className="flex-1 overflow-y-auto p-4 md:p-6">
-              <div className={cn("mx-auto", getMaxWidthClass())}>
+              <div className={cn("mx-auto px-4", getMaxWidthClass())}>
                 {children}
               </div>
             </main>

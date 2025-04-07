@@ -6,6 +6,7 @@ import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { DashboardProjectSection } from '@/components/dashboard/DashboardProjectSection';
 import { DashboardActivityTimeline } from '@/components/dashboard/DashboardActivityTimeline';
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
+import { DashboardAIInsights } from '@/components/dashboard/DashboardAIInsights';
 import { InteractiveHelp } from '@/components/dashboard/InteractiveHelp';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useDashboard } from '@/contexts/DashboardContext';
@@ -67,12 +68,20 @@ const DashboardContent = () => {
         <DashboardStats />
       </motion.div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <DashboardAIInsights className="mb-8" />
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <motion.div 
           className="lg:col-span-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <DashboardProjectSection />
         </motion.div>
@@ -80,7 +89,7 @@ const DashboardContent = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
         >
           <div className="space-y-8">
             <DashboardQuickActions hasProjects={true} className="border-slate-200 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-slate-50" />

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Upload, Camera, Save, Download, ArrowRight } from 'lucide-react';
+import { Upload, Camera, Save, Download, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface DashboardQuickActionsProps {
@@ -21,25 +21,6 @@ export const DashboardQuickActions = ({ hasProjects, className }: DashboardQuick
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-3">
-          <Button 
-            variant="default" 
-            className="justify-start h-auto py-3 px-4 bg-brand-500 hover:bg-brand-600 text-white"
-            onClick={() => navigate('/projects/new')}
-          >
-            <div className="flex items-center w-full justify-between">
-              <div className="flex items-center">
-                <div className="h-9 w-9 rounded-full bg-brand-400 bg-opacity-30 flex items-center justify-center mr-3">
-                  <PlusCircle className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="font-medium">Create New Project</div>
-                  <div className="text-xs text-brand-100 mt-0.5">Start a new educational content project</div>
-                </div>
-              </div>
-              <ArrowRight className="h-5 w-5 text-brand-200 ml-2" />
-            </div>
-          </Button>
-          
           {hasProjects && (
             <>
               <Button 

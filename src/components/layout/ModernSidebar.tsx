@@ -60,7 +60,7 @@ export const ModernSidebar = () => {
   };
 
   return (
-    <Sidebar>
+    <Sidebar variant="sidebar" collapsible="icon">
       <SidebarRail />
       
       <SidebarHeader>
