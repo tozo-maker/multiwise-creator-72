@@ -3,10 +3,23 @@ import React from 'react';
 import { ProjectCreationWizard } from '@/components/project-creation/ProjectCreationWizard';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 export const CreateProject: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const handleProjectCreated = (projectId: string) => {
+    toast({
+      title: "Project created successfully",
+      description: "Your new project has been created."
+    });
+    navigate(`/projects/${projectId}`);
+  };
+  
   return (
-    <ModernLayout contentWidth="wide">
+    <ModernLayout contentWidth="default">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -21,7 +34,10 @@ export const CreateProject: React.FC = () => {
           </div>
           
           <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-            <ProjectCreationWizard />
+            <ProjectCreationWizard
+              templateId="blank"
+              onComplete={handleProjectCreated}
+            />
           </div>
         </div>
       </motion.div>
