@@ -29,8 +29,6 @@ import {
   SidebarRail,
   useSidebar
 } from '@/components/ui/sidebar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const ModernSidebar = () => {
@@ -38,7 +36,7 @@ export const ModernSidebar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { state, setOpen } = useSidebar();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   
   // Save sidebar state to localStorage when it changes
   useEffect(() => {
@@ -153,81 +151,60 @@ export const ModernSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
-        <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {state === "expanded" && (
-                <div className="mb-4 px-2 py-3 flex items-center space-x-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback className="bg-brand-100 text-brand-700 dark:bg-brand-800 dark:text-brand-200">JD</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">John Doe</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">john.doe@example.com</span>
-                  </div>
-                </div>
-              )}
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={isActive('/settings/profile')}
-                  tooltip="Profile Settings"
-                >
-                  <Link to="/settings?tab=profile">
-                    <User />
-                    <span>Profile Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={isActive('/settings')}
-                  tooltip="Settings"
-                >
-                  <Link to="/settings">
-                    <Settings />
-                    <span>Account Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={isActive('/help')}
-                  tooltip="Help"
-                >
-                  <Link to="/help">
-                    <HelpCircle />
-                    <span>Help</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  onClick={toggleTheme}
-                  tooltip={theme === 'light' ? "Dark Mode" : "Light Mode"}
-                >
-                  {theme === 'light' ? <Moon /> : <Sun />}
-                  <span>{theme === 'light' ? "Dark Mode" : "Light Mode"}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter>
+      <SidebarFooter className="flex flex-col space-y-2">
+        {state === "expanded" && (
+          <div className="mb-4 px-3 py-2">
+            <div className="text-sm font-medium text-slate-900 dark:text-white">John Doe</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">john.doe@example.com</div>
+          </div>
+        )}
+        
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              asChild 
+              isActive={isActive('/settings/profile')}
+              tooltip="Profile Settings"
+            >
+              <Link to="/settings?tab=profile">
+                <User />
+                <span>Profile Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              asChild 
+              isActive={isActive('/settings')}
+              tooltip="Settings"
+            >
+              <Link to="/settings">
+                <Settings />
+                <span>Account Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              asChild 
+              isActive={isActive('/help')}
+              tooltip="Help"
+            >
+              <Link to="/help">
+                <HelpCircle />
+                <span>Help</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        
         <SidebarMenuButton 
           onClick={handleLogout}
-          className="w-full justify-start text-red-600 dark:text-red-400"
+          className="w-full justify-start text-red-600 dark:text-red-400 mt-2"
           tooltip="Logout"
         >
           <LogOut />

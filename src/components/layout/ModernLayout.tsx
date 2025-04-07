@@ -4,7 +4,7 @@ import { ModernTopBar } from './ModernTopBar';
 import { ModernSidebar } from './ModernSidebar';
 import { cn } from '@/lib/utils';
 import { DashboardProvider } from '@/contexts/DashboardContext';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface ModernLayoutProps {
@@ -46,7 +46,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
         <ModernSidebar />
         
         <DashboardProvider>
-          <SidebarInset className="flex flex-col">
+          <SidebarInset className="flex flex-col w-full">
             <ModernTopBar />
             <main className="flex-1 overflow-y-auto p-4 md:p-6">
               <div className={cn("mx-auto", getMaxWidthClass())}>

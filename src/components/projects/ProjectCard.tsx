@@ -58,7 +58,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <>
-      <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <Card className="overflow-hidden hover:shadow-md transition-shadow dark:bg-slate-800 dark:border-slate-700">
         <CardContent className="p-0">
           <div className="relative h-3 w-full">
             <div 
@@ -69,12 +69,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           <div className="p-5">
             <div className="flex justify-between items-start">
               <Link to={`/projects/${id}`} className="group">
-                <h3 className="font-semibold text-lg text-slate-900 line-clamp-1 group-hover:text-brand-600 transition-colors">{name}</h3>
-                <p className="text-sm text-slate-500 mt-1 line-clamp-2">{description}</p>
+                <h3 className="font-semibold text-lg text-slate-900 dark:text-white line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">{name}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{description}</p>
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-700 dark:text-slate-300">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -89,7 +89,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                     <Link to={`/projects/${id}/knowledge-base`} className="flex w-full">Manage Knowledge Base</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    className="text-red-600"
+                    className="text-red-600 dark:text-red-400"
                     onClick={() => setIsDeleteDialogOpen(true)}
                   >
                     Delete Project
@@ -99,22 +99,22 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             </div>
             
             <div className="mt-4 flex flex-wrap gap-2">
-              <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
+              <Badge variant="outline" className="flex items-center gap-1 text-slate-700 dark:text-slate-300 dark:border-slate-600 dark:bg-slate-700/30">
                 <Globe className="h-3 w-3" />
                 {targetLanguage}
               </Badge>
-              <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
+              <Badge variant="outline" className="flex items-center gap-1 text-slate-700 dark:text-slate-300 dark:border-slate-600 dark:bg-slate-700/30">
                 <BookText className="h-3 w-3" />
                 {type}
               </Badge>
               {collaborators > 0 && (
-                <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
+                <Badge variant="outline" className="flex items-center gap-1 text-slate-700 dark:text-slate-300 dark:border-slate-600 dark:bg-slate-700/30">
                   <Users className="h-3 w-3" />
                   {collaborators} {collaborators === 1 ? 'collaborator' : 'collaborators'}
                 </Badge>
               )}
               {totalMaterials > 0 && (
-                <Badge variant="outline" className="flex items-center gap-1 text-slate-700">
+                <Badge variant="outline" className="flex items-center gap-1 text-slate-700 dark:text-slate-300 dark:border-slate-600 dark:bg-slate-700/30">
                   <Briefcase className="h-3 w-3" />
                   {totalMaterials} {totalMaterials === 1 ? 'material' : 'materials'}
                 </Badge>
@@ -123,29 +123,29 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         </CardContent>
         
-        <CardFooter className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-          <div className="flex items-center gap-1 text-xs text-slate-500">
+        <CardFooter className="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+          <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
             <Clock className="h-3 w-3" />
             <span>Updated {lastModified}</span>
           </div>
-          <div className="text-xs font-medium text-slate-700">
+          <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
             {progress}% Complete
           </div>
         </CardFooter>
       </Card>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="dark:bg-slate-800 dark:border-slate-700">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this project?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="dark:text-white">Are you sure you want to delete this project?</AlertDialogTitle>
+            <AlertDialogDescription className="dark:text-slate-400">
               This action cannot be undone. This will permanently delete the project 
               "{name}" and all associated content and files.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogCancel className="dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
