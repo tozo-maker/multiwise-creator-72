@@ -2,7 +2,7 @@
 import React from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
-import { Search } from '@/components/layout/search/SearchBar';
+import { SearchBar } from '@/components/layout/search/SearchBar';
 import { NotificationPanel } from './notifications/NotificationPanel';
 import { UserMenu } from './user/UserMenu';
 import { ThemeToggle } from './theme/ThemeToggle';
@@ -20,7 +20,7 @@ export const ModernTopBar = () => {
       </div>
       
       <div className="flex-1 pl-4 pr-4 max-w-2xl mx-auto">
-        <Search />
+        <SearchBar />
       </div>
       
       <div className="flex items-center space-x-2 sm:space-x-4">

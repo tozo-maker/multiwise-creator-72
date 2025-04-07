@@ -6,8 +6,18 @@ import { useDashboard } from '@/contexts/DashboardContext';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// Add a status field to the filtered projects if it doesn't exist already
+const addStatusIfMissing = (projects: any[]) => {
+  return projects.map(project => ({
+    ...project,
+    status: project.status || 'active' // Default to 'active' if status is missing
+  }));
+};
+
 export const Projects = () => {
-  const { filteredProjects } = useDashboard();
+  const { filteredProjects: originalFilteredProjects } = useDashboard();
+  // Ensure all projects have a status field
+  const filteredProjects = addStatusIfMissing(originalFilteredProjects);
   
   return (
     <ModernLayout contentWidth="wide">
