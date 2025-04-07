@@ -25,9 +25,9 @@ export const DashboardProjectSection: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow-md">
+    <div className="space-y-6 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md dark:hover:shadow-slate-800/30">
       <div className="mb-2">
-        <h2 className="text-xl font-semibold text-slate-800">Recent Projects</h2>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Recent Projects</h2>
       </div>
       
       <DashboardProjectFilters />
@@ -35,14 +35,14 @@ export const DashboardProjectSection: React.FC = () => {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="rounded-lg border border-slate-200 overflow-hidden">
+            <div key={i} className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800">
               <div className="p-5">
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2 mb-6" />
-                <Skeleton className="h-2 w-full mb-2" />
+                <Skeleton className="h-6 w-3/4 mb-2 dark:bg-slate-700" />
+                <Skeleton className="h-4 w-1/2 mb-6 dark:bg-slate-700" />
+                <Skeleton className="h-2 w-full mb-2 dark:bg-slate-700" />
                 <div className="flex justify-between mt-4">
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-4 w-1/4 dark:bg-slate-700" />
+                  <Skeleton className="h-4 w-1/4 dark:bg-slate-700" />
                 </div>
               </div>
             </div>
@@ -59,10 +59,10 @@ export const DashboardProjectSection: React.FC = () => {
           {filteredProjects.length === 0 && (
             <motion.div 
               variants={itemAnimation}
-              className="text-center py-12 border border-dashed border-slate-300 rounded-lg bg-slate-50 transition-all hover:bg-slate-100"
+              className="text-center py-12 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-800/50 transition-all hover:bg-slate-100 dark:hover:bg-slate-700/50"
             >
-              <h3 className="text-lg font-medium text-slate-700">No projects found</h3>
-              <p className="text-slate-500 mt-1">Try adjusting your filters</p>
+              <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">No projects found</h3>
+              <p className="text-slate-500 dark:text-slate-400 mt-1">Try adjusting your filters</p>
             </motion.div>
           )}
         </motion.div>

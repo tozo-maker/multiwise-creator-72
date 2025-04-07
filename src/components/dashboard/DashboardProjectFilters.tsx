@@ -87,7 +87,7 @@ export const DashboardProjectFilters: React.FC<DashboardProjectFiltersProps> = (
         {isFiltersActive && (
           <Badge 
             variant="outline" 
-            className="bg-slate-100 hover:bg-slate-200 cursor-pointer"
+            className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer dark:text-slate-200"
             onClick={clearFilters}
           >
             Clear Filters
@@ -102,29 +102,30 @@ export const DashboardProjectFilters: React.FC<DashboardProjectFiltersProps> = (
               variant="outline" 
               size="sm" 
               className={cn(
-                "h-10 gap-2 border-slate-200 transition-all hover:border-brand-200 hover:bg-brand-50",
-                isFiltersActive && "bg-brand-50 border-brand-200 text-brand-700"
+                "h-10 gap-2 border-slate-200 dark:border-slate-700 dark:text-slate-200 transition-all hover:border-brand-200 dark:hover:border-brand-700 hover:bg-brand-50 dark:hover:bg-brand-900/20",
+                isFiltersActive && "bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-700 text-brand-700 dark:text-brand-300"
               )}
             >
               <Filter className="h-4 w-4" />
               <span>Filter</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 bg-white">
-            <DropdownMenuLabel>Filter Projects</DropdownMenuLabel>
-            <DropdownMenuSeparator />
+          <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-slate-800 dark:border-slate-700">
+            <DropdownMenuLabel className="dark:text-slate-200">Filter Projects</DropdownMenuLabel>
+            <DropdownMenuSeparator className="dark:bg-slate-700" />
             
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
+              <DropdownMenuSubTrigger className="dark:text-slate-200 dark:focus:bg-slate-700">
                 <span>Project Type</span>
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
-                <DropdownMenuSubContent className="bg-white">
+                <DropdownMenuSubContent className="bg-white dark:bg-slate-800 dark:border-slate-700">
                   {projectTypes.map((type) => (
                     <DropdownMenuCheckboxItem
                       key={type}
                       checked={filterType === type}
                       onCheckedChange={() => handleFilterChange(type)}
+                      className="dark:text-slate-200 dark:focus:bg-slate-700"
                     >
                       {type}
                     </DropdownMenuCheckboxItem>
@@ -134,16 +135,17 @@ export const DashboardProjectFilters: React.FC<DashboardProjectFiltersProps> = (
             </DropdownMenuSub>
             
             <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
+              <DropdownMenuSubTrigger className="dark:text-slate-200 dark:focus:bg-slate-700">
                 <span>Language</span>
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
-                <DropdownMenuSubContent className="bg-white">
+                <DropdownMenuSubContent className="bg-white dark:bg-slate-800 dark:border-slate-700">
                   {languages.map((language) => (
                     <DropdownMenuCheckboxItem
                       key={language}
                       checked={filterLanguage === language}
                       onCheckedChange={() => handleLanguageChange(language)}
+                      className="dark:text-slate-200 dark:focus:bg-slate-700"
                     >
                       {language}
                     </DropdownMenuCheckboxItem>
@@ -152,10 +154,10 @@ export const DashboardProjectFilters: React.FC<DashboardProjectFiltersProps> = (
               </DropdownMenuPortal>
             </DropdownMenuSub>
             
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="dark:bg-slate-700" />
             
             <div className="px-2 py-1.5 flex items-center justify-between">
-              <span className="text-sm">Active Projects Only</span>
+              <span className="text-sm dark:text-slate-300">Active Projects Only</span>
               <Switch 
                 checked={showActiveOnly} 
                 onCheckedChange={handleActiveToggle} 
@@ -170,18 +172,22 @@ export const DashboardProjectFilters: React.FC<DashboardProjectFiltersProps> = (
               variant="outline" 
               size="sm" 
               className={cn(
-                "h-10 gap-2 border-slate-200 transition-all hover:border-brand-200 hover:bg-brand-50",
-                isSortActive && "bg-brand-50 border-brand-200 text-brand-700"
+                "h-10 gap-2 border-slate-200 dark:border-slate-700 dark:text-slate-200 transition-all hover:border-brand-200 dark:hover:border-brand-700 hover:bg-brand-50 dark:hover:bg-brand-900/20",
+                isSortActive && "bg-brand-50 dark:bg-brand-900/20 border-brand-200 dark:border-brand-700 text-brand-700 dark:text-brand-300"
               )}
             >
               <ArrowUpDown className="h-4 w-4" />
               <span>Sort</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-white">
+          <DropdownMenuContent align="end" className="bg-white dark:bg-slate-800 dark:border-slate-700">
             <DropdownMenuRadioGroup value={sortOrder} onValueChange={handleSortChange}>
               {sortOptions.map((option) => (
-                <DropdownMenuRadioItem key={option.value} value={option.value}>
+                <DropdownMenuRadioItem 
+                  key={option.value} 
+                  value={option.value}
+                  className="dark:text-slate-200 dark:focus:bg-slate-700"
+                >
                   {option.label}
                 </DropdownMenuRadioItem>
               ))}

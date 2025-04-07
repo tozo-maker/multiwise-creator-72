@@ -19,6 +19,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/dashboard/EmptyStates';
 import { motion } from 'framer-motion';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const chartConfig = {
   contentGeneration: {
@@ -39,42 +40,44 @@ const chartConfig = {
 
 export const DashboardStats: React.FC = () => {
   const { projectStats, activityData, contentGenerationData, isLoading } = useDashboard();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const statCards = [
     {
       title: 'Total Projects',
       value: projectStats.totalProjects,
-      icon: <BookText className="h-5 w-5 text-indigo-600" />,
+      icon: <BookText className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
       trend: '+12% from last month',
       trendUp: true,
-      backgroundColor: 'bg-indigo-50',
+      backgroundColor: 'bg-indigo-50 dark:bg-indigo-950/30',
       ariaLabel: 'Total projects count'
     },
     {
       title: 'Active Projects',
       value: projectStats.activeProjects,
-      icon: <Activity className="h-5 w-5 text-green-600" />,
+      icon: <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />,
       trend: '+5% from last month',
       trendUp: true,
-      backgroundColor: 'bg-green-50',
+      backgroundColor: 'bg-green-50 dark:bg-green-950/30',
       ariaLabel: 'Active projects count'
     },
     {
       title: 'Content Created',
       value: projectStats.contentCount,
-      icon: <FileText className="h-5 w-5 text-blue-600" />,
+      icon: <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
       trend: '+25% from last month',
       trendUp: true,
-      backgroundColor: 'bg-blue-50',
+      backgroundColor: 'bg-blue-50 dark:bg-blue-950/30',
       ariaLabel: 'Content items count'
     },
     {
       title: 'Knowledge Base Files',
       value: projectStats.knowledgeBaseFiles,
-      icon: <Bookmark className="h-5 w-5 text-amber-600" />,
+      icon: <Bookmark className="h-5 w-5 text-amber-600 dark:text-amber-400" />,
       trend: '+8% from last month',
       trendUp: true,
-      backgroundColor: 'bg-amber-50',
+      backgroundColor: 'bg-amber-50 dark:bg-amber-950/30',
       ariaLabel: 'Knowledge base files count'
     }
   ];
@@ -99,32 +102,32 @@ export const DashboardStats: React.FC = () => {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
+            <Card key={i} className="dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="pt-6">
-                <Skeleton className="h-4 w-1/2 mb-4" />
-                <Skeleton className="h-8 w-1/3 mb-4" />
-                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-4 w-1/2 mb-4 dark:bg-slate-700" />
+                <Skeleton className="h-8 w-1/3 mb-4 dark:bg-slate-700" />
+                <Skeleton className="h-4 w-2/3 dark:bg-slate-700" />
               </CardContent>
             </Card>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="col-span-1">
+          <Card className="col-span-1 dark:bg-slate-800 dark:border-slate-700">
             <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-1/3" />
+              <Skeleton className="h-6 w-1/3 dark:bg-slate-700" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-[240px] w-full" />
+              <Skeleton className="h-[240px] w-full dark:bg-slate-700" />
             </CardContent>
           </Card>
 
-          <Card className="col-span-1">
+          <Card className="col-span-1 dark:bg-slate-800 dark:border-slate-700">
             <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-1/3" />
+              <Skeleton className="h-6 w-1/3 dark:bg-slate-700" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-[240px] w-full" />
+              <Skeleton className="h-[240px] w-full dark:bg-slate-700" />
             </CardContent>
           </Card>
         </div>
@@ -141,13 +144,13 @@ export const DashboardStats: React.FC = () => {
     >
       <motion.div variants={itemAnimation} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (
-          <Card key={index} className="border border-slate-200 transition-all hover:shadow-md bg-gradient-to-br from-white to-slate-50">
+          <Card key={index} className="border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md dark:hover:shadow-slate-800/30 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/80">
             <CardContent className="pt-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-                  <h3 className="text-2xl font-bold mt-1 text-slate-800" aria-label={stat.ariaLabel}>{stat.value}</h3>
-                  <p className={`text-xs mt-1 flex items-center ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.title}</p>
+                  <h3 className="text-2xl font-bold mt-1 text-slate-800 dark:text-slate-100" aria-label={stat.ariaLabel}>{stat.value}</h3>
+                  <p className={`text-xs mt-1 flex items-center ${stat.trendUp ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                     {stat.trendUp ? <ArrowUpRight className="h-3 w-3 mr-1" /> : null}
                     {stat.trend}
                   </p>
@@ -162,9 +165,9 @@ export const DashboardStats: React.FC = () => {
       </motion.div>
 
       <motion.div variants={itemAnimation} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="col-span-1 border border-slate-200 transition-all hover:shadow-md backdrop-blur-sm bg-gradient-to-br from-white to-slate-50">
+        <Card className="col-span-1 border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md dark:hover:shadow-slate-800/30 backdrop-blur-sm bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/80">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center">
+            <CardTitle className="text-lg flex items-center dark:text-white">
               <BarChart2 className="h-5 w-5 mr-2 text-brand-500" />
               Content Generation Trend
             </CardTitle>
@@ -182,24 +185,26 @@ export const DashboardStats: React.FC = () => {
                   >
                     <defs>
                       <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
+                        <stop offset="5%" stopColor={isDark ? "#a78bfa" : "#8b5cf6"} stopOpacity={0.8} />
+                        <stop offset="95%" stopColor={isDark ? "#a78bfa" : "#8b5cf6"} stopOpacity={0.1} />
                       </linearGradient>
                     </defs>
                     <XAxis 
                       dataKey="date" 
                       axisLine={false}
                       tickLine={false}
+                      stroke={isDark ? "#64748b" : "#94a3b8"}
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(value) => `${value}`}
+                      stroke={isDark ? "#64748b" : "#94a3b8"}
                     />
                     <CartesianGrid 
                       strokeDasharray="3 3" 
                       vertical={false} 
-                      stroke="#f1f5f9"
+                      stroke={isDark ? "#334155" : "#f1f5f9"}
                     />
                     <ChartTooltip
                       content={
@@ -209,7 +214,7 @@ export const DashboardStats: React.FC = () => {
                     <Area 
                       type="monotone" 
                       dataKey="count" 
-                      stroke="#8b5cf6" 
+                      stroke={isDark ? "#a78bfa" : "#8b5cf6"} 
                       fillOpacity={1} 
                       fill="url(#colorCount)" 
                       activeDot={{ r: 6, strokeWidth: 0 }}
@@ -228,9 +233,9 @@ export const DashboardStats: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="col-span-1 border border-slate-200 transition-all hover:shadow-md backdrop-blur-sm bg-gradient-to-br from-white to-slate-50">
+        <Card className="col-span-1 border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md dark:hover:shadow-slate-800/30 backdrop-blur-sm bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/80">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center">
+            <CardTitle className="text-lg flex items-center dark:text-white">
               <Activity className="h-5 w-5 mr-2 text-brand-500" />
               Project Activity
             </CardTitle>
@@ -250,16 +255,18 @@ export const DashboardStats: React.FC = () => {
                       dataKey="name" 
                       axisLine={false}
                       tickLine={false}
+                      stroke={isDark ? "#64748b" : "#94a3b8"}
                     />
                     <YAxis 
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(value) => `${value}`}
+                      stroke={isDark ? "#64748b" : "#94a3b8"}
                     />
                     <CartesianGrid 
                       strokeDasharray="3 3" 
                       vertical={false}
-                      stroke="#f1f5f9"
+                      stroke={isDark ? "#334155" : "#f1f5f9"}
                     />
                     <ChartTooltip
                       content={
@@ -269,7 +276,7 @@ export const DashboardStats: React.FC = () => {
                     <Bar 
                       dataKey="value" 
                       name="activity"
-                      fill="#8b5cf6" 
+                      fill={isDark ? "#a78bfa" : "#8b5cf6"} 
                       radius={[4, 4, 0, 0]}
                       className="transition-all duration-300 hover:opacity-80"
                     />

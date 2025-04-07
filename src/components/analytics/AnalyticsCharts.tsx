@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bar, BarChart, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const lineData = [
   {
@@ -58,12 +59,19 @@ const barData = [
 ];
 
 export const AnalyticsCharts = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
+  const chartStrokeColor = isDark ? "#64748b" : "#888888";
+  const lineStrokeColor = isDark ? "#a78bfa" : "#8884d8";
+  const barFillColor = isDark ? "#a78bfa" : "#8884d8";
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-      <Card className="col-span-4">
+      <Card className="col-span-4 dark:bg-slate-800 dark:border-slate-700">
         <CardHeader>
-          <CardTitle>Project Activity</CardTitle>
-          <CardDescription>
+          <CardTitle className="dark:text-white">Project Activity</CardTitle>
+          <CardDescription className="dark:text-slate-400">
             Monthly project activity and content generation
           </CardDescription>
         </CardHeader>
@@ -72,13 +80,13 @@ export const AnalyticsCharts = () => {
             <LineChart data={lineData}>
               <XAxis
                 dataKey="name"
-                stroke="#888888"
+                stroke={chartStrokeColor}
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                stroke="#888888"
+                stroke={chartStrokeColor}
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -87,7 +95,7 @@ export const AnalyticsCharts = () => {
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#8884d8"
+                stroke={lineStrokeColor}
                 strokeWidth={2}
                 activeDot={{ r: 8 }}
               />
@@ -95,10 +103,10 @@ export const AnalyticsCharts = () => {
           </ResponsiveContainer>
         </CardContent>
       </Card>
-      <Card className="col-span-3">
+      <Card className="col-span-3 dark:bg-slate-800 dark:border-slate-700">
         <CardHeader>
-          <CardTitle>Project Distribution</CardTitle>
-          <CardDescription>
+          <CardTitle className="dark:text-white">Project Distribution</CardTitle>
+          <CardDescription className="dark:text-slate-400">
             Projects by subject area
           </CardDescription>
         </CardHeader>
@@ -107,13 +115,13 @@ export const AnalyticsCharts = () => {
             <BarChart data={barData}>
               <XAxis
                 dataKey="name"
-                stroke="#888888"
+                stroke={chartStrokeColor}
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                stroke="#888888"
+                stroke={chartStrokeColor}
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -121,7 +129,7 @@ export const AnalyticsCharts = () => {
               />
               <Bar
                 dataKey="total"
-                fill="#8884d8"
+                fill={barFillColor}
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>

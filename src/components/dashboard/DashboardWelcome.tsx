@@ -21,7 +21,7 @@ export const DashboardWelcome = ({ userName, hasProjects, className }: Dashboard
   };
 
   return (
-    <Card className={`border-brand-200 dark:border-brand-800 bg-gradient-to-br from-brand-50 to-slate-50 dark:from-brand-900/30 dark:to-slate-900/50 ${className}`}>
+    <Card className={`border-brand-200 dark:border-brand-800/50 bg-gradient-to-br from-brand-50 to-slate-50 dark:from-brand-900/30 dark:to-slate-800/50 ${className}`}>
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
@@ -53,7 +53,7 @@ export const DashboardWelcome = ({ userName, hasProjects, className }: Dashboard
             <img 
               src="/dashboard-illustration.svg" 
               alt="Dashboard illustration" 
-              className="h-24 w-auto"
+              className="h-24 w-auto dark:opacity-80"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
