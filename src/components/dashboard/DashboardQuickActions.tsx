@@ -14,7 +14,7 @@ export const DashboardQuickActions = ({ hasProjects, className }: DashboardQuick
   const navigate = useNavigate();
 
   return (
-    <Card className={`${className} dark:bg-slate-800 dark:border-slate-700`}>
+    <Card className={`${className} dark:bg-slate-800 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow backdrop-blur-sm`}>
       <CardHeader>
         <CardTitle className="text-lg font-semibold dark:text-white">Quick Actions</CardTitle>
         <CardDescription className="dark:text-slate-400">Frequently used functions and shortcuts</CardDescription>

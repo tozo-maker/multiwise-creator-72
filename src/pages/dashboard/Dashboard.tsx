@@ -30,7 +30,7 @@ const DashboardContent = () => {
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 text-brand-500 animate-spin" />
-          <p className="text-slate-500">Loading your dashboard...</p>
+          <p className="text-slate-500 dark:text-slate-400">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -92,9 +92,8 @@ const DashboardContent = () => {
           transition={{ duration: 0.5, delay: 0.5 }}
         >
           <div className="space-y-8">
-            <DashboardQuickActions hasProjects={true} className="border-slate-200 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-slate-50" />
-            
-            <DashboardActivityTimeline className="border-slate-200 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-slate-50" />
+            <DashboardQuickActions hasProjects={true} />
+            <DashboardActivityTimeline />
           </div>
         </motion.div>
       </div>

@@ -62,7 +62,7 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   const displayActivities = activities || defaultActivities;
 
   return (
-    <Card className={`${className} border border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800`}>
+    <Card className={`${className} border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800 backdrop-blur-sm`}>
       <CardHeader>
         <CardTitle className="text-lg font-semibold dark:text-white">Recent Activity</CardTitle>
         <CardDescription className="dark:text-slate-400">Your recent project activities</CardDescription>

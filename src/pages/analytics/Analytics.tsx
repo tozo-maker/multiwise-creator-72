@@ -21,8 +21,12 @@ import {
   Cell,
   PieChart as RechartsPieChart
 } from 'recharts';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const Analytics = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   // Sample data for charts
   const performanceData = [
     { month: 'Jan', engagement: 65, completion: 40, progress: 24 },
@@ -57,8 +61,8 @@ export const Analytics = () => {
         </div>
         
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-3xl font-bold tracking-tight dark:text-white">Analytics</h2>
+          <p className="text-muted-foreground dark:text-slate-400">
             Your project stats and performance metrics.
           </p>
         </div>
@@ -66,10 +70,10 @@ export const Analytics = () => {
         <AnalyticsOverview />
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card className="border border-slate-200">
+          <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LineChart className="h-5 w-5 text-slate-500" />
+              <CardTitle className="flex items-center gap-2 dark:text-white">
+                <LineChart className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                 Project Performance
               </CardTitle>
             </CardHeader>
@@ -80,10 +84,10 @@ export const Analytics = () => {
                     data={performanceData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" opacity={isDark ? 0.1 : 0.15} stroke={isDark ? "#475569" : undefined} />
+                    <XAxis dataKey="month" stroke={isDark ? "#94a3b8" : undefined} />
+                    <YAxis stroke={isDark ? "#94a3b8" : undefined} />
+                    <Tooltip contentStyle={isDark ? { backgroundColor: '#1e293b', borderColor: '#475569', color: '#f8fafc' } : undefined} />
                     <Legend />
                     <Bar dataKey="engagement" name="Engagement" fill="#8884d8" />
                     <Bar dataKey="completion" name="Completion" fill="#82ca9d" />
@@ -94,10 +98,10 @@ export const Analytics = () => {
             </CardContent>
           </Card>
           
-          <Card className="border border-slate-200">
+          <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="h-5 w-5 text-slate-500" />
+              <CardTitle className="flex items-center gap-2 dark:text-white">
+                <PieChart className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                 Content Type Distribution
               </CardTitle>
             </CardHeader>
@@ -119,7 +123,7 @@ export const Analytics = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip contentStyle={isDark ? { backgroundColor: '#1e293b', borderColor: '#475569', color: '#f8fafc' } : undefined} />
                     <Legend />
                   </RechartsPieChart>
                 </ResponsiveContainer>

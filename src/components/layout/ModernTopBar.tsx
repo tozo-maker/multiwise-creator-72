@@ -4,7 +4,6 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { SearchBar } from '@/components/layout/search/SearchBar';
 import { NotificationPanel } from './notifications/NotificationPanel';
-import { UserMenu } from './user/UserMenu';
 import { ThemeToggle } from './theme/ThemeToggle';
 import { NewProjectButton } from '../projects/NewProjectButton';
 import { HelpCircle } from 'lucide-react';
@@ -43,8 +42,6 @@ export const ModernTopBar = () => {
         </Button>
 
         <NotificationPanel />
-        
-        <UserMenu />
       </div>
     </header>
   );
