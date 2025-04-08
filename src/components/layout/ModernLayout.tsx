@@ -24,10 +24,10 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
       case 'narrow':
         return 'max-w-4xl';
       case 'default':
-        return 'max-w-7xl'; // Increased from max-w-6xl for consistency
+        return 'max-w-7xl'; 
       case 'wide':
       default:
-        return 'max-w-full px-4 md:px-6'; // Changed to full width with padding
+        return 'max-w-full px-4 md:px-6';
     }
   };
 

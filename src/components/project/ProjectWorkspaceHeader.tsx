@@ -43,8 +43,8 @@ export const ProjectWorkspaceHeader: React.FC<ProjectWorkspaceHeaderProps> = ({
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{projectName}</h1>
           <div className="flex items-center space-x-2 mt-1">
-            <Badge variant="outline" className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{projectType}</Badge>
-            <Badge variant="outline" className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{targetLanguage}</Badge>
+            <Badge variant="outline" className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">{projectType}</Badge>
+            <Badge variant="outline" className="bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">{targetLanguage}</Badge>
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@ export const ProjectWorkspaceHeader: React.FC<ProjectWorkspaceHeaderProps> = ({
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-2"
+              className="gap-2 border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200"
               onClick={() => navigate(`/projects/${window.location.pathname.split('/')[2]}/configuration`)}
             >
               <Settings className="h-4 w-4" />
