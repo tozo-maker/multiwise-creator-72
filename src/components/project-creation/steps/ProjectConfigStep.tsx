@@ -16,7 +16,7 @@ interface ProjectConfigStepProps {
     complexity: string;
     templateId: string;
   };
-  updateData: (data: Partial<typeof ProjectConfigStepProps['data']>) => void;
+  updateData: (data: Partial<ProjectConfigStepProps['data']>) => void;
   isMobile?: boolean;
 }
 
@@ -78,7 +78,7 @@ export function ProjectConfigStep({ data, updateData, isMobile = false }: Projec
             <Label htmlFor="estimated-length" className="text-slate-900 dark:text-slate-200">Estimated Length</Label>
             <Select
               onValueChange={(value) => {
-                // Store this in your data structure if needed
+                // This is just a comment
               }}
               defaultValue="medium"
             >
@@ -89,7 +89,7 @@ export function ProjectConfigStep({ data, updateData, isMobile = false }: Projec
                 <SelectValue placeholder="Select length" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="short">Short (< 1 hour)</SelectItem>
+                <SelectItem value="short">Short (&#60; 1 hour)</SelectItem>
                 <SelectItem value="medium">Medium (1-3 hours)</SelectItem>
                 <SelectItem value="long">Long (3+ hours)</SelectItem>
               </SelectContent>
@@ -100,7 +100,7 @@ export function ProjectConfigStep({ data, updateData, isMobile = false }: Projec
             <Label htmlFor="format" className="text-slate-900 dark:text-slate-200">Format</Label>
             <Select
               onValueChange={(value) => {
-                // Store this in your data structure if needed
+                // This is just a comment
               }}
               defaultValue="text"
             >
