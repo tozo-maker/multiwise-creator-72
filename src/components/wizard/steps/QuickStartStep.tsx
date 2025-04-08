@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { 
   BookOpen, 
   GraduationCap, 
@@ -13,6 +12,7 @@ import {
 } from 'lucide-react';
 import { ConfigData } from '../types';
 import { TemplateCard } from './quick-start/TemplateCard';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface QuickStartStepProps {
   data: Pick<ConfigData, 'quickStart' | 'targetLanguage'>;
@@ -20,6 +20,8 @@ interface QuickStartStepProps {
 }
 
 export const QuickStartStep: React.FC<QuickStartStepProps> = ({ data, updateData }) => {
+  const { isDark } = useTheme();
+  
   // Define templates with their default settings
   const templates = [
     {
@@ -69,8 +71,13 @@ export const QuickStartStep: React.FC<QuickStartStepProps> = ({ data, updateData
 
   return (
     <div className="space-y-6">
-      <div className="text-sm text-muted-foreground">
-        Choose a starting point for your educational content project. You can customize all settings later.
+      <div>
+        <h2 className={`text-2xl font-semibold mb-2 ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+          Choose a Starting Point
+        </h2>
+        <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'} mb-6`}>
+          Select a template or start from scratch to configure your educational project.
+        </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

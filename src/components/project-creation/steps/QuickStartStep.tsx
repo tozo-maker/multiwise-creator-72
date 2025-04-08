@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { 
   BookOpen, 
   GraduationCap, 
@@ -12,6 +10,7 @@ import {
   Microscope,
   FileText
 } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface QuickStartStepProps {
   data: {
@@ -22,6 +21,8 @@ interface QuickStartStepProps {
 }
 
 export function QuickStartStep({ data, updateData }: QuickStartStepProps) {
+  const { isDark } = useTheme();
+  
   // Define templates
   const templates = [
     {
@@ -72,8 +73,10 @@ export function QuickStartStep({ data, updateData }: QuickStartStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-4 text-slate-100">Choose a Starting Point</h2>
-        <p className="text-slate-400 mb-6">
+        <h2 className={`text-2xl font-semibold mb-4 ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+          Choose a Starting Point
+        </h2>
+        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} mb-6`}>
           Select a template or start from scratch to configure your educational project.
         </p>
       </div>
@@ -82,25 +85,35 @@ export function QuickStartStep({ data, updateData }: QuickStartStepProps) {
         {templates.map((template) => (
           <Card 
             key={template.id}
-            className={`cursor-pointer border-2 transition-all hover:shadow-md bg-slate-800/30 ${
+            className={`cursor-pointer border transition-all hover:shadow-md ${
               data.templateId === template.id 
-                ? 'border-indigo-500' 
-                : 'border-slate-700'
+                ? isDark
+                  ? 'border-indigo-500 bg-indigo-900/30' 
+                  : 'border-brand-500 bg-brand-50/80'
+                : isDark
+                  ? 'border-slate-700 bg-slate-800/30'
+                  : 'border-slate-200 bg-white'
             }`}
             onClick={() => handleSelectTemplate(template.id)}
           >
             <CardContent className="p-6 flex items-start gap-4">
               <div className={`p-2 rounded-full ${
                 data.templateId === template.id 
-                  ? 'bg-indigo-900/50 text-indigo-400' 
-                  : 'bg-slate-800 text-slate-400'
+                  ? isDark
+                    ? 'bg-indigo-900/50 text-indigo-400' 
+                    : 'bg-brand-100 text-brand-700'
+                  : isDark
+                    ? 'bg-slate-800 text-slate-400'
+                    : 'bg-slate-100 text-slate-600'
               }`}>
                 <template.icon className="h-6 w-6" />
               </div>
               
               <div>
-                <h3 className="font-medium text-slate-100">{template.name}</h3>
-                <p className="text-sm text-slate-400 mt-1">
+                <h3 className={`font-medium ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+                  {template.name}
+                </h3>
+                <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   {template.description}
                 </p>
               </div>

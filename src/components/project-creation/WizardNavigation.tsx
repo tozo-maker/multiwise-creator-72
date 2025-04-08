@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface WizardNavigationProps {
   currentStep: number;
@@ -19,14 +20,20 @@ export function WizardNavigation({
 }: WizardNavigationProps) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === stepsCount - 1;
+  const { isDark } = useTheme();
 
   return (
-    <div className="flex justify-between p-6 border-t border-slate-700">
+    <div className={`flex justify-between p-6 border-t ${
+      isDark ? 'border-slate-700' : 'border-slate-200'
+    }`}>
       <Button 
         variant="outline" 
         onClick={onPrev}
         disabled={isFirstStep}
-        className="border-slate-600 dark:border-slate-600 text-slate-300 hover:bg-slate-700"
+        className={isDark 
+          ? "border-slate-600 text-slate-300 hover:bg-slate-700" 
+          : "border-slate-200 text-slate-700 hover:bg-slate-50"
+        }
       >
         Back
       </Button>
@@ -34,14 +41,20 @@ export function WizardNavigation({
       {!isLastStep ? (
         <Button 
           onClick={onNext} 
-          className="bg-indigo-600 hover:bg-indigo-500 text-white"
+          className={isDark
+            ? "bg-indigo-600 hover:bg-indigo-500 text-white"
+            : "bg-primary hover:bg-primary/90 text-white"
+          }
         >
           Continue
         </Button>
       ) : (
         <Button 
           onClick={onComplete} 
-          className="bg-indigo-600 hover:bg-indigo-500 text-white"
+          className={isDark
+            ? "bg-indigo-600 hover:bg-indigo-500 text-white"
+            : "bg-primary hover:bg-primary/90 text-white"
+          }
         >
           Create Project
         </Button>

@@ -24,8 +24,7 @@ export function ProjectWizard({ onComplete }: ProjectWizardProps) {
     handleCreate
   } = useProjectWizard(onComplete);
   
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { isDark } = useTheme();
   
   return (
     <div className="w-full space-y-6">

@@ -10,8 +10,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 export const CreateProject: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { isDark } = useTheme();
   
   const handleProjectCreated = (projectId: string) => {
     toast({
