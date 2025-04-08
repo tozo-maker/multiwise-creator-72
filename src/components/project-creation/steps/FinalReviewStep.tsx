@@ -16,7 +16,7 @@ interface FinalReviewStepProps {
     hasKnowledgeBase?: boolean;
     knowledgeBaseFiles?: string[];
   };
-  updateData?: (data: Partial<typeof FinalReviewStepProps.prototype.data>) => void;
+  updateData?: (data: Partial<FinalReviewStepProps['data']>) => void;
   isMobile?: boolean;
 }
 

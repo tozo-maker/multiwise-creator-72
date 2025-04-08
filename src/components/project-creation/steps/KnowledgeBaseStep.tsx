@@ -12,7 +12,7 @@ interface KnowledgeBaseStepProps {
     hasKnowledgeBase?: boolean;
     knowledgeBaseFiles?: string[];
   };
-  updateData: (data: Partial<typeof KnowledgeBaseStepProps.prototype.data>) => void;
+  updateData: (data: Partial<KnowledgeBaseStepProps['data']>) => void;
   isMobile?: boolean;
 }
 

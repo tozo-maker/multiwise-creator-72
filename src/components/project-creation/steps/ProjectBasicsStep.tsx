@@ -13,7 +13,7 @@ interface ProjectBasicsStepProps {
     targetAudience: string;
     complexity: string;
   };
-  updateData: (data: Partial<typeof ProjectBasicsStepProps.prototype.data>) => void;
+  updateData: (data: Partial<ProjectBasicsStepProps['data']>) => void;
   isMobile?: boolean;
 }
 
