@@ -38,7 +38,7 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
   ];
   
   return (
-    <div className="border-b border-slate-200 dark:border-slate-800 mb-6 overflow-x-auto">
+    <div className="border-b border-slate-700 mb-6 overflow-x-auto">
       <div className="flex space-x-8">
         {tabs.map((tab) => (
           <Link
@@ -47,8 +47,8 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
             className={cn(
               "pb-2 relative text-sm font-medium",
               isTabActive(tab.id)
-                ? "text-brand-500 dark:text-brand-400 border-b-2 border-brand-500 dark:border-brand-400"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                ? "text-indigo-400 border-b-2 border-indigo-500"
+                : "text-slate-400 hover:text-slate-300"
             )}
           >
             {tab.label}
