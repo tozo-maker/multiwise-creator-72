@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
@@ -7,9 +7,19 @@ import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ChevronRight, FileText, LineChart, Sparkles, CalendarClock, FileBox, AlertCircle } from 'lucide-react';
+import { ChevronRight, FileText, LineChart, Sparkles, CalendarClock, FileBox, AlertCircle, Download } from 'lucide-react';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/components/ui/use-toast';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+
+// Lazy load the analytics component for better performance
+const ProjectAnalyticsExport = lazy(() => 
+  import('@/components/analytics/ProjectAnalyticsExport').then(module => ({ 
+    default: module.ProjectAnalyticsExport 
+  }))
+);
 
 export const ProjectWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -68,6 +78,21 @@ export const ProjectWorkspace = () => {
     }
   ];
   
+  const handleExportProject = () => {
+    toast({
+      title: "Export initiated",
+      description: "Your project is being prepared for export.",
+    });
+    
+    // Simulate export process
+    setTimeout(() => {
+      toast({
+        title: "Export complete",
+        description: "Project exported successfully.",
+      });
+    }, 1500);
+  };
+  
   return (
     <ModernLayout contentWidth="wide">
       <div className="space-y-6">
@@ -75,11 +100,22 @@ export const ProjectWorkspace = () => {
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
         
-        <ProjectWorkspaceHeader 
-          projectName={project.name}
-          projectType={project.type}
-          targetLanguage={project.targetLanguage}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <ProjectWorkspaceHeader 
+            projectName={project.name}
+            projectType={project.type}
+            targetLanguage={project.targetLanguage}
+          />
+          
+          <Button 
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={handleExportProject}
+          >
+            <Download className="h-4 w-4" />
+            Export Project
+          </Button>
+        </div>
         
         <ProjectWorkspaceTabs projectId={project.id} />
         
@@ -144,6 +180,13 @@ export const ProjectWorkspace = () => {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Analytics & Exports Section */}
+        <ErrorBoundary>
+          <Suspense fallback={<Skeleton className="w-full h-[200px]" />}>
+            <ProjectAnalyticsExport projectId={projectId} />
+          </Suspense>
+        </ErrorBoundary>
         
         {/* Quick Actions Grid */}
         <div>

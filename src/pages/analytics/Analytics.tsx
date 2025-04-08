@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { AnalyticsOverview } from '@/components/analytics/AnalyticsOverview';
-import { AnalyticsCharts } from '@/components/analytics/AnalyticsCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, BarChart, PieChart, Calendar } from 'lucide-react';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { ProjectAnalyticsExport } from '@/components/analytics/ProjectAnalyticsExport';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -22,6 +23,11 @@ import {
   PieChart as RechartsPieChart
 } from 'recharts';
 import { useTheme } from '@/contexts/ThemeContext';
+
+// Lazy-loaded component for performance optimization
+const AnalyticsCharts = lazy(() => import('@/components/analytics/AnalyticsCharts').then(
+  module => ({ default: module.AnalyticsCharts })
+));
 
 export const Analytics = () => {
   const { theme } = useTheme();
@@ -55,7 +61,7 @@ export const Analytics = () => {
 
   return (
     <ModernLayout contentWidth="wide">
-      <div className="space-y-6">
+      <div className="space-y-6 analytics-container">
         <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
@@ -68,6 +74,28 @@ export const Analytics = () => {
         </div>
         
         <AnalyticsOverview />
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="md:col-span-2">
+            <ProjectAnalyticsExport />
+          </div>
+          
+          <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 dark:text-white">
+                <Calendar className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                Activity Calendar
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-48 flex items-center justify-center">
+                <p className="text-sm text-muted-foreground">
+                  Activity calendar coming soon
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800">
@@ -132,7 +160,9 @@ export const Analytics = () => {
           </Card>
         </div>
         
-        <AnalyticsCharts />
+        <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>
+          <AnalyticsCharts />
+        </Suspense>
       </div>
     </ModernLayout>
   );

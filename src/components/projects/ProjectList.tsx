@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { ProjectCard, ProjectCardProps } from './ProjectCard';
 import { NewProjectButton } from './NewProjectButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { Search, Filter, SortAsc, SortDesc, Download, BarChart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
@@ -14,6 +15,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 
 interface ProjectListProps {
   projects: ProjectCardProps[];
@@ -24,6 +27,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'progress'| 'name'>('newest');
   const [filterType, setFilterType] = useState<string | null>(null);
+  const navigate = useNavigate();
   
   const projectTypes = Array.from(new Set(projects.map(project => project.type)));
   
@@ -48,6 +52,26 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
     });
   
   const displayProjects = filteredProjects.slice(0, window.location.pathname === '/dashboard' ? 6 : filteredProjects.length);
+  
+  const handleExportData = () => {
+    toast({
+      title: "Export initiated",
+      description: "Your project data is being prepared for export.",
+    });
+    
+    // Simulate export process
+    setTimeout(() => {
+      toast({
+        title: "Export complete",
+        description: "Project data exported successfully.",
+      });
+      console.log("Project data export (would download CSV in production)");
+    }, 1500);
+  };
+  
+  const goToAnalytics = () => {
+    navigate('/analytics');
+  };
     
   if (isLoading) {
     return (
@@ -114,7 +138,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 project-list-container">
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
@@ -126,56 +150,81 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
           />
         </div>
         
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              {filterType || 'All Types'}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setFilterType(null)}>
-              All Types
-            </DropdownMenuItem>
-            {projectTypes.map(type => (
-              <DropdownMenuItem key={type} onClick={() => setFilterType(type)}>
-                {type}
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Filter className="h-4 w-4" />
+                {filterType || 'All Types'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setFilterType(null)}>
+                All Types
               </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              {projectTypes.map(type => (
+                <DropdownMenuItem key={type} onClick={() => setFilterType(type)}>
+                  {type}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                {sortOrder === 'newest' || sortOrder === 'progress' ? 
+                  <SortDesc className="h-4 w-4" /> : 
+                  <SortAsc className="h-4 w-4" />
+                }
+                Sort
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setSortOrder('newest')}>
+                Newest First
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortOrder('oldest')}>
+                Oldest First
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortOrder('progress')}>
+                Progress
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortOrder('name')}>
+                Name
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              {sortOrder === 'newest' || sortOrder === 'progress' ? 
-                <SortDesc className="h-4 w-4" /> : 
-                <SortAsc className="h-4 w-4" />
-              }
-              Sort
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setSortOrder('newest')}>
-              Newest First
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortOrder('oldest')}>
-              Oldest First
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortOrder('progress')}>
-              Progress
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortOrder('name')}>
-              Name
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        
-        <NewProjectButton className="ml-auto" />
+        <div className="ml-auto flex gap-2 items-center">
+          {window.location.pathname !== '/dashboard' && projects.length > 0 && (
+            <>
+              <Button 
+                variant="outline" 
+                className="gap-2" 
+                onClick={handleExportData}
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Export</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="gap-2" 
+                onClick={goToAnalytics}
+              >
+                <BarChart className="h-4 w-4" />
+                <span className="hidden sm:inline">Analytics</span>
+              </Button>
+            </>
+          )}
+          <NewProjectButton className="ml-auto" />
+        </div>
       </div>
 
       <AnimatePresence>
@@ -216,7 +265,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
           <Button 
             variant="outline" 
             className="border-dashed border-slate-300 transition-all hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600"
-            onClick={() => window.location.href = '/projects'}
+            onClick={() => navigate('/projects')}
           >
             View all {projects.length} projects
           </Button>
