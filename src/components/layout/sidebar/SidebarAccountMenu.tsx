@@ -32,11 +32,7 @@ export const SidebarAccountMenu = () => {
         </SidebarMenuButton>
       </SidebarMenuItem>
       
-      <SidebarMenuItem>
-        <SidebarMenuButton asChild tooltip="Account Settings">
-          
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      
       
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip="Help">
