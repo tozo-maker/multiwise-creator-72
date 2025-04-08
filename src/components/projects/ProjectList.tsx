@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ProjectCard, ProjectCardProps } from './ProjectCard';
 import { NewProjectButton } from './NewProjectButton';
@@ -26,10 +25,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'progress'| 'name'>('newest');
   const [filterType, setFilterType] = useState<string | null>(null);
   
-  // Get unique project types for filtering
   const projectTypes = Array.from(new Set(projects.map(project => project.type)));
   
-  // Filter projects based on search term and project type
   const filteredProjects = projects
     .filter(project => 
       project.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -38,7 +35,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
     .sort((a, b) => {
       switch (sortOrder) {
         case 'newest':
-          // Assuming higher IDs are newer
           return parseInt(b.id) - parseInt(a.id);
         case 'oldest':
           return parseInt(a.id) - parseInt(b.id);
@@ -51,10 +47,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
       }
     });
   
-  // Show up to 6 projects if on dashboard, or all if on projects page
   const displayProjects = filteredProjects.slice(0, window.location.pathname === '/dashboard' ? 6 : filteredProjects.length);
     
-  // Skeleton loading state
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -104,7 +98,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
     );
   }
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -122,7 +115,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
 
   return (
     <div className="space-y-4">
-      {/* Filter and search controls */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
@@ -186,7 +178,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
         <NewProjectButton className="ml-auto" />
       </div>
 
-      {/* Project grid */}
       <AnimatePresence>
         {displayProjects.length === 0 ? (
           <motion.div 
@@ -220,7 +211,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
         )}
       </AnimatePresence>
       
-      {/* "View all" button if there are more projects to show */}
       {window.location.pathname === '/dashboard' && projects.length > 6 && (
         <div className="col-span-full mt-6 text-center">
           <Button 
