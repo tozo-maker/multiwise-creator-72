@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -43,6 +42,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const LandingPage = lazy(() => import("./pages/auth/LandingPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
+const CreateProject = lazy(() => import("./pages/projects/CreateProject"));
 
 // Configure React Query with error handling
 const queryClient = new QueryClient({
@@ -148,7 +148,7 @@ const AppContent = () => {
             
             <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth/login" />} />
             <Route path="/projects" element={isAuthenticated ? <Projects /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/new" element={isAuthenticated ? <ConfigurationWizard /> : <Navigate to="/auth/login" />} />
+            <Route path="/projects/new" element={isAuthenticated ? <CreateProject /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId" element={isAuthenticated ? <ProjectWorkspace /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId/knowledge-base" element={isAuthenticated ? <KnowledgeBase /> : <Navigate to="/auth/login" />} />
             <Route path="/projects/:projectId/knowledge-base/advanced" element={isAuthenticated ? <KnowledgeBaseAdvanced /> : <Navigate to="/auth/login" />} />
