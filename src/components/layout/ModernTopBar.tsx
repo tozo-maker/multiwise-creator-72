@@ -30,7 +30,7 @@ export const ModernTopBar = () => {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="hidden sm:flex"
+          className="hidden sm:flex text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
           onClick={() => {
             toast({
               title: "Help panel opened",

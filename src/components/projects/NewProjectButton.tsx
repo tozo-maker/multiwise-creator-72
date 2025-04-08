@@ -19,7 +19,7 @@ export const NewProjectButton: React.FC<NewProjectButtonProps> = ({ className })
   return (
     <Button 
       onClick={handleClick}
-      className={cn("bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-2", className)}
+      className={cn("bg-brand-500 hover:bg-brand-600 text-white dark:text-white flex items-center gap-2", className)}
       size="sm"
     >
       <Plus className="h-4 w-4" />

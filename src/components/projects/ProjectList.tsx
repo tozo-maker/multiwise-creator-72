@@ -1,10 +1,9 @@
 
 import React, { useState } from 'react';
 import { ProjectCard, ProjectCardProps } from './ProjectCard';
-import { NewProjectButton } from './NewProjectButton';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, SortAsc, SortDesc, Download, BarChart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Filter, SortAsc, SortDesc, Download, BarChart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
@@ -17,6 +16,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { useDashboard } from '@/contexts/DashboardContext';
 
 interface ProjectListProps {
   projects: ProjectCardProps[];
@@ -24,16 +24,17 @@ interface ProjectListProps {
 }
 
 export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = false }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'progress'| 'name'>('newest');
+  // Get existing search term from DashboardContext to avoid duplicating functionality
+  const { searchTerm: globalSearchTerm } = useDashboard();
   const [filterType, setFilterType] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'progress'| 'name'>('newest');
   const navigate = useNavigate();
   
   const projectTypes = Array.from(new Set(projects.map(project => project.type)));
   
   const filteredProjects = projects
     .filter(project => 
-      project.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      project.name.toLowerCase().includes(globalSearchTerm.toLowerCase()) &&
       (filterType === null || project.type === filterType)
     )
     .sort((a, b) => {
@@ -77,7 +78,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap gap-4 mb-6">
-          <Skeleton className="h-10 w-48" />
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-10 w-32 ml-auto" />
         </div>
@@ -116,7 +116,13 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
         <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-1">No projects yet</h3>
         <p className="text-slate-500 dark:text-slate-400 mb-4">Get started by creating your first educational project</p>
         <div className="flex justify-center">
-          <NewProjectButton />
+          <Button 
+            onClick={() => navigate('/projects/new')}
+            className="bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-2"
+            size="sm"
+          >
+            <span>New Project</span>
+          </Button>
         </div>
       </motion.div>
     );
@@ -140,16 +146,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
   return (
     <div className="space-y-4 project-list-container">
       <div className="flex flex-wrap gap-4 mb-6">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-          <Input
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-white dark:bg-slate-800"
-          />
-        </div>
-        
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -223,7 +219,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
               </Button>
             </>
           )}
-          <NewProjectButton className="ml-auto" />
         </div>
       </div>
 
@@ -233,12 +228,11 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="text-center py-12 bg-white rounded-lg border border-dashed border-slate-300 dark:bg-slate-800 dark:border-slate-700"
+            className="text-center py-12 bg-white dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-700"
           >
             <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-1">No matching projects</h3>
             <p className="text-slate-500 dark:text-slate-400 mb-4">Try adjusting your search or filters</p>
             <Button variant="outline" onClick={() => {
-              setSearchTerm('');
               setFilterType(null);
             }}>
               Clear Filters

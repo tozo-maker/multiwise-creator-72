@@ -11,7 +11,7 @@ export const ThemeToggle = () => {
     <Button 
       variant="ghost" 
       size="icon" 
-      className="hidden sm:flex"
+      className="hidden sm:flex text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
       onClick={toggleTheme}
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >

@@ -1,11 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ModernTopBar } from './ModernTopBar';
 import { ModernSidebar } from './ModernSidebar';
 import { cn } from '@/lib/utils';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ModernLayoutProps {
@@ -17,7 +16,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
   children, 
   contentWidth = 'wide' 
 }) => {
-  const { theme } = useTheme();
   const isMobile = useIsMobile();
   
   // Map contentWidth to appropriate max-width classes
