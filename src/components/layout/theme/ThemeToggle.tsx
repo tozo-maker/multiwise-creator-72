@@ -6,8 +6,13 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeTooltip } from '@/components/shared/ThemeTooltip';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { SidebarMenuButton } from '@/components/ui/sidebar';
 
-export const ThemeToggle = () => {
+interface ThemeToggleProps {
+  isSidebar?: boolean;
+}
+
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ isSidebar = false }) => {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const isDark = theme === 'dark';
@@ -19,6 +24,24 @@ export const ThemeToggle = () => {
       description: `The application theme has been switched to ${isDark ? 'light' : 'dark'} mode.`,
     });
   };
+
+  if (isSidebar) {
+    return (
+      <SidebarMenuButton 
+        onClick={handleToggle}
+        tooltip={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      >
+        {isDark ? (
+          <Sun className="h-4 w-4" />
+        ) : (
+          <Moon className="h-4 w-4" />
+        )}
+        <span>
+          {isDark ? 'Light Mode' : 'Dark Mode'}
+        </span>
+      </SidebarMenuButton>
+    );
+  }
 
   return (
     <ThemeTooltip content={`Switch to ${isDark ? 'light' : 'dark'} mode`}>
