@@ -28,7 +28,7 @@ export const CreateProject: React.FC = () => {
     <ModernLayout contentWidth="wide">
       <div className="w-full bg-slate-900/90 dark:bg-slate-900/90 min-h-screen -mt-4 py-6">
         <div className="w-full">
-          <div className="px-6">
+          <div>
             <PageBreadcrumbs items={breadcrumbItems} />
             
             <div className="mb-6">
@@ -39,7 +39,7 @@ export const CreateProject: React.FC = () => {
             </div>
           </div>
           
-          <div className="px-6">
+          <div>
             <ProjectWizard
               onComplete={handleProjectCreated}
             />
