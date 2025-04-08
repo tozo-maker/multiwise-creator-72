@@ -6,6 +6,7 @@ import { SubjectSelector } from '@/components/wizard/steps/project-config/Subjec
 import { PedagogySelector } from '@/components/wizard/steps/project-config/PedagogySelector';
 import { EducationalLevelSelector } from '@/components/wizard/steps/project-config/EducationalLevelSelector';
 import { WordCountInput } from '@/components/wizard/steps/project-config/WordCountInput';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectConfigTabProps {
   configData: ConfigData;
@@ -13,9 +14,12 @@ interface ProjectConfigTabProps {
 }
 
 export const ProjectConfigTab: React.FC<ProjectConfigTabProps> = ({ configData, updateConfigData }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   return (
-    <div className="text-slate-300 space-y-8">
-      <p className="mb-6">Configure the project type, subjects, and educational standards.</p>
+    <div className={`${isDark ? 'text-slate-300' : 'text-slate-700'} space-y-8`}>
+      <p className={`mb-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Configure the project type, subjects, and educational standards.</p>
       
       <ProjectTypeSelector 
         projectType={configData.projectType}

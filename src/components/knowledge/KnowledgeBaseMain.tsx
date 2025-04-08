@@ -9,9 +9,12 @@ import { KnowledgeBaseAnalytics } from './KnowledgeBaseAnalytics';
 import { Button } from '@/components/ui/button';
 import { Plus, SearchIcon, TagIcon, FolderIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const KnowledgeBaseMain = () => {
   const { toast } = useToast();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   
   // Sample mock data for files
@@ -114,13 +117,13 @@ export const KnowledgeBaseMain = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Knowledge Base</h2>
-          <p className="text-muted-foreground">
+          <h2 className={`text-3xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Knowledge Base</h2>
+          <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
             Manage your educational resources and materials.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button>
+          <Button variant={isDark ? "outline" : "secondary"} className={isDark ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-slate-100'}>
             <SearchIcon className="mr-2 h-4 w-4" />
             Search
           </Button>
@@ -132,19 +135,19 @@ export const KnowledgeBaseMain = () => {
       </div>
 
       <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all">All Resources</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="images">Images</TabsTrigger>
-          <TabsTrigger value="videos">Videos</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <TabsList className={isDark ? 'bg-slate-800' : 'bg-slate-100'}>
+          <TabsTrigger value="all" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>All Resources</TabsTrigger>
+          <TabsTrigger value="documents" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>Documents</TabsTrigger>
+          <TabsTrigger value="images" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>Images</TabsTrigger>
+          <TabsTrigger value="videos" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>Videos</TabsTrigger>
+          <TabsTrigger value="analytics" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="all" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <Card className="col-span-2">
+            <Card className={`col-span-2 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
               <CardHeader>
-                <CardTitle>Recently Added</CardTitle>
-                <CardDescription>
+                <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Recently Added</CardTitle>
+                <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                   Your most recently added knowledge resources
                 </CardDescription>
               </CardHeader>
@@ -159,9 +162,9 @@ export const KnowledgeBaseMain = () => {
               </CardContent>
             </Card>
             <div className="space-y-4">
-              <Card>
+              <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
                 <CardHeader className="pb-3">
-                  <CardTitle>Categories</CardTitle>
+                  <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Categories</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <KnowledgeBaseCategories 
@@ -172,9 +175,9 @@ export const KnowledgeBaseMain = () => {
                   />
                 </CardContent>
               </Card>
-              <Card>
+              <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
                 <CardHeader className="pb-3">
-                  <CardTitle>Upload</CardTitle>
+                  <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Upload</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
@@ -191,9 +194,9 @@ export const KnowledgeBaseMain = () => {
           />
         </TabsContent>
         <TabsContent value="documents" className="space-y-4">
-          <Card>
+          <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
             <CardHeader>
-              <CardTitle>Documents</CardTitle>
+              <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Documents</CardTitle>
             </CardHeader>
             <CardContent>
               <KnowledgeBaseFileList 
@@ -207,22 +210,22 @@ export const KnowledgeBaseMain = () => {
           </Card>
         </TabsContent>
         <TabsContent value="images" className="space-y-4">
-          <Card>
+          <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
             <CardHeader>
-              <CardTitle>Images</CardTitle>
+              <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Images</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Image resources will be displayed here.</p>
+              <p className={isDark ? 'text-slate-300' : 'text-slate-600'}>Image resources will be displayed here.</p>
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="videos" className="space-y-4">
-          <Card>
+          <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
             <CardHeader>
-              <CardTitle>Videos</CardTitle>
+              <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Videos</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Video resources will be displayed here.</p>
+              <p className={isDark ? 'text-slate-300' : 'text-slate-600'}>Video resources will be displayed here.</p>
             </CardContent>
           </Card>
         </TabsContent>

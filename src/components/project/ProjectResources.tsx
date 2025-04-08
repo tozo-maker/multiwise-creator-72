@@ -1,116 +1,81 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ChevronRight, FileText, FileBox, AlertCircle } from 'lucide-react';
+import { FileText, Plus, Book, Link as LinkIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectResourcesProps {
   projectId: string;
 }
 
 export const ProjectResources: React.FC<ProjectResourcesProps> = ({ projectId }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
+  const resources = [
+    {
+      id: 1,
+      title: 'Curriculum Standards',
+      type: 'PDF',
+      date: '2023-04-10',
+      icon: FileText
+    },
+    {
+      id: 2,
+      title: 'Chapter 1 Draft',
+      type: 'DOCX',
+      date: '2023-04-15',
+      icon: Book
+    },
+    {
+      id: 3,
+      title: 'External Resources',
+      type: 'URL',
+      date: '2023-04-18',
+      icon: LinkIcon
+    }
+  ];
+  
   return (
-    <div>
-      <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Project Resources</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Content Section */}
-        <Card className="border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow">
-          <CardHeader className="p-4 pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Content</CardTitle>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0">
-                    <Link to={`/projects/${projectId}/content`}>
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Go to Content</p>
-                </TooltipContent>
-              </Tooltip>
+    <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className={`text-xl ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>Project Resources</CardTitle>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className={`${
+            isDark 
+              ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' 
+              : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+          }`}
+          asChild
+        >
+          <Link to={`/projects/${projectId}/knowledge-base`}>
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add Resource
+          </Link>
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="divide-y divide-slate-700">
+          {resources.map(resource => (
+            <div key={resource.id} className={`flex items-center gap-3 py-3 ${isDark ? 'divide-slate-700' : 'divide-slate-200'}`}>
+              <div className={`w-8 h-8 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-100'} flex items-center justify-center flex-shrink-0`}>
+                <resource.icon className={`h-4 w-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className={`text-sm font-medium truncate ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{resource.title}</p>
+                <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{resource.type} • {resource.date}</p>
+              </div>
+              <Button variant="ghost" size="sm" className={`px-2 ${isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'}`}>
+                View
+              </Button>
             </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-1 pb-4">
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-              Create and manage educational content for your project.
-            </p>
-            <Button asChild variant="outline" size="sm" className="w-full justify-between">
-              <Link to={`/projects/${projectId}/content/new`}>
-                <span>Create New Content</span>
-                <FileText className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Knowledge Base */}
-        <Card className="border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow">
-          <CardHeader className="p-4 pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Knowledge Base</CardTitle>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0">
-                    <Link to={`/projects/${projectId}/knowledge-base`}>
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Go to Knowledge Base</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-1 pb-4">
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-              Manage reference materials and context files for your project.
-            </p>
-            <Button asChild variant="outline" size="sm" className="w-full justify-between">
-              <Link to={`/projects/${projectId}/knowledge-base`}>
-                <span>Manage Knowledge Base</span>
-                <FileBox className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Snapshots */}
-        <Card className="border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow">
-          <CardHeader className="p-4 pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Snapshots</CardTitle>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" asChild className="h-7 w-7 p-0">
-                    <Link to={`/projects/${projectId}/snapshots`}>
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Go to Snapshots</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-1 pb-4">
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-              View and restore previous versions of your project content.
-            </p>
-            <Button asChild variant="outline" size="sm" className="w-full justify-between">
-              <Link to={`/projects/${projectId}/snapshots`}>
-                <span>View Snapshots</span>
-                <AlertCircle className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

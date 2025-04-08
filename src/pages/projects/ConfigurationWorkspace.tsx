@@ -103,7 +103,7 @@ export const ConfigurationWorkspace = () => {
         
         <Card className={isDark 
           ? 'bg-slate-800 border-slate-700' 
-          : 'bg-white border-slate-200'
+          : 'bg-white border-slate-200 shadow-sm'
         }>
           <CardHeader>
             <CardTitle className={`text-xl ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
