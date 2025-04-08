@@ -16,7 +16,7 @@ interface ProjectData {
   language: string;
   targetAudience: string;
   complexity: string;
-  templateId?: string;
+  templateId: string; // Changed from optional to required
   quickStart?: string;
   hasKnowledgeBase?: boolean;
   knowledgeBaseFiles?: string[];
@@ -39,6 +39,7 @@ export function ProjectWizard({
     targetAudience: '',
     complexity: 'Intermediate',
     quickStart: 'custom',
+    templateId: '', // Add a default value
   });
   const { toast } = useToast();
   
