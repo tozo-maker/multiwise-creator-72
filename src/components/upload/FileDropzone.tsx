@@ -1,8 +1,9 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useCallback, KeyboardEvent } from 'react';
 import { Upload, File, X, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface FileDropzoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -11,6 +12,7 @@ interface FileDropzoneProps {
   maxFiles?: number;
   className?: string;
   showSelectedFiles?: boolean;
+  id?: string;
 }
 
 export const FileDropzone: React.FC<FileDropzoneProps> = ({
@@ -20,13 +22,15 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
   maxFiles = 10,
   className,
   showSelectedFiles = true,
+  id = "file-dropzone",
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const { isDark } = useTheme();
 
-  const validateFiles = (files: File[]): File[] => {
+  const validateFiles = useCallback((files: File[]): File[] => {
     setError(null);
     
     if (files.length === 0) return [];
@@ -64,9 +68,9 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
     });
     
     return validFiles;
-  };
+  }, [accept, maxFiles, maxSize]);
 
-  const handleDrag = (e: React.DragEvent) => {
+  const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -75,9 +79,9 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
     } else if (e.type === "dragleave") {
       setDragActive(false);
     }
-  };
+  }, []);
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -91,12 +95,12 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         onFilesSelected(validFiles);
       }
     }
-  };
+  }, [validateFiles, onFilesSelected]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const selectedFiles = Array.from(e.target.files);
-      const validFiles = validateFiles(selectedFiles);
+      const newSelectedFiles = Array.from(e.target.files);
+      const validFiles = validateFiles(newSelectedFiles);
       
       if (validFiles.length > 0) {
         setSelectedFiles(prev => [...prev, ...validFiles]);
@@ -108,12 +112,22 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
         fileInputRef.current.value = '';
       }
     }
-  };
+  }, [validateFiles, onFilesSelected]);
 
-  const removeFile = (fileName: string) => {
-    const newFiles = selectedFiles.filter(file => file.name !== fileName);
-    setSelectedFiles(newFiles);
-  };
+  const removeFile = useCallback((fileName: string) => {
+    setSelectedFiles(prev => {
+      const newFiles = prev.filter(file => file.name !== fileName);
+      return newFiles;
+    });
+  }, []);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
+    // Trigger file selection on Enter or Space
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInputRef.current?.click();
+    }
+  }, []);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) {
@@ -130,30 +144,37 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
       <div 
         className={cn(
           "border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-200",
-          dragActive ? "border-brand-500 bg-brand-50" : "border-slate-300 hover:border-brand-400",
+          dragActive ? "border-brand-500 bg-brand-50 dark:bg-brand-900/10" : 
+            "border-slate-300 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-600",
           className
         )}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label="Upload files by clicking or dragging them here"
+        id={id}
       >
         <div className="space-y-4">
-          <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-            <Upload className="h-6 w-6 text-slate-500" />
+          <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+            <Upload className="h-6 w-6 text-slate-500 dark:text-slate-400" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-sm font-medium">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
               Drag and drop files, or{" "}
               <button 
                 type="button"
-                className="text-brand-600 hover:text-brand-700 hover:underline" 
+                className="text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 rounded-sm" 
                 onClick={() => fileInputRef.current?.click()}
+                aria-label="Browse for files"
               >
                 browse
               </button>
             </p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Supports {accept.replace(/\./g, '').toUpperCase()} (Max {maxSize}MB per file)
             </p>
           </div>
@@ -164,38 +185,48 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
             onChange={handleFileChange}
             accept={accept}
             multiple={maxFiles > 1}
+            aria-hidden="true"
+            tabIndex={-1}
+            id={`${id}-input`}
           />
         </div>
       </div>
       
       {error && (
-        <div className="flex items-center gap-2 text-destructive text-sm mt-2">
-          <AlertCircle className="h-4 w-4" />
+        <div 
+          className="flex items-center gap-2 text-destructive text-sm mt-2" 
+          role="alert" 
+          aria-live="assertive"
+        >
+          <AlertCircle className="h-4 w-4" aria-hidden="true" />
           <span>{error}</span>
         </div>
       )}
       
       {showSelectedFiles && selectedFiles.length > 0 && (
-        <div className="mt-4 space-y-2">
-          <p className="text-sm font-medium">Selected files:</p>
-          {selectedFiles.map((file, index) => (
-            <div key={index} className="flex items-center justify-between bg-slate-50 rounded-md p-2 text-sm">
-              <div className="flex items-center gap-2">
-                <File className="h-4 w-4 text-slate-500" />
-                <span className="truncate max-w-[200px]">{file.name}</span>
-                <span className="text-slate-500 text-xs">{formatFileSize(file.size)}</span>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => removeFile(file.name)}
-              >
-                <X className="h-4 w-4 text-slate-500" />
-              </Button>
-            </div>
-          ))}
+        <div className="mt-4 space-y-2" aria-label="Selected files">
+          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Selected files:</p>
+          <ul aria-label={`${selectedFiles.length} files selected`}>
+            {selectedFiles.map((file, index) => (
+              <li key={index} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800 rounded-md p-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <File className="h-4 w-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
+                  <span className="truncate max-w-[200px]">{file.name}</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-xs">{formatFileSize(file.size)}</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => removeFile(file.name)}
+                  aria-label={`Remove ${file.name}`}
+                >
+                  <X className="h-4 w-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
+                </Button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

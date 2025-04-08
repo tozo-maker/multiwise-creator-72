@@ -11,14 +11,16 @@ interface DashboardLayoutProps {
   animate?: boolean;
   pageTitle?: string;
   pageDescription?: string;
+  mainId?: string;
 }
 
-export function DashboardLayout({ 
+export const DashboardLayout = React.memo(function DashboardLayout({ 
   children, 
   contentWidth = 'wide',
   animate = true,
   pageTitle,
-  pageDescription
+  pageDescription,
+  mainId = 'main-content'
 }: DashboardLayoutProps) {
   const { isDark } = useTheme();
   
@@ -29,17 +31,36 @@ export function DashboardLayout({
     } else {
       document.title = 'MultiGuide Dashboard';
     }
+    
+    // Return a cleanup function to reset the title when unmounting
+    return () => {
+      document.title = 'MultiGuide Dashboard';
+    };
   }, [pageTitle]);
   
+  // Create a valid id from the title for ARIA references
+  const titleId = pageTitle 
+    ? `dashboard-title-${pageTitle.replace(/\s+/g, '-').toLowerCase()}` 
+    : undefined;
+  
   const content = (
-    <div className="space-y-8" role="region" aria-label="Dashboard Content">
+    <main 
+      id={mainId}
+      className="space-y-8" 
+      role="main" 
+      aria-labelledby={titleId}
+      tabIndex={-1} // Allow programmatic focus but not tab focus
+    >
       {(pageTitle || pageDescription) && (
-        <div className="mb-8">
+        <header className="mb-8">
           {pageTitle && (
-            <h1 className={cn(
-              "text-2xl font-bold mb-1",
-              isDark ? "text-white" : "text-slate-900"
-            )}>
+            <h1 
+              id={titleId}
+              className={cn(
+                "text-2xl font-bold mb-1",
+                isDark ? "text-white" : "text-slate-900"
+              )}
+            >
               {pageTitle}
             </h1>
           )}
@@ -47,16 +68,15 @@ export function DashboardLayout({
             <p className={cn(
               "text-sm",
               isDark ? "text-slate-400" : "text-slate-600"
-            )}
-            aria-describedby={pageTitle ? `dashboard-title-${pageTitle.replace(/\s+/g, '-').toLowerCase()}` : undefined}>
+            )}>
               {pageDescription}
             </p>
           )}
-        </div>
+        </header>
       )}
       
       {children}
-    </div>
+    </main>
   );
   
   return (
@@ -73,4 +93,6 @@ export function DashboardLayout({
       ) : content}
     </ModernLayout>
   );
-}
+});
+
+DashboardLayout.displayName = 'DashboardLayout';
