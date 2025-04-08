@@ -4,25 +4,13 @@ import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
-import { Button } from '@/components/ui/button';
-import { Plus, FileText, FilePlus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-
-interface ContentItem {
-  id: string;
-  title: string;
-  type: string;
-  status: 'draft' | 'completed' | 'in-review';
-  lastModified: string;
-}
+import { ContentItemsCard } from '@/components/content/ContentItemsCard';
+import { QuickContentTemplates } from '@/components/content/QuickContentTemplates';
+import { type ContentItem } from '@/components/content/ContentItemsList';
 
 export const ContentWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
   
   // Mock project data - would normally be fetched based on ID
   const project = {
@@ -66,19 +54,6 @@ export const ContentWorkspace = () => {
     }
   ]);
   
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-      case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-      case 'in-review':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-      default:
-        return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300';
-    }
-  };
-
   const breadcrumbItems = [
     { label: 'Projects', path: '/projects' },
     { label: project.name, path: `/projects/${projectId}` },
@@ -102,120 +77,14 @@ export const ContentWorkspace = () => {
         
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2">
-            <Card className="bg-slate-800 border-slate-700">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl text-slate-100 flex justify-between items-center">
-                  <span>Content Items</span>
-                  <Button
-                    onClick={() => navigate(`/projects/${projectId}/content/new`)}
-                    size={isMobile ? "sm" : "default"}
-                    className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
-                  >
-                    <Plus className="h-4 w-4" />
-                    New Content
-                  </Button>
-                </CardTitle>
-                <CardDescription className="text-slate-400">
-                  Manage your educational content items
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {contentItems.length > 0 ? (
-                  <div className="space-y-3">
-                    {contentItems.map((item) => (
-                      <Card key={item.id} className="cursor-pointer hover:border-indigo-800 transition-colors bg-slate-700/50 border-slate-600">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-start space-x-3">
-                              <div className="h-10 w-10 rounded bg-slate-600 flex items-center justify-center flex-shrink-0">
-                                <FileText className="h-5 w-5 text-slate-300" />
-                              </div>
-                              <div>
-                                <h3 className="font-medium text-slate-100">{item.title}</h3>
-                                <div className="flex flex-wrap gap-2 mt-1">
-                                  <span className="text-xs text-slate-400">{item.type}</span>
-                                  <span className="text-xs text-slate-500">•</span>
-                                  <span className="text-xs text-slate-400">Last modified {item.lastModified}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center">
-                              <span className={`text-xs px-2 py-1 rounded-full capitalize ${getStatusBadgeClass(item.status)}`}>
-                                {item.status}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <Card className="border-dashed border-2 border-slate-700 bg-slate-800/50">
-                    <CardContent className="p-6 text-center">
-                      <div className="mx-auto w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mb-3">
-                        <FilePlus className="h-6 w-6 text-slate-300" />
-                      </div>
-                      <h3 className="font-medium text-slate-100 mb-1">No content items yet</h3>
-                      <p className="text-slate-400 text-sm mb-4">
-                        Start creating educational content for your project
-                      </p>
-                      <Button 
-                        onClick={() => navigate(`/projects/${projectId}/content/new`)}
-                        className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Create Content
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-              </CardContent>
-            </Card>
+            <ContentItemsCard 
+              projectId={project.id} 
+              contentItems={contentItems} 
+            />
           </div>
           
           <div>
-            <Card className="bg-slate-800 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-lg text-slate-100">Quick Content Creation</CardTitle>
-                <CardDescription className="text-slate-400">
-                  Generate new content with AI assistance
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full justify-start gap-2 mb-3 bg-indigo-600 hover:bg-indigo-700 text-white" 
-                  onClick={() => navigate(`/projects/${projectId}/content/new`)}
-                >
-                  <Plus className="h-4 w-4" />
-                  New Chapter/Section
-                </Button>
-                
-                <div className="text-sm text-slate-400 mb-4">
-                  Content templates:
-                </div>
-                
-                <div className="space-y-2">
-                  {[
-                    { name: 'Vocabulary List', description: 'Create a themed vocabulary list' },
-                    { name: 'Grammar Explanation', description: 'Explain a grammar concept' },
-                    { name: 'Practice Exercise', description: 'Generate practice activities' },
-                    { name: 'Cultural Note', description: 'Add cultural context' },
-                  ].map((template, i) => (
-                    <Button 
-                      key={i}
-                      variant="outline" 
-                      className="w-full justify-start h-auto py-3 border-slate-700 text-slate-300 hover:bg-slate-700"
-                      onClick={() => navigate(`/projects/${projectId}/content/new`)}
-                    >
-                      <div className="text-left">
-                        <div className="font-medium">{template.name}</div>
-                        <div className="text-xs text-slate-400 mt-0.5">{template.description}</div>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <QuickContentTemplates projectId={project.id} />
           </div>
         </div>
       </div>
