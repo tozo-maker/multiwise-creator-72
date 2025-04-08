@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { Card } from '@/components/ui/card';
 
 export const CreateProject: React.FC = () => {
   const navigate = useNavigate();
@@ -37,18 +38,18 @@ export const CreateProject: React.FC = () => {
         </div>
         
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create New Project</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Create New Project</h1>
           <p className="text-muted-foreground">
             Set up your new educational content project.
           </p>
         </div>
         
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+        <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg p-6 shadow-sm">
           <ProjectCreationWizard
             templateId="blank"
             onComplete={handleProjectCreated}
           />
-        </div>
+        </Card>
       </motion.div>
     </ModernLayout>
   );

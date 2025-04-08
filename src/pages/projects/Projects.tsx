@@ -5,9 +5,6 @@ import { ProjectList } from '@/components/projects/ProjectList';
 import { useDashboard, DashboardProvider } from '@/contexts/DashboardContext';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
 
 // Add a status field to the filtered projects if it doesn't exist already
 const addStatusIfMissing = (projects: any[]) => {
@@ -20,8 +17,7 @@ const addStatusIfMissing = (projects: any[]) => {
 // Create a wrapper component that uses the DashboardProvider
 const ProjectsContent = () => {
   const { filteredProjects: originalFilteredProjects } = useDashboard();
-  const navigate = useNavigate();
-
+  
   // Ensure all projects have a status field
   const filteredProjects = addStatusIfMissing(originalFilteredProjects);
   
@@ -32,21 +28,11 @@ const ProjectsContent = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex flex-col gap-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-            <p className="text-muted-foreground">
-              View and manage all your educational content projects.
-            </p>
-          </div>
-          <Button 
-            onClick={() => navigate('/projects/new')}
-            className="bg-brand-500 hover:bg-brand-600 text-white flex items-center gap-2"
-            size="sm"
-          >
-            <Plus className="h-4 w-4" />
-            <span>New Project</span>
-          </Button>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+          <p className="text-muted-foreground">
+            View and manage all your educational content projects.
+          </p>
         </div>
         
         <Tabs defaultValue="all" className="space-y-4">
