@@ -77,7 +77,7 @@ export function ProjectConfigStep({ data, updateData, isMobile = false }: Projec
           <div className="space-y-2">
             <Label htmlFor="estimated-length" className="text-slate-900 dark:text-slate-200">Estimated Length</Label>
             <Select
-              onValueChange={(value) => updateData({ /* Store this in your data structure if needed */ })}
+              onValueChange={(value) => {/* Store this in your data structure if needed */}}
               defaultValue="medium"
             >
               <SelectTrigger 
@@ -97,7 +97,7 @@ export function ProjectConfigStep({ data, updateData, isMobile = false }: Projec
           <div className="space-y-2">
             <Label htmlFor="format" className="text-slate-900 dark:text-slate-200">Format</Label>
             <Select
-              onValueChange={(value) => updateData({ /* Store this in your data structure if needed */ })}
+              onValueChange={(value) => {/* Store this in your data structure if needed */}}
               defaultValue="text"
             >
               <SelectTrigger 
