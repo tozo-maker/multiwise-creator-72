@@ -15,30 +15,40 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
   const [theme, setTheme] = useState<Theme>('dark'); // Set dark as default
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
+    // Check if OS prefers dark mode
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
     // Initialize theme from localStorage on component mount
     const savedTheme = localStorage.getItem('theme') as Theme | null;
+    
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     } else {
-      // Set dark mode as the default
-      setTheme('dark');
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      // Use OS preference if no saved theme
+      const defaultTheme = prefersDarkMode ? 'dark' : 'light';
+      setTheme(defaultTheme);
+      document.documentElement.classList.toggle('dark', defaultTheme === 'dark');
+      localStorage.setItem('theme', defaultTheme);
     }
+    
+    setInitialized(true);
   }, []);
+
+  // Apply theme when it changes
+  useEffect(() => {
+    if (initialized) {
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      localStorage.setItem('theme', theme);
+    }
+  }, [theme, initialized]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    
-    // Save theme preference to localStorage
-    localStorage.setItem('theme', newTheme);
-    
-    // Apply theme class to the document
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
     
     toast({
       title: `${newTheme === 'dark' ? 'Dark' : 'Light'} theme activated`,

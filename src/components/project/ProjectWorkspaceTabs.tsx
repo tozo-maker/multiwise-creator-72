@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectWorkspaceTabsProps {
   projectId: string;
@@ -14,6 +15,7 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { theme } = useTheme();
   
   const isTabActive = (tabPath: string) => {
     if (activeTab) {
@@ -38,7 +40,9 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
   ];
   
   return (
-    <div className="border-b border-slate-700 mb-6 overflow-x-auto">
+    <div className={`border-b mb-6 overflow-x-auto ${
+      theme === 'dark' ? 'border-slate-700' : 'border-slate-200'
+    }`}>
       <div className="flex space-x-8">
         {tabs.map((tab) => (
           <Link
@@ -47,8 +51,12 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
             className={cn(
               "pb-2 relative text-sm font-medium",
               isTabActive(tab.id)
-                ? "text-indigo-400 border-b-2 border-indigo-500"
-                : "text-slate-400 hover:text-slate-300"
+                ? theme === 'dark'
+                  ? "text-indigo-400 border-b-2 border-indigo-500"
+                  : "text-indigo-600 border-b-2 border-indigo-500"
+                : theme === 'dark'
+                  ? "text-slate-400 hover:text-slate-300"
+                  : "text-slate-600 hover:text-slate-900"
             )}
           >
             {tab.label}

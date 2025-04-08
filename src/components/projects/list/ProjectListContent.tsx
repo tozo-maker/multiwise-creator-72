@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ProjectCard, ProjectCardProps } from '../ProjectCard';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectListContentProps {
   projects: ProjectCardProps[];
@@ -12,6 +13,8 @@ export const ProjectListContent: React.FC<ProjectListContentProps> = ({
   projects, 
   containerVariants 
 }) => {
+  const { theme } = useTheme();
+  
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
@@ -19,7 +22,9 @@ export const ProjectListContent: React.FC<ProjectListContentProps> = ({
   
   return (
     <motion.div 
-      className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${
+        theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+      }`}
       variants={containerVariants}
       initial="hidden"
       animate="show"
