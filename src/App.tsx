@@ -50,25 +50,31 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      onError: (error) => {
-        console.error('Query error:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "There was an error loading data. Please try again.",
-        });
-      }
     },
-    mutations: {
-      onError: (error) => {
-        console.error('Mutation error:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "There was an error saving your changes. Please try again.",
-        });
-      }
-    }
+    mutations: {}
+  }
+});
+
+// Add global error handlers to log and display errors
+queryClient.getQueryCache().subscribe({
+  onError: (error) => {
+    console.error('Query error:', error);
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "There was an error loading data. Please try again.",
+    });
+  }
+});
+
+queryClient.getMutationCache().subscribe({
+  onError: (error) => {
+    console.error('Mutation error:', error);
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "There was an error saving your changes. Please try again.",
+    });
   }
 });
 
