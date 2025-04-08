@@ -107,19 +107,19 @@ export const ConfigurationWorkspace = () => {
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="configuration" />
         
-        <Card className="mt-6">
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle>Project Configuration</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl text-slate-100">Project Configuration</CardTitle>
+            <CardDescription className="text-slate-400">
               Edit your project settings and parameters
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="system" className="space-y-6">
-              <TabsList>
-                <TabsTrigger value="system">System</TabsTrigger>
-                <TabsTrigger value="project">Project</TabsTrigger>
-                <TabsTrigger value="language">Language & Content</TabsTrigger>
+              <TabsList className="bg-slate-700">
+                <TabsTrigger value="system" className="data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white">System</TabsTrigger>
+                <TabsTrigger value="project" className="data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white">Project</TabsTrigger>
+                <TabsTrigger value="language" className="data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white">Language & Content</TabsTrigger>
               </TabsList>
               
               <TabsContent value="system" className="space-y-6">
@@ -145,7 +145,7 @@ export const ConfigurationWorkspace = () => {
             </Tabs>
             
             <div className="mt-8 flex justify-end">
-              <Button onClick={handleSaveChanges}>
+              <Button onClick={handleSaveChanges} className="bg-indigo-600 hover:bg-indigo-700 text-white">
                 Save Changes
               </Button>
             </div>

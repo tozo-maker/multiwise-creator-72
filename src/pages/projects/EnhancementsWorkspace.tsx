@@ -58,25 +58,25 @@ export const EnhancementsWorkspace = () => {
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="enhancements" />
         
-        <Card className="mt-6">
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle>Content Enhancements</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl text-slate-100">Content Enhancements</CardTitle>
+            <CardDescription className="text-slate-400">
               Generate AI-powered suggestions to improve your educational content
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="enhancementType">Enhancement Type</Label>
+                <Label htmlFor="enhancementType" className="text-slate-300">Enhancement Type</Label>
                 <Select 
                   value={enhancementType} 
                   onValueChange={setEnhancementType}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-slate-200">
                     <SelectValue placeholder="Select enhancement type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
                     <SelectItem value="language">Language Improvement</SelectItem>
                     <SelectItem value="clarity">Clarity & Readability</SelectItem>
                     <SelectItem value="pedagogy">Pedagogical Strengthening</SelectItem>
@@ -88,41 +88,41 @@ export const EnhancementsWorkspace = () => {
               </div>
               
               <div className="space-y-2">
-                <Label>Content Scope</Label>
+                <Label className="text-slate-300">Content Scope</Label>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center space-x-2">
-                    <Checkbox id="single-section" />
-                    <Label htmlFor="single-section" className="text-sm">Current Section Only</Label>
+                    <Checkbox id="single-section" className="border-slate-500 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                    <Label htmlFor="single-section" className="text-sm text-slate-300">Current Section Only</Label>
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <Checkbox id="all-content" />
-                    <Label htmlFor="all-content" className="text-sm">All Content</Label>
+                    <Checkbox id="all-content" className="border-slate-500 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                    <Label htmlFor="all-content" className="text-sm text-slate-300">All Content</Label>
                   </div>
                 </div>
               </div>
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Constraints & Guidelines (Optional)</Label>
-                  <Button variant="outline" size="sm" className="gap-1">
+                  <Label className="text-slate-300">Constraints & Guidelines (Optional)</Label>
+                  <Button variant="outline" size="sm" className="gap-1 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-slate-100">
                     <FileText className="h-4 w-4" />
                     Select from Knowledge Base
                   </Button>
                 </div>
-                <div className="border border-dashed border-slate-300 rounded-md p-6 text-center">
-                  <p className="text-sm text-slate-500">
+                <div className="border border-dashed border-slate-600 rounded-md p-6 text-center bg-slate-800/50">
+                  <p className="text-sm text-slate-400">
                     No files selected. Select files from your Knowledge Base to provide constraints and guidelines.
                   </p>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="instructions">Enhancement Instructions</Label>
+                <Label htmlFor="instructions" className="text-slate-300">Enhancement Instructions</Label>
                 <Textarea 
                   id="instructions" 
                   placeholder="Provide specific instructions for the enhancement suggestions..."
-                  className="min-h-[100px]"
+                  className="min-h-[100px] bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500"
                 />
               </div>
               
@@ -130,7 +130,7 @@ export const EnhancementsWorkspace = () => {
                 <Button
                   onClick={handleGenerateEnhancements}
                   disabled={isGenerating}
-                  className="bg-brand-500 hover:bg-brand-600 gap-2"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
                 >
                   {isGenerating ? (
                     <>

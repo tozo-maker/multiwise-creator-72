@@ -57,25 +57,25 @@ export const AnalysisWorkspace = () => {
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="analysis" />
         
-        <Card className="border border-slate-200 hover:shadow-sm transition-shadow">
+        <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle>Content Analysis</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl text-slate-100">Content Analysis</CardTitle>
+            <CardDescription className="text-slate-400">
               Analyze your educational content for readability, standards alignment, and more
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="analysisType">Analysis Type</Label>
+                <Label htmlFor="analysisType" className="text-slate-300">Analysis Type</Label>
                 <Select 
                   value={analysisType} 
                   onValueChange={setAnalysisType}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-slate-200">
                     <SelectValue placeholder="Select analysis type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
                     <SelectItem value="readability">Readability Analysis</SelectItem>
                     <SelectItem value="standards">Standards Alignment</SelectItem>
                     <SelectItem value="language">Language Proficiency Level</SelectItem>
@@ -87,25 +87,25 @@ export const AnalysisWorkspace = () => {
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Additional Context Files (Optional)</Label>
-                  <Button variant="outline" size="sm" className="gap-1">
+                  <Label className="text-slate-300">Additional Context Files (Optional)</Label>
+                  <Button variant="outline" size="sm" className="gap-1 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-slate-100">
                     <FileText className="h-4 w-4" />
                     Select from Knowledge Base
                   </Button>
                 </div>
-                <div className="border border-dashed border-slate-300 rounded-md p-6 text-center">
-                  <p className="text-sm text-slate-500">
+                <div className="border border-dashed border-slate-600 rounded-md p-6 text-center bg-slate-800/50">
+                  <p className="text-sm text-slate-400">
                     No context files selected. Select files from your Knowledge Base to guide the analysis.
                   </p>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="instructions">Analysis Instructions (Optional)</Label>
+                <Label htmlFor="instructions" className="text-slate-300">Analysis Instructions (Optional)</Label>
                 <Textarea 
                   id="instructions" 
                   placeholder="Provide any specific instructions for the analysis..."
-                  className="min-h-[100px]"
+                  className="min-h-[100px] bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500"
                 />
               </div>
               
@@ -113,7 +113,7 @@ export const AnalysisWorkspace = () => {
                 <Button
                   onClick={handleAnalyze}
                   disabled={isAnalyzing}
-                  className="bg-brand-500 hover:bg-brand-600 gap-2"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
                 >
                   {isAnalyzing ? (
                     <>

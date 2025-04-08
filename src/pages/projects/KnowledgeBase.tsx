@@ -21,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export const KnowledgeBase = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -173,48 +174,51 @@ export const KnowledgeBase = () => {
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="knowledge-base" />
         
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Knowledge Base</h2>
-          <p className="text-slate-500">
-            Manage files that provide context and guidance for AI content generation.
-          </p>
-        </div>
-        
-        <div className="flex justify-between items-center mb-6">
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input placeholder="Search files" className="pl-8" />
-          </div>
-          
-          <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
-        </div>
-        
-        <KnowledgeBaseFileList 
-          files={files}
-          onDelete={handleDeleteFile}
-          onEdit={handleEditDescription}
-          onPreview={handlePreviewFile}
-          onDownload={handleDownloadFile}
-        />
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-xl text-slate-100">Knowledge Base</CardTitle>
+            <CardDescription className="text-slate-400">
+              Manage files that provide context and guidance for AI content generation.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center mb-6">
+              <div className="relative w-64">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input placeholder="Search files" className="pl-8 bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500" />
+              </div>
+              
+              <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
+            </div>
+            
+            <KnowledgeBaseFileList 
+              files={files}
+              onDelete={handleDeleteFile}
+              onEdit={handleEditDescription}
+              onPreview={handlePreviewFile}
+              onDownload={handleDownloadFile}
+            />
+          </CardContent>
+        </Card>
         
         {/* Edit Description Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent>
+          <DialogContent className="bg-slate-800 border-slate-700">
             <DialogHeader>
-              <DialogTitle>Edit File Description</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-slate-100">Edit File Description</DialogTitle>
+              <DialogDescription className="text-slate-400">
                 Update the description for {currentEditFile?.name}
               </DialogDescription>
             </DialogHeader>
             
             <div className="py-4">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-slate-300">Description</Label>
               <Textarea 
                 id="description"
                 value={editedDescription}
                 onChange={(e) => setEditedDescription(e.target.value)}
                 placeholder="Enter a description for this file..."
-                className="mt-2"
+                className="mt-2 bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500"
               />
             </div>
             
@@ -222,11 +226,12 @@ export const KnowledgeBase = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setEditDialogOpen(false)}
+                className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-slate-100"
               >
                 Cancel
               </Button>
               <Button 
-                className="bg-brand-500 hover:bg-brand-600 text-white"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
                 onClick={saveDescription}
               >
                 Save Changes
