@@ -8,6 +8,9 @@ import { ProjectConfigStep } from './steps/ProjectConfigStep';
 import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { FinalReviewStep } from './steps/FinalReviewStep';
 import { WizardSteps } from './WizardSteps';
+import { QuickStartStep } from './steps/QuickStartStep';
+import { LanguageConfigStep } from './steps/LanguageConfigStep';
+import { SystemConfigStep } from './steps/SystemConfigStep';
 
 interface ProjectData {
   name: string;
@@ -16,7 +19,7 @@ interface ProjectData {
   language: string;
   targetAudience: string;
   complexity: string;
-  templateId: string; // Changed from optional to required
+  templateId: string; // Required
   quickStart?: string;
   hasKnowledgeBase?: boolean;
   knowledgeBaseFiles?: string[];
@@ -39,7 +42,7 @@ export function ProjectWizard({
     targetAudience: '',
     complexity: 'Intermediate',
     quickStart: 'custom',
-    templateId: '', // Add a default value
+    templateId: '', // Default value
   });
   const { toast } = useToast();
   
@@ -143,21 +146,20 @@ export function ProjectWizard({
     switch (currentStep) {
       case 0:
         return <ProjectBasicsStep data={formData} updateData={updateFormData} />;
+      case 1:
+        return <QuickStartStep data={formData} updateData={updateFormData} />;
+      case 2:
+        return <SystemConfigStep data={formData} updateData={updateFormData} />;
       case 3:
         return <ProjectConfigStep data={formData} updateData={updateFormData} />;
+      case 4:
+        return <LanguageConfigStep data={formData} updateData={updateFormData} />;
       case 5:
         return <KnowledgeBaseStep data={formData} updateData={updateFormData} />;
       case 6:
         return <FinalReviewStep data={formData} />;
       default:
-        return (
-          <div className="space-y-4 py-6">
-            <p className="text-lg font-medium">This step is under construction</p>
-            <p className="text-slate-500">
-              This wizard step is not fully implemented in the current demo. Please continue to the next step.
-            </p>
-          </div>
-        );
+        return null;
     }
   };
   

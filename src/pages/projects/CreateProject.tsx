@@ -26,19 +26,21 @@ export const CreateProject: React.FC = () => {
   
   return (
     <ModernLayout contentWidth="wide">
-      <div className="w-full">
-        <PageBreadcrumbs items={breadcrumbItems} />
-        
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50">Create New Project</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Configure your educational content project by following these steps.
-          </p>
+      <div className="w-full bg-slate-50/50 dark:bg-slate-900/20 min-h-screen -mt-4 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <PageBreadcrumbs items={breadcrumbItems} />
+          
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50">Create New Project</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">
+              Configure your educational content project by following these steps.
+            </p>
+          </div>
+          
+          <ProjectWizard
+            onComplete={handleProjectCreated}
+          />
         </div>
-        
-        <ProjectWizard
-          onComplete={handleProjectCreated}
-        />
       </div>
     </ModernLayout>
   );
