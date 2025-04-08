@@ -7,6 +7,8 @@ import { ViewAllProjectsButton } from './ViewAllProjectsButton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { EmptyProjectsList } from './EmptyProjectsList';
 import { ProjectListSkeleton } from './ProjectListSkeleton';
+import { useTheme } from '@/contexts/ThemeContext';
+import { ThemeCard } from '@/components/shared/ThemeCard';
 
 interface ProjectListContainerProps {
   projects: ProjectCardProps[];
@@ -18,7 +20,7 @@ interface ProjectListContainerProps {
   setSortOrder: (order: 'newest' | 'oldest' | 'progress' | 'name') => void;
 }
 
-export const ProjectListContainer: React.FC<ProjectListContainerProps> = ({
+export const ProjectListContainer = React.memo(function ProjectListContainer({ 
   projects,
   isLoading = false,
   filteredProjects,
@@ -26,7 +28,9 @@ export const ProjectListContainer: React.FC<ProjectListContainerProps> = ({
   setFilterType,
   sortOrder,
   setSortOrder
-}) => {
+}: ProjectListContainerProps) {
+  const { theme } = useTheme();
+  
   if (isLoading) {
     return <ProjectListSkeleton />;
   }
@@ -48,7 +52,7 @@ export const ProjectListContainer: React.FC<ProjectListContainerProps> = ({
   };
 
   return (
-    <div className="space-y-4 project-list-container">
+    <ThemeCard className="space-y-4 project-list-container p-4">
       <ProjectListHeader 
         projects={projects}
         filterType={filterType}
@@ -71,6 +75,6 @@ export const ProjectListContainer: React.FC<ProjectListContainerProps> = ({
       {window.location.pathname === '/dashboard' && projects.length > 6 && (
         <ViewAllProjectsButton projectCount={projects.length} />
       )}
-    </div>
+    </ThemeCard>
   );
-};
+});

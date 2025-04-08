@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { ModernLayout } from '@/components/layout/ModernLayout';
 import { DashboardWelcome } from '@/components/dashboard/DashboardWelcome';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { DashboardProjectSection } from '@/components/dashboard/DashboardProjectSection';
@@ -8,17 +7,18 @@ import { DashboardActivityTimeline } from '@/components/dashboard/DashboardActiv
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
 import { DashboardAIInsights } from '@/components/dashboard/DashboardAIInsights';
 import { InteractiveHelp } from '@/components/dashboard/InteractiveHelp';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { DashboardLayout as DashboardContentLayout } from '@/components/dashboard/DashboardLayout';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 const Dashboard = () => {
   return (
-    <ModernLayout contentWidth="wide">
+    <DashboardLayout contentWidth="wide">
       <DashboardContent />
-    </ModernLayout>
+    </DashboardLayout>
   );
 };
 
@@ -32,8 +32,8 @@ const DashboardContent = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 text-brand-500 animate-spin" />
-          <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>Loading your dashboard...</p>
+          <Loader2 className="h-8 w-8 text-brand-500 animate-spin" aria-hidden="true" />
+          <p className={isDark ? 'text-slate-400' : 'text-slate-500'} aria-live="polite">Loading your dashboard...</p>
         </div>
       </div>
     );
