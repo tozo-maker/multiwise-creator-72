@@ -4,7 +4,7 @@ import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { ProjectWizard } from '@/components/project-creation/ProjectWizard';
+import { UnifiedProjectWizard } from '@/components/project-creation/UnifiedProjectWizard';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const CreateProject: React.FC = () => {
@@ -48,7 +48,7 @@ export const CreateProject: React.FC = () => {
           </div>
           
           <div>
-            <ProjectWizard
+            <UnifiedProjectWizard
               onComplete={handleProjectCreated}
             />
           </div>
