@@ -1,48 +1,29 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  Trash2, 
-  Send, 
-  Copy, 
-  Check,
-  Bot,
-  User,
-  ThumbsUp, 
-  ThumbsDown,
-  Loader2,
-  DownloadCloud,
-  RefreshCcw,
-  Sparkles
-} from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from '@/hooks/use-mobile';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+import { Message, ContextFile } from './chat/types';
+import { ChatHeader } from './chat/ChatHeader';
+import { ChatEmptyState } from './chat/ChatEmptyState';
+import { ChatInput } from './chat/ChatInput';
+import { ChatMessage } from './chat/ChatMessage';
+import { TypingIndicator } from './chat/TypingIndicator';
+import { ContextFilesBar } from './chat/ContextFilesBar';
 
 interface AiChatInterfaceProps {
-  contextFiles?: Array<{ name: string; content?: string }>;
+  contextFiles?: ContextFile[];
   initialPrompt?: string;
   onContentGenerated?: (content: string) => void;
 }
 
-export const AiChatInterface = ({ 
+export const AiChatInterface: React.FC<AiChatInterfaceProps> = ({ 
   contextFiles = [], 
   initialPrompt = '',
   onContentGenerated
-}: AiChatInterfaceProps) => {
+}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -126,19 +107,6 @@ Praesent ac magna at metus malesuada tincidunt. Nullam auctor, nisl ac ultricies
     }
   };
   
-  const copyToClipboard = (text: string, messageId: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedMessageId(messageId);
-      setTimeout(() => setCopiedMessageId(null), 2000);
-      
-      toast({
-        title: "Copied to clipboard",
-        description: "Content has been copied to your clipboard.",
-        duration: 2000,
-      });
-    });
-  };
-  
   const formatMessage = (content: string) => {
     // Replace newlines with <br> tags for HTML rendering
     return content.split('\n').map((line, i) => (
@@ -158,249 +126,74 @@ Praesent ac magna at metus malesuada tincidunt. Nullam auctor, nisl ac ultricies
       duration: 3000,
     });
   };
+
+  const resetConversation = () => {
+    setMessages([]);
+    setInput('');
+    setIsTyping(false);
+  };
+
+  const exportConversation = () => {
+    // Create a text version of the conversation
+    const conversationText = messages
+      .map(msg => `${msg.role === 'user' ? 'You' : 'AI'}: ${msg.content}`)
+      .join('\n\n');
+    
+    // Create a blob and download it
+    const blob = new Blob([conversationText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ai-conversation.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Conversation exported",
+      description: "Your conversation has been downloaded as a text file.",
+      duration: 3000,
+    });
+  };
   
   return (
-    <div className="flex flex-col h-full bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
-      <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center">
-        <div className="flex items-center">
-          <div className="h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center mr-3">
-            <Sparkles className="h-4 w-4 text-brand-600" />
-          </div>
-          <div>
-            <h3 className="font-medium">AI Content Assistant</h3>
-            <p className="text-xs text-slate-500">Creating educational content with AI</p>
-          </div>
-        </div>
-        
-        <div className="flex space-x-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-slate-500">
-                  <RefreshCcw className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Reset conversation</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-slate-500">
-                  <DownloadCloud className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Export conversation</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </div>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <ChatHeader 
+        resetConversation={resetConversation}
+        exportConversation={exportConversation}
+      />
       
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {contextFiles.length > 0 && (
-          <div className="text-xs text-slate-500 bg-slate-100 p-2 rounded-md">
-            Using {contextFiles.length} file(s) as context: {contextFiles.map(f => f.name).join(', ')}
-          </div>
-        )}
+        <ContextFilesBar contextFiles={contextFiles} />
         
-        {messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6">
-            <div className="h-12 w-12 rounded-full bg-brand-100 flex items-center justify-center mb-4">
-              <Bot className="h-6 w-6 text-brand-600" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">Content Generation Assistant</h3>
-            <p className="text-slate-500 max-w-md mb-6">
-              Ask me to generate educational content, create lesson plans, or adapt materials for different learning levels.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-lg">
-              <Button 
-                variant="outline" 
-                className="justify-start" 
-                onClick={() => setInput("Create a lesson plan for teaching Spanish past tense to beginners.")}
-              >
-                Create a lesson plan...
-              </Button>
-              <Button 
-                variant="outline" 
-                className="justify-start" 
-                onClick={() => setInput("Write a vocabulary section for intermediate French learners.")}
-              >
-                Write a vocabulary section...
-              </Button>
-              <Button 
-                variant="outline" 
-                className="justify-start" 
-                onClick={() => setInput("Generate 10 practice exercises for German grammar.")}
-              >
-                Generate practice exercises...
-              </Button>
-              <Button 
-                variant="outline" 
-                className="justify-start" 
-                onClick={() => setInput("Create an assessment quiz for Chinese characters.")}
-              >
-                Create an assessment quiz...
-              </Button>
-            </div>
-          </div>
-        )}
-        
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <Card 
-              className={`max-w-[85%] ${
-                message.role === 'user' 
-                  ? 'bg-brand-100 border-brand-200' 
-                  : 'bg-white'
-              }`}
-            >
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex space-x-2 items-start mb-2">
-                  <div 
-                    className={`h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.role === 'user' 
-                        ? 'bg-brand-500 text-white'
-                        : 'bg-slate-100'
-                    }`}
-                  >
-                    {message.role === 'user' ? (
-                      <User className="h-3 w-3" />
-                    ) : (
-                      <Bot className="h-3 w-3" />
-                    )}
-                  </div>
-                  <div className="flex flex-col flex-1">
-                    <div className="flex justify-between items-start">
-                      <p className="text-xs font-medium">
-                        {message.role === 'user' ? 'You' : 'AI Assistant'}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {new Intl.DateTimeFormat('en-US', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }).format(message.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="text-sm whitespace-pre-line">
-                  {formatMessage(message.content)}
-                </div>
-                
-                {message.role === 'assistant' && (
-                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 text-slate-600 hover:text-brand-600"
-                        onClick={() => handleFeedback(true)}
-                      >
-                        <ThumbsUp className="h-4 w-4 mr-1" />
-                        Helpful
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 text-slate-600 hover:text-destructive"
-                        onClick={() => handleFeedback(false)}
-                      >
-                        <ThumbsDown className="h-4 w-4 mr-1" />
-                        Not helpful
-                      </Button>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-slate-600"
-                      onClick={() => copyToClipboard(message.content, message.id)}
-                    >
-                      {copiedMessageId === message.id ? (
-                        <Check className="h-4 w-4 mr-1" />
-                      ) : (
-                        <Copy className="h-4 w-4 mr-1" />
-                      )}
-                      {copiedMessageId === message.id ? 'Copied' : 'Copy'}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        ))}
-        
-        {isTyping && (
-          <div className="flex justify-start">
-            <Card className="max-w-[85%] bg-white">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex space-x-2 items-start">
-                  <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-3 w-3" />
-                  </div>
-                  <div className="flex flex-col">
-                    <p className="text-xs font-medium">AI Assistant</p>
-                    <div className="flex space-x-1 mt-2">
-                      <div className="w-2 h-2 rounded-full bg-slate-300 animate-bounce"></div>
-                      <div className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        {messages.length === 0 ? (
+          <ChatEmptyState setInput={setInput} />
+        ) : (
+          <>
+            {messages.map((message) => (
+              <ChatMessage 
+                key={message.id}
+                message={message}
+                handleFeedback={handleFeedback}
+                formatMessage={formatMessage}
+              />
+            ))}
+            
+            {isTyping && <TypingIndicator />}
+          </>
         )}
         
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-4 border-t border-slate-200 bg-white">
-        <div className="relative">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Type your instructions for content generation..."
-            className="w-full resize-none pr-24"
-            rows={isMobile ? 3 : 2}
-          />
-          <div className="absolute right-2 bottom-2 flex space-x-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-500"
-              disabled={!input.trim()}
-              onClick={() => setInput('')}
-            >
-              <Trash2 className="h-4 w-4" />
-              <span className="sr-only">Clear</span>
-            </Button>
-            
-            <Button
-              size="sm"
-              className="h-8"
-              disabled={!input.trim() || isTyping}
-              onClick={() => handleSendMessage()}
-            >
-              {isTyping ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4 mr-1" />
-              )}
-              {isTyping ? 'Processing' : 'Send'}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ChatInput
+        input={input}
+        setInput={setInput}
+        handleSendMessage={() => handleSendMessage()}
+        handleKeyPress={handleKeyPress}
+        isTyping={isTyping}
+      />
     </div>
   );
 };
