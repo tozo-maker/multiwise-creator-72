@@ -9,11 +9,11 @@ interface ProjectListContentProps {
   containerVariants: any;
 }
 
-export const ProjectListContent: React.FC<ProjectListContentProps> = ({ 
+export const ProjectListContent: React.FC<ProjectListContentProps> = React.memo(({ 
   projects, 
   containerVariants 
 }) => {
-  const { theme } = useTheme();
+  const { isDark } = useTheme();
   
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -23,7 +23,7 @@ export const ProjectListContent: React.FC<ProjectListContentProps> = ({
   return (
     <motion.div 
       className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${
-        theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+        isDark ? 'text-slate-100' : 'text-slate-900'
       }`}
       variants={containerVariants}
       initial="hidden"
@@ -36,4 +36,6 @@ export const ProjectListContent: React.FC<ProjectListContentProps> = ({
       ))}
     </motion.div>
   );
-};
+});
+
+ProjectListContent.displayName = 'ProjectListContent';

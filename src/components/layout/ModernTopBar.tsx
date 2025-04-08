@@ -11,9 +11,16 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeButton } from '@/components/shared/ThemeButton';
 import { ThemeTooltip } from '@/components/shared/ThemeTooltip';
 
-export const ModernTopBar = () => {
+export const ModernTopBar = React.memo(function ModernTopBar() {
   const { toast } = useToast();
   const { isDark } = useTheme();
+
+  const handleHelpClick = React.useCallback(() => {
+    toast({
+      title: "Help panel opened",
+      description: "Here you can find helpful tips and guides.",
+    });
+  }, [toast]);
 
   return (
     <header 
@@ -47,12 +54,7 @@ export const ModernTopBar = () => {
             variant="ghost" 
             size="icon" 
             className="hidden sm:flex"
-            onClick={() => {
-              toast({
-                title: "Help panel opened",
-                description: "Here you can find helpful tips and guides.",
-              });
-            }}
+            onClick={handleHelpClick}
             aria-label="Open help panel"
           >
             <HelpCircle className="h-5 w-5" />
@@ -63,4 +65,4 @@ export const ModernTopBar = () => {
       </div>
     </header>
   );
-};
+});

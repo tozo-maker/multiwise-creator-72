@@ -1,101 +1,82 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, Home } from 'lucide-react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { motion } from 'framer-motion';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
-export interface BreadcrumbItem {
+interface BreadcrumbItemType {
   label: string;
   path?: string;
 }
 
 interface PageBreadcrumbsProps {
-  items: BreadcrumbItem[];
-  homeLink?: string;
+  items: BreadcrumbItemType[];
   className?: string;
+  'aria-label'?: string;
 }
 
-export const PageBreadcrumbs: React.FC<PageBreadcrumbsProps> = ({ 
+export const PageBreadcrumbs = ({ 
   items,
-  homeLink = '/dashboard',
-  className
-}) => {
-  const location = useLocation();
-  const currentPath = location.pathname;
+  className = '',
+  'aria-label': ariaLabel = 'Breadcrumb navigation'
+}: PageBreadcrumbsProps) => {
+  const { isDark } = useTheme();
   
-  // Don't show breadcrumbs on the dashboard itself to avoid duplication
-  if (currentPath === '/dashboard') {
+  if (!items || items.length === 0) {
     return null;
   }
-  
-  // Filter out any duplicate items
-  const uniqueItems = items.filter((item, index, self) => 
-    index === self.findIndex((t) => t.label === item.label)
-  );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`${className || ''}`}
+    <div 
+      className={cn(
+        "mb-6", 
+        className
+      )}
     >
-      <Breadcrumb className="mb-6">
+      <Breadcrumb className={cn(
+        isDark ? "text-slate-300" : "text-slate-600"
+      )} aria-label={ariaLabel}>
         <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link to={homeLink} className="flex items-center text-slate-600 hover:text-brand-600 transition-colors">
-                <Home className="h-4 w-4 mr-1" />
-                Dashboard
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          
-          {uniqueItems.length > 0 && (
-            <BreadcrumbSeparator aria-hidden>
-              <ChevronRight className="h-4 w-4 text-slate-400" />
-            </BreadcrumbSeparator>
-          )}
-          
-          {uniqueItems.map((item, index) => {
-            const isLast = index === uniqueItems.length - 1;
-            
-            return (
-              <React.Fragment key={index}>
-                {isLast ? (
-                  <BreadcrumbItem>
-                    <BreadcrumbPage className="text-slate-800 font-medium">{item.label}</BreadcrumbPage>
-                  </BreadcrumbItem>
+          {items.map((item, index) => (
+            <React.Fragment key={`breadcrumb-${index}`}>
+              <BreadcrumbItem>
+                {item.path ? (
+                  <BreadcrumbLink 
+                    asChild
+                    className={cn(
+                      "text-sm font-medium hover:underline",
+                      isDark 
+                        ? "text-slate-400 hover:text-slate-200" 
+                        : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    <Link to={item.path}>{item.label}</Link>
+                  </BreadcrumbLink>
                 ) : (
-                  <>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link 
-                          to={item.path || '#'} 
-                          className="text-slate-600 hover:text-brand-600 transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator aria-hidden>
-                      <ChevronRight className="h-4 w-4 text-slate-400" />
-                    </BreadcrumbSeparator>
-                  </>
+                  <span 
+                    className={cn(
+                      "text-sm font-semibold",
+                      isDark ? "text-slate-100" : "text-slate-900"
+                    )}
+                    aria-current="page"
+                  >
+                    {item.label}
+                  </span>
                 )}
-              </React.Fragment>
-            );
-          })}
+              </BreadcrumbItem>
+              {index < items.length - 1 && (
+                <BreadcrumbSeparator>
+                  <ChevronRight className="h-4 w-4" />
+                </BreadcrumbSeparator>
+              )}
+            </React.Fragment>
+          ))}
         </BreadcrumbList>
       </Breadcrumb>
-    </motion.div>
+    </div>
   );
 };
+
+export default PageBreadcrumbs;
