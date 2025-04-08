@@ -166,7 +166,7 @@ export function ProjectWizard({
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <WizardSteps 
         steps={steps}
         currentStep={currentStep}
@@ -174,7 +174,7 @@ export function ProjectWizard({
         onStepClick={goToStep}
       />
       
-      <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+      <Card className="w-full border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
         <div className="p-6">
           {renderStepContent()}
         </div>
