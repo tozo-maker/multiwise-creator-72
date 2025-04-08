@@ -57,8 +57,9 @@ const queryClient = new QueryClient({
 
 // Add global error handlers to log and display errors
 queryClient.getQueryCache().subscribe(event => {
-  if (event.type === 'error' && event.error instanceof Error) {
-    console.error('Query error:', event.error);
+  if (event.type === 'updated' && event.action.type === 'error') {
+    const error = event.action.error;
+    console.error('Query error:', error);
     toast({
       variant: "destructive",
       title: "Error",
@@ -68,8 +69,9 @@ queryClient.getQueryCache().subscribe(event => {
 });
 
 queryClient.getMutationCache().subscribe(event => {
-  if (event.type === 'error' && event.error instanceof Error) {
-    console.error('Mutation error:', event.error);
+  if (event.type === 'updated' && event.action.type === 'error') {
+    const error = event.action.error;
+    console.error('Mutation error:', error);
     toast({
       variant: "destructive",
       title: "Error",
