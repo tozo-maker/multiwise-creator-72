@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Menu, BookText } from 'lucide-react';
 import { 
   Sheet,
@@ -21,11 +21,15 @@ export const MobileNavigation = () => {
   const { isDark } = useTheme();
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setIsOpen(false);
     }
-  };
+  }, []);
+
+  const toggleMenu = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
 
   return (
     <div className="block md:hidden">
@@ -38,13 +42,17 @@ export const MobileNavigation = () => {
             aria-label="Open navigation menu"
             aria-expanded={isOpen}
             aria-haspopup="true"
+            onClick={toggleMenu}
           >
             <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>
         </SheetTrigger>
         <SheetContent 
           side="left" 
-          className="w-[280px] p-0" 
+          className={cn(
+            "w-[280px] p-0",
+            isDark ? "bg-slate-900 text-slate-100" : "bg-white text-slate-900"
+          )}
           onKeyDown={handleKeyDown}
           aria-label="Mobile Navigation"
         >
@@ -67,7 +75,11 @@ export const MobileNavigation = () => {
           
           <MobileUserProfile />
           
-          <div className="py-2 flex-1 overflow-y-auto" role="navigation" aria-label="Mobile Navigation Menu">
+          <div 
+            className="py-2 flex-1 overflow-y-auto" 
+            role="navigation" 
+            aria-label="Mobile Navigation Menu"
+          >
             <MobileAccessibleNavigation />
             <MobileProjectNavigation />
             <MobileThemeToggle />

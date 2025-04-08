@@ -1,17 +1,16 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { ModernLayout } from '@/components/layout/ModernLayout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { ContentCreationForm } from '@/components/project/ContentCreationForm';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export const ContentCreation = () => {
+const ContentCreation = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { isDark } = useTheme();
   
   // Mock project data
   const project = {
@@ -29,7 +28,11 @@ export const ContentCreation = () => {
   ];
   
   return (
-    <ModernLayout contentWidth="wide">
+    <DashboardLayout 
+      contentWidth="wide"
+      mainId={`project-${projectId}-content-creation`}
+      aria-label="Content Creation Page"
+    >
       <div className="space-y-6">
         <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
@@ -56,7 +59,7 @@ export const ContentCreation = () => {
         
         <ContentCreationForm />
       </div>
-    </ModernLayout>
+    </DashboardLayout>
   );
 };
 

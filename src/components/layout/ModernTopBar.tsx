@@ -7,7 +7,6 @@ import { NotificationPanel } from './notifications/NotificationPanel';
 import { ThemeToggle } from './theme/ThemeToggle';
 import { NewProjectButton } from '../projects/NewProjectButton';
 import { HelpCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeButton } from '@/components/shared/ThemeButton';
 import { ThemeTooltip } from '@/components/shared/ThemeTooltip';
@@ -24,9 +23,14 @@ export const ModernTopBar = () => {
           : 'border-slate-200 bg-white'
       } px-4 flex items-center sticky top-0 z-10`}
       role="banner"
+      aria-label="Page header"
     >
       <div className="flex items-center space-x-2">
-        <SidebarTrigger aria-label="Toggle sidebar" />
+        <SidebarTrigger 
+          aria-label="Toggle sidebar" 
+          aria-expanded="false"
+          aria-controls="main-sidebar"
+        />
       </div>
       
       <div className="flex-1 pl-4 pr-4 max-w-2xl mx-auto">

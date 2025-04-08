@@ -11,15 +11,18 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface ModernLayoutProps {
   children: React.ReactNode;
   contentWidth?: 'default' | 'narrow' | 'wide';
+  mainId?: string;
+  ariaLabel?: string;
 }
 
 export const ModernLayout: React.FC<ModernLayoutProps> = ({ 
   children, 
-  contentWidth = 'wide' 
+  contentWidth = 'wide',
+  mainId = 'main-content',
+  ariaLabel = 'Main content'
 }) => {
   const isMobile = useIsMobile();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { isDark } = useTheme();
   
   // Map contentWidth to appropriate max-width classes
   const getMaxWidthClass = () => {
@@ -60,10 +63,16 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
         <DashboardProvider>
           <SidebarInset className="flex flex-col w-full">
             <ModernTopBar />
-            <main className={cn(
-              "flex-1 overflow-y-auto p-3 md:p-6",
-              isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
-            )}>
+            <main 
+              id={mainId}
+              className={cn(
+                "flex-1 overflow-y-auto p-3 md:p-6",
+                isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
+              )}
+              role="main"
+              aria-label={ariaLabel}
+              tabIndex={-1}
+            >
               <div className={cn("mx-auto transition-all", getMaxWidthClass())}>
                 {children}
               </div>

@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -15,10 +15,9 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.m
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { isDark } = useTheme();
   
-  const isTabActive = (tabPath: string) => {
+  const isTabActive = useCallback((tabPath: string) => {
     if (activeTab) {
       return activeTab === tabPath;
     }
@@ -28,7 +27,7 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.m
     }
     
     return currentPath.includes(`/projects/${projectId}/${tabPath}`);
-  };
+  }, [activeTab, currentPath, projectId]);
   
   const tabs = useMemo(() => [
     { id: 'overview', label: 'Overview', path: `/projects/${projectId}` },
@@ -40,6 +39,13 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.m
     { id: 'snapshots', label: 'Snapshots', path: `/projects/${projectId}/snapshots` },
   ], [projectId]);
   
+  const handleKeyDown = useCallback((e: React.KeyboardEvent, path: string) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      window.location.href = path;
+    }
+  }, []);
+
   return (
     <div 
       className={`border-b mb-6 overflow-x-auto ${
@@ -54,7 +60,7 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.m
             key={tab.id}
             to={tab.path}
             className={cn(
-              "pb-2 relative text-sm font-medium",
+              "pb-2 relative text-sm font-medium outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 rounded px-1",
               isTabActive(tab.id)
                 ? isDark
                   ? "text-indigo-400 border-b-2 border-indigo-500"
@@ -68,6 +74,7 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.m
             aria-controls={`panel-${tab.id}`}
             id={`tab-${tab.id}`}
             tabIndex={isTabActive(tab.id) ? 0 : -1}
+            onKeyDown={(e) => handleKeyDown(e, tab.path)}
           >
             {tab.label}
           </Link>
