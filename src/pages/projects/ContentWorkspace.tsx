@@ -9,9 +9,10 @@ import { ContentItemsCard } from '@/components/content/ContentItemsCard';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ContentItem } from '@/components/content/ContentItemsList';
 
-// Mock data - Updated to match the ContentItem interface
-const mockContentItems = [
+// Mock data - Explicitly typed to match the ContentItem interface
+const mockContentItems: ContentItem[] = [
   {
     id: '1',
     title: 'Basic Vocabulary List',
