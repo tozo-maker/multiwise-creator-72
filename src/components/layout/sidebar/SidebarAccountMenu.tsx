@@ -1,12 +1,8 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User, Settings, HelpCircle } from 'lucide-react';
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
-import { ThemeToggle } from '@/components/layout/theme/ThemeToggle';
-
 export const SidebarAccountMenu = () => {
   const navigate = useNavigate();
   const {
@@ -38,10 +34,7 @@ export const SidebarAccountMenu = () => {
       
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip="Account Settings">
-          <Link to="/settings?tab=account">
-            <Settings />
-            <span>Account Settings</span>
-          </Link>
+          
         </SidebarMenuButton>
       </SidebarMenuItem>
       
@@ -53,10 +46,6 @@ export const SidebarAccountMenu = () => {
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
-
-      <SidebarMenuItem>
-        <ThemeToggle isSidebar={true} />
-      </SidebarMenuItem>
       
       <SidebarMenuItem>
         <SidebarMenuButton onClick={handleLogout} className="w-full justify-start text-red-600 dark:text-red-400" tooltip="Logout">
@@ -66,3 +55,6 @@ export const SidebarAccountMenu = () => {
       </SidebarMenuItem>
     </>;
 };
+
+// Add missing import
+import { Link } from 'react-router-dom';

@@ -5,6 +5,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { SearchBar } from '@/components/layout/search/SearchBar';
 import { NotificationPanel } from './notifications/NotificationPanel';
+import { ThemeToggle } from './theme/ThemeToggle';
 import { NewProjectButton } from '../projects/NewProjectButton';
 import { HelpCircle } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -44,6 +45,8 @@ export const ModernTopBar = React.memo(function ModernTopBar() {
       
       <div className="flex items-center space-x-2 sm:space-x-4">
         <NewProjectButton />
+        
+        <ThemeToggle />
         
         <ThemeTooltip content="Help">
           <ThemeButton 
