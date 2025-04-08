@@ -13,7 +13,7 @@ import { useDashboard } from '@/contexts/DashboardContext';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export const Dashboard = () => {
+const Dashboard = () => {
   return (
     <ModernLayout contentWidth="wide">
       <DashboardContent />
@@ -100,3 +100,5 @@ const DashboardContent = () => {
     </div>
   );
 };
+
+export default Dashboard;

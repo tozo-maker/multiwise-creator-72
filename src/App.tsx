@@ -50,23 +50,27 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      onError: (error) => {
-        console.error('Query error:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "There was an error loading data. Please try again.",
-        });
+      onSettled: (_, error) => {
+        if (error) {
+          console.error('Query error:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "There was an error loading data. Please try again.",
+          });
+        }
       },
     },
     mutations: {
-      onError: (error) => {
-        console.error('Mutation error:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "There was an error saving your changes. Please try again.",
-        });
+      onSettled: (_, error) => {
+        if (error) {
+          console.error('Mutation error:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "There was an error saving your changes. Please try again.",
+          });
+        }
       }
     }
   }
