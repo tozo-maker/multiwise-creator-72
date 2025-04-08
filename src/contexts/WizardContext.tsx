@@ -21,7 +21,7 @@ interface WizardContextType<T extends Record<string, any>> {
 }
 
 interface WizardProviderProps<T extends Record<string, any>> {
-  children: React.ReactNode;
+  children: (context: WizardContextType<T>) => React.ReactNode;
   steps: WizardStep[];
   initialData: T;
   saveKey?: string;
@@ -113,7 +113,7 @@ export function WizardProvider<T extends Record<string, any>>({
 
   return (
     <WizardContext.Provider value={value}>
-      {children}
+      {children(value)}
     </WizardContext.Provider>
   );
 }

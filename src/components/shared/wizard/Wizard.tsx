@@ -39,7 +39,7 @@ export function Wizard<T extends Record<string, any>>({
       saveKey={saveKey}
       navigateLogic={navigateLogic}
     >
-      {(context: any) => {
+      {(context) => {
         const { currentStep, formData, updateFormData, hasVisited, goToStep } = context;
         
         return (
