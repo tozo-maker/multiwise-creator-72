@@ -42,7 +42,7 @@ export const ContentCreation = () => {
         
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-2">Create Content</h2>
-          <p className="text-slate-500">
+          <p className="text-muted-foreground">
             Generate new content with AI assistance using your project configuration and knowledge base.
           </p>
         </div>

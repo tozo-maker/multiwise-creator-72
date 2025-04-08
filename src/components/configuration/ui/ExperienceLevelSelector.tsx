@@ -35,18 +35,18 @@ export const ExperienceLevelSelector: React.FC<ExperienceLevelSelectorProps> = (
         {options.map((option) => (
           <div 
             key={option.value}
-            className="flex flex-col bg-slate-800/80 border border-slate-700 rounded-md p-4 hover:border-slate-600 transition-colors cursor-pointer"
+            className="flex flex-col bg-card border border-border rounded-md p-4 hover:border-accent transition-colors cursor-pointer"
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value={option.value} id={option.value.toLowerCase()} />
               <Label 
                 htmlFor={option.value.toLowerCase()} 
-                className="font-medium text-slate-200 cursor-pointer"
+                className="font-medium cursor-pointer"
               >
                 {option.label}
               </Label>
             </div>
-            <p className="text-xs text-slate-400 mt-1">{option.description}</p>
+            <p className="text-xs text-muted-foreground mt-1">{option.description}</p>
           </div>
         ))}
       </RadioGroup>

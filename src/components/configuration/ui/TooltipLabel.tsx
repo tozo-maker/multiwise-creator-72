@@ -15,7 +15,7 @@ export const TooltipLabel: React.FC<TooltipLabelProps> = ({
   htmlFor,
   label,
   tooltip,
-  className = "text-slate-300"
+  className = ""
 }) => {
   return (
     <div className="flex items-center gap-2">
@@ -23,7 +23,7 @@ export const TooltipLabel: React.FC<TooltipLabelProps> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            <Info className="h-4 w-4 text-slate-400" />
+            <Info className="h-4 w-4 text-muted-foreground" />
           </TooltipTrigger>
           <TooltipContent>
             <p>{tooltip}</p>

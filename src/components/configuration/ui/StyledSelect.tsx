@@ -36,10 +36,10 @@ export const StyledSelect: React.FC<StyledSelectProps> = ({
         defaultValue={value}
         onValueChange={onChange}
       >
-        <SelectTrigger id={id} className="bg-slate-800 border-slate-600 text-slate-200 w-full">
+        <SelectTrigger id={id} className="w-full">
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
         </SelectTrigger>
-        <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+        <SelectContent>
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
           ))}
