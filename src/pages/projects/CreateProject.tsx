@@ -26,7 +26,7 @@ export const CreateProject: React.FC = () => {
   
   return (
     <ModernLayout contentWidth="wide">
-      <div className="w-full bg-slate-900/90 dark:bg-slate-900/90 min-h-screen -mt-4 py-6">
+      <div className="w-full bg-slate-900 dark:bg-slate-900 min-h-screen -mt-4 py-6">
         <div className="w-full">
           <div>
             <PageBreadcrumbs items={breadcrumbItems} />

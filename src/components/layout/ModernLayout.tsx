@@ -48,13 +48,13 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarState()}>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex w-full">
+      <div className="min-h-screen bg-slate-900 dark:bg-slate-900 flex w-full">
         <ModernSidebar />
         
         <DashboardProvider>
           <SidebarInset className="flex flex-col w-full">
             <ModernTopBar />
-            <main className="flex-1 overflow-y-auto p-3 md:p-6">
+            <main className="flex-1 overflow-y-auto p-3 md:p-6 bg-slate-900 text-slate-100">
               <div className={cn("mx-auto transition-all", getMaxWidthClass())}>
                 {children}
               </div>

@@ -20,7 +20,7 @@ export const QuickContentTemplates: React.FC<QuickContentTemplatesProps> = ({ pr
   ];
   
   return (
-    <Card className="bg-slate-800 border-slate-700">
+    <Card className="bg-slate-900 border-slate-800">
       <CardHeader>
         <CardTitle className="text-lg text-slate-100">Quick Content Creation</CardTitle>
         <CardDescription className="text-slate-400">
@@ -29,7 +29,7 @@ export const QuickContentTemplates: React.FC<QuickContentTemplatesProps> = ({ pr
       </CardHeader>
       <CardContent>
         <Button 
-          className="w-full justify-start gap-2 mb-3 bg-indigo-600 hover:bg-indigo-700 text-white" 
+          className="w-full justify-start gap-2 mb-3 bg-brand-600 hover:bg-brand-700 text-white" 
           onClick={() => navigate(`/projects/${projectId}/content/new`)}
         >
           <Plus className="h-4 w-4" />
@@ -45,7 +45,7 @@ export const QuickContentTemplates: React.FC<QuickContentTemplatesProps> = ({ pr
             <Button 
               key={i}
               variant="outline" 
-              className="w-full justify-start h-auto py-3 border-slate-700 text-slate-300 hover:bg-slate-700"
+              className="w-full justify-start h-auto py-3 border-slate-700 text-slate-300 hover:bg-slate-800 bg-slate-900/50"
               onClick={() => navigate(`/projects/${projectId}/content/new`)}
             >
               <div className="text-left">

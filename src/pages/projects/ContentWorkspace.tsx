@@ -62,7 +62,7 @@ export const ContentWorkspace = () => {
   
   return (
     <ModernLayout contentWidth="wide">
-      <div className="space-y-6">
+      <div className="space-y-6 bg-slate-900">
         <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>

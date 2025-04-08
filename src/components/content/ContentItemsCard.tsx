@@ -17,14 +17,14 @@ export const ContentItemsCard: React.FC<ContentItemsCardProps> = ({ projectId, c
   const isMobile = useIsMobile();
   
   return (
-    <Card className="bg-slate-800 border-slate-700">
+    <Card className="bg-slate-900 border-slate-800">
       <CardHeader className="pb-3">
         <CardTitle className="text-xl text-slate-100 flex justify-between items-center">
           <span>Content Items</span>
           <Button
             onClick={() => navigate(`/projects/${projectId}/content/new`)}
             size={isMobile ? "sm" : "default"}
-            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
           >
             <Plus className="h-4 w-4" />
             New Content
