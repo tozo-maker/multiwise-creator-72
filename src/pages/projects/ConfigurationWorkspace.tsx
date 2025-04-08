@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -177,7 +178,7 @@ export const ConfigurationWorkspace = () => {
                         <Label className="text-slate-300">Interaction Mode</Label>
                         <Info className="h-4 w-4 text-slate-400" />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <RadioGroup defaultValue="conversational" className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="flex items-center space-x-3 bg-slate-800/80 border border-slate-700 rounded-md p-4 hover:border-slate-600 transition-colors cursor-pointer">
                           <RadioGroupItem value="conversational" id="conversational" />
                           <div>
@@ -209,7 +210,7 @@ export const ConfigurationWorkspace = () => {
                             <p className="text-xs text-slate-400 mt-1">Iterative back-and-forth approach</p>
                           </div>
                         </div>
-                      </div>
+                      </RadioGroup>
                     </div>
                     
                     <div className="space-y-2">
