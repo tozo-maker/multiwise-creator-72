@@ -9,20 +9,24 @@ import { NewProjectButton } from '../projects/NewProjectButton';
 import { HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ThemeButton } from '@/components/shared/ThemeButton';
+import { ThemeTooltip } from '@/components/shared/ThemeTooltip';
 
 export const ModernTopBar = () => {
   const { toast } = useToast();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { isDark } = useTheme();
 
   return (
-    <header className={`h-16 border-b ${
-      isDark 
-        ? 'border-slate-800 bg-slate-900' 
-        : 'border-slate-200 bg-white'
-    } px-4 flex items-center sticky top-0 z-10`}>
+    <header 
+      className={`h-16 border-b ${
+        isDark 
+          ? 'border-slate-800 bg-slate-900' 
+          : 'border-slate-200 bg-white'
+      } px-4 flex items-center sticky top-0 z-10`}
+      role="banner"
+    >
       <div className="flex items-center space-x-2">
-        <SidebarTrigger />
+        <SidebarTrigger aria-label="Toggle sidebar" />
       </div>
       
       <div className="flex-1 pl-4 pr-4 max-w-2xl mx-auto">
@@ -34,23 +38,22 @@ export const ModernTopBar = () => {
         
         <ThemeToggle />
         
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className={`hidden sm:flex ${
-            isDark
-              ? 'text-slate-400 hover:text-slate-100'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-          onClick={() => {
-            toast({
-              title: "Help panel opened",
-              description: "Here you can find helpful tips and guides.",
-            });
-          }}
-        >
-          <HelpCircle className="h-5 w-5" />
-        </Button>
+        <ThemeTooltip content="Get help">
+          <ThemeButton 
+            variant="ghost" 
+            size="icon" 
+            className="hidden sm:flex"
+            onClick={() => {
+              toast({
+                title: "Help panel opened",
+                description: "Here you can find helpful tips and guides.",
+              });
+            }}
+            aria-label="Open help panel"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </ThemeButton>
+        </ThemeTooltip>
 
         <NotificationPanel />
       </div>

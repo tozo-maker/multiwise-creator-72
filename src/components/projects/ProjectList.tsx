@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { ProjectCardProps } from './ProjectCard';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { ProjectListContainer } from './list/ProjectListContainer';
@@ -8,17 +8,27 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface ProjectListProps {
   projects: ProjectCardProps[];
   isLoading?: boolean;
+  'aria-labelledby'?: string;
 }
 
 export const ProjectList: React.FC<ProjectListProps> = React.memo(({ 
   projects, 
-  isLoading = false 
+  isLoading = false,
+  'aria-labelledby': ariaLabelledBy 
 }) => {
   // Get existing search term from DashboardContext to avoid duplicating functionality
   const { searchTerm: globalSearchTerm } = useDashboard();
   const [filterType, setFilterType] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'progress'| 'name'>('newest');
-  const { theme } = useTheme();
+  const { isDark } = useTheme();
+  
+  const setFilterTypeCallback = useCallback((type: string | null) => {
+    setFilterType(type);
+  }, []);
+
+  const setSortOrderCallback = useCallback((order: 'newest' | 'oldest' | 'progress'| 'name') => {
+    setSortOrder(order);
+  }, []);
   
   const filteredProjects = useMemo(() => {
     return projects
@@ -43,15 +53,21 @@ export const ProjectList: React.FC<ProjectListProps> = React.memo(({
   }, [projects, globalSearchTerm, filterType, sortOrder]);
   
   return (
-    <div aria-live="polite" aria-busy={isLoading} role="region" aria-label="Project list">
+    <div 
+      aria-live="polite" 
+      aria-busy={isLoading}
+      role="region"
+      aria-labelledby={ariaLabelledBy}
+      className="focus-within:outline-none"
+    >
       <ProjectListContainer 
         projects={projects}
         isLoading={isLoading}
         filteredProjects={filteredProjects}
         filterType={filterType}
-        setFilterType={setFilterType}
+        setFilterType={setFilterTypeCallback}
         sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
+        setSortOrder={setSortOrderCallback}
       />
     </div>
   );

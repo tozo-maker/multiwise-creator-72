@@ -9,12 +9,13 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { MobileMenuItems } from '@/components/layout/mobile/MobileMenuItems';
+import { MobileAccessibleNavigation } from '@/components/layout/mobile/MobileAccessibleNavigation';
 import { MobileProjectNavigation } from '@/components/layout/mobile/MobileProjectNavigation';
 import { MobileUserProfile } from '@/components/layout/mobile/MobileUserProfile';
 import { MobileThemeToggle } from '@/components/layout/mobile/MobileThemeToggle';
 import { MobileUserSection } from '@/components/layout/mobile/MobileUserSection';
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 export const MobileNavigation = () => {
   const { isDark } = useTheme();
@@ -67,7 +68,7 @@ export const MobileNavigation = () => {
           <MobileUserProfile />
           
           <div className="py-2 flex-1 overflow-y-auto" role="navigation" aria-label="Mobile Navigation Menu">
-            <MobileMenuItems />
+            <MobileAccessibleNavigation />
             <MobileProjectNavigation />
             <MobileThemeToggle />
           </div>
@@ -78,6 +79,3 @@ export const MobileNavigation = () => {
     </div>
   );
 };
-
-// Add missing import
-import { cn } from '@/lib/utils';

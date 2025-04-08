@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ModernLayout } from './ModernLayout';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -23,6 +23,7 @@ export const DashboardLayout = React.memo(function DashboardLayout({
   mainId = 'main-content'
 }: DashboardLayoutProps) {
   const { isDark } = useTheme();
+  const mainRef = useRef<HTMLElement>(null);
   
   // Set page title for better accessibility
   useEffect(() => {
@@ -30,6 +31,11 @@ export const DashboardLayout = React.memo(function DashboardLayout({
       document.title = `${pageTitle} | MultiGuide Dashboard`;
     } else {
       document.title = 'MultiGuide Dashboard';
+    }
+    
+    // Focus the main content area when the page loads for accessibility
+    if (mainRef.current) {
+      mainRef.current.focus();
     }
     
     // Return a cleanup function to reset the title when unmounting
@@ -46,6 +52,7 @@ export const DashboardLayout = React.memo(function DashboardLayout({
   const content = (
     <main 
       id={mainId}
+      ref={mainRef}
       className="space-y-8" 
       role="main" 
       aria-labelledby={titleId}
@@ -57,7 +64,7 @@ export const DashboardLayout = React.memo(function DashboardLayout({
             <h1 
               id={titleId}
               className={cn(
-                "text-2xl font-bold mb-1",
+                "text-2xl md:text-3xl font-bold mb-1",
                 isDark ? "text-white" : "text-slate-900"
               )}
             >
@@ -66,9 +73,11 @@ export const DashboardLayout = React.memo(function DashboardLayout({
           )}
           {pageDescription && (
             <p className={cn(
-              "text-sm",
+              "text-sm md:text-base",
               isDark ? "text-slate-400" : "text-slate-600"
-            )}>
+            )}
+            aria-hidden="false"
+            >
               {pageDescription}
             </p>
           )}
