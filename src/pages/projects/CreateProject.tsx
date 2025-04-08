@@ -19,7 +19,6 @@ export const CreateProject: React.FC = () => {
   };
 
   const breadcrumbItems = [
-    { label: 'Dashboard', path: '/dashboard' },
     { label: 'Projects', path: '/projects' },
     { label: 'Create New Project' }
   ];
