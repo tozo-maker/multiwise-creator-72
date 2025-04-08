@@ -12,11 +12,13 @@ import {
   Presentation
 } from 'lucide-react';
 
+interface ProjectConfigData {
+  type: string;
+}
+
 interface ProjectConfigStepProps {
-  data: {
-    type: string;
-  };
-  updateData: (data: Partial<typeof data>) => void;
+  data: ProjectConfigData;
+  updateData: (data: Partial<ProjectConfigData>) => void;
   isMobile?: boolean;
 }
 

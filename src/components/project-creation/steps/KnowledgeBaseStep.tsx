@@ -4,8 +4,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { FileUploader } from './FileUploader';
 import { AlertCircle, Upload } from 'lucide-react';
+import { FileDropzone } from '@/components/upload/FileDropzone';
 
 interface KnowledgeBaseStepProps {
   data: any;
@@ -58,10 +58,11 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
       {enableKnowledgeBase && (
         <Card className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
           <div className="space-y-4">
-            <FileUploader 
+            <FileDropzone 
               onFilesSelected={handleFilesSelected}
               maxFiles={5}
-              acceptedFileTypes={['.pdf', '.docx', '.txt', '.md']}
+              accept=".pdf,.docx,.txt,.md"
+              className="w-full"
             />
             
             {files.length === 0 && (
@@ -106,41 +107,6 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
           </p>
         </div>
       )}
-    </div>
-  );
-}
-
-interface FileUploaderProps {
-  onFilesSelected: (files: File[]) => void;
-  maxFiles?: number;
-  acceptedFileTypes?: string[];
-}
-
-// This is just a placeholder component - assume it exists or will be implemented elsewhere
-function FileUploader({ onFilesSelected, maxFiles = 5, acceptedFileTypes }: FileUploaderProps) {
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const fileArray = Array.from(e.target.files).slice(0, maxFiles);
-      onFilesSelected(fileArray);
-    }
-  };
-
-  return (
-    <div className="flex justify-center">
-      <label className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-6 py-4 transition-colors hover:border-slate-400 dark:hover:border-slate-500">
-        <Upload className="h-6 w-6 text-slate-500 dark:text-slate-400" />
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Click to upload</span>
-        <span className="text-xs text-slate-500 dark:text-slate-400">
-          {acceptedFileTypes?.join(', ')} (max {maxFiles} files)
-        </span>
-        <input 
-          type="file" 
-          className="hidden" 
-          onChange={handleFileChange} 
-          multiple 
-          accept={acceptedFileTypes?.join(',')} 
-        />
-      </label>
     </div>
   );
 }

@@ -4,17 +4,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
 
+interface ProjectData {
+  name: string;
+  description: string;
+  type: string;
+  language: string;
+  targetAudience: string;
+  complexity: string;
+  templateId: string;
+}
+
 interface FinalReviewStepProps {
-  data: {
-    name: string;
-    description: string;
-    type: string;
-    language: string;
-    targetAudience: string;
-    complexity: string;
-    templateId: string;
-  };
-  updateData?: (data: Partial<typeof data>) => void;
+  data: ProjectData;
+  updateData?: (data: Partial<ProjectData>) => void;
   isMobile?: boolean;
 }
 

@@ -6,15 +6,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 
+interface ProjectBasicsData {
+  name: string;
+  description: string;
+  language: string;
+  targetAudience: string;
+  complexity: string;
+}
+
 interface ProjectBasicsStepProps {
-  data: {
-    name: string;
-    description: string;
-    language: string;
-    targetAudience: string;
-    complexity: string;
-  };
-  updateData: (data: Partial<typeof data>) => void;
+  data: ProjectBasicsData;
+  updateData: (data: Partial<ProjectBasicsData>) => void;
   isMobile?: boolean;
 }
 

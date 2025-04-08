@@ -87,7 +87,7 @@ export function ProjectCreationWizard({
   const StepComponent = steps[currentStep].component;
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <div className="space-y-2">
         <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
           <span>Step {currentStep + 1} of {steps.length}</span>
@@ -96,7 +96,7 @@ export function ProjectCreationWizard({
         <Progress value={progressPercentage} className="h-2 bg-slate-100 dark:bg-slate-800" />
       </div>
       
-      <div className="min-h-[300px]">
+      <div className="min-h-[300px] w-full">
         <StepComponent 
           data={formData} 
           updateData={updateFormData}
