@@ -1,10 +1,14 @@
 
 import React from 'react';
-import { Card, CardProps } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
-export function ThemeCard({ children, className, ...props }: CardProps) {
+interface ThemeCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
+
+export function ThemeCard({ children, className, ...props }: ThemeCardProps) {
   const { isDark } = useTheme();
   
   return (

@@ -1,12 +1,15 @@
 
 import React from 'react';
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { VariantProps } from 'class-variance-authority';
 
-interface ThemeButtonProps extends ButtonProps {
+interface ThemeButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'variant'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  className?: string;
+  children: React.ReactNode;
 }
 
 export function ThemeButton({
@@ -51,10 +54,29 @@ export function ThemeButton({
     }
   };
 
+  // Map our variant to the Button component's variant
+  const getButtonVariant = (): VariantProps<typeof buttonVariants>['variant'] => {
+    switch (variant) {
+      case 'primary':
+        return 'default';
+      case 'secondary':
+        return 'secondary';
+      case 'outline': 
+        return 'outline';
+      case 'ghost':
+        return 'ghost';
+      case 'destructive':
+        return 'destructive';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <Button
       className={cn(getVariantClasses(), className)}
       size={size}
+      variant={getButtonVariant()}
       {...props}
     >
       {children}
