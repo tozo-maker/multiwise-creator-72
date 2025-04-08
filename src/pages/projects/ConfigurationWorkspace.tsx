@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -10,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ConfigData } from '@/components/wizard/types';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
@@ -19,7 +18,6 @@ export const ConfigurationWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { toast } = useToast();
   
-  // Mock project data - would normally be fetched based on ID
   const project = {
     id: projectId || '1',
     name: 'Spanish Language Textbook',
@@ -36,20 +34,16 @@ export const ConfigurationWorkspace = () => {
     { label: 'Configuration' }
   ];
   
-  // Mock configuration data that would be retrieved from the backend
   const [configData, setConfigData] = useState<ConfigData>({
-    // Project Info
     name: 'Spanish Language Textbook',
     quickStart: 'custom',
     
-    // System Config
     interfaceLanguage: 'English',
     experienceLevel: 'Intermediate',
     interactionMode: 'Guided',
     outputDetail: 'Detailed',
     systemBehavior: 'Balanced',
     
-    // Project Config
     projectType: 'Textbook',
     customProjectType: '',
     subjects: ['Spanish', 'Language Arts'],
@@ -60,7 +54,6 @@ export const ConfigurationWorkspace = () => {
     wordDistribution: 'balanced',
     wordEnforcement: 'flexible',
     
-    // Language Config
     targetLanguage: 'Spanish',
     goal: 'Teaching',
     complexity: 'Intermediate',
@@ -73,11 +66,9 @@ export const ConfigurationWorkspace = () => {
     formatting: 'Default',
     scriptType: 'Latin',
     
-    // Documents
     uploadedDocuments: [],
     needsDocumentUpload: false,
     
-    // Metadata
     createdDate: new Date().toISOString(),
     lastModified: new Date().toISOString()
   });
@@ -87,7 +78,6 @@ export const ConfigurationWorkspace = () => {
   };
 
   const handleSaveChanges = () => {
-    // In a real app, this would save to the backend
     toast({
       title: "Changes saved",
       description: "Project configuration has been updated successfully."
@@ -132,7 +122,7 @@ export const ConfigurationWorkspace = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Label htmlFor="interfaceLanguage" className="text-slate-300">Interface Language</Label>
-                        <InfoCircledIcon className="h-4 w-4 text-slate-400" />
+                        <Info className="h-4 w-4 text-slate-400" />
                       </div>
                       <Select defaultValue="English">
                         <SelectTrigger id="interfaceLanguage" className="bg-slate-800 border-slate-600 text-slate-200 w-full">
@@ -150,7 +140,7 @@ export const ConfigurationWorkspace = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Label className="text-slate-300">User Experience Level</Label>
-                        <InfoCircledIcon className="h-4 w-4 text-slate-400" />
+                        <Info className="h-4 w-4 text-slate-400" />
                       </div>
                       <RadioGroup 
                         defaultValue="intermediate" 
@@ -185,7 +175,7 @@ export const ConfigurationWorkspace = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Label className="text-slate-300">Interaction Mode</Label>
-                        <InfoCircledIcon className="h-4 w-4 text-slate-400" />
+                        <Info className="h-4 w-4 text-slate-400" />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="flex items-center space-x-3 bg-slate-800/80 border border-slate-700 rounded-md p-4 hover:border-slate-600 transition-colors cursor-pointer">
@@ -225,7 +215,7 @@ export const ConfigurationWorkspace = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Label htmlFor="outputDetail" className="text-slate-300">Output Detail Level</Label>
-                        <InfoCircledIcon className="h-4 w-4 text-slate-400" />
+                        <Info className="h-4 w-4 text-slate-400" />
                       </div>
                       <Select defaultValue="detailed">
                         <SelectTrigger id="outputDetail" className="bg-slate-800 border-slate-600 text-slate-200 w-full">
@@ -242,7 +232,7 @@ export const ConfigurationWorkspace = () => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Label htmlFor="systemBehavior" className="text-slate-300">System Behavior Style</Label>
-                        <InfoCircledIcon className="h-4 w-4 text-slate-400" />
+                        <Info className="h-4 w-4 text-slate-400" />
                       </div>
                       <Select defaultValue="balanced">
                         <SelectTrigger id="systemBehavior" className="bg-slate-800 border-slate-600 text-slate-200 w-full">
@@ -260,18 +250,14 @@ export const ConfigurationWorkspace = () => {
               </TabsContent>
               
               <TabsContent value="project" className="space-y-6">
-                {/* Project configuration tab content */}
                 <div className="text-slate-300">
                   <p>Configure the project type, subjects, and educational standards.</p>
-                  {/* Project configuration form fields would go here */}
                 </div>
               </TabsContent>
               
               <TabsContent value="language" className="space-y-6">
-                {/* Language & Content configuration tab content */}
                 <div className="text-slate-300">
                   <p>Configure language settings and content specifications.</p>
-                  {/* Language configuration form fields would go here */}
                 </div>
               </TabsContent>
             </Tabs>
