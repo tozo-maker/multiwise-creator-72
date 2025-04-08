@@ -89,11 +89,11 @@ export function ProjectCreationWizard({
   return (
     <div className="space-y-6 py-6">
       <div className="space-y-2">
-        <div className="flex justify-between text-sm font-medium">
+        <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
           <span>Step {currentStep + 1} of {steps.length}</span>
           <span>{steps[currentStep].title}</span>
         </div>
-        <Progress value={progressPercentage} className="h-2" />
+        <Progress value={progressPercentage} className="h-2 bg-slate-100 dark:bg-slate-800" />
       </div>
       
       <div className="min-h-[300px]">
@@ -109,16 +109,23 @@ export function ProjectCreationWizard({
           variant="outline" 
           onClick={prevStep}
           disabled={currentStep === 0}
+          className="border-slate-200 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           Back
         </Button>
         
         {currentStep < steps.length - 1 ? (
-          <Button onClick={nextStep} className="bg-brand-500 hover:bg-brand-600">
+          <Button 
+            onClick={nextStep} 
+            className="bg-brand-500 hover:bg-brand-600 text-white"
+          >
             Continue
           </Button>
         ) : (
-          <Button onClick={handleCreate} className="bg-brand-500 hover:bg-brand-600">
+          <Button 
+            onClick={handleCreate} 
+            className="bg-brand-500 hover:bg-brand-600 text-white"
+          >
             Create Project
           </Button>
         )}

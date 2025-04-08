@@ -37,11 +37,11 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="name">Project Name</Label>
+          <Label htmlFor="name" className="text-slate-900 dark:text-slate-100">Project Name</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400" />
+                <HelpCircle className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="max-w-xs">Give your project a descriptive name to easily identify it later</p>
@@ -54,18 +54,18 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
           value={data.name}
           onChange={(e) => updateData({ name: e.target.value })}
           placeholder="My Educational Project"
-          className="w-full"
+          className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
           autoFocus
         />
       </div>
       
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description" className="text-slate-900 dark:text-slate-100">Description</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400" />
+                <HelpCircle className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="max-w-xs">A brief description of what this project is about</p>
@@ -78,17 +78,17 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
           value={data.description}
           onChange={(e) => updateData({ description: e.target.value })}
           placeholder="Enter a brief description of your project..."
-          className="min-h-[100px] resize-none"
+          className="min-h-[100px] resize-none bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
         />
       </div>
       
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="type">Project Type</Label>
+          <Label htmlFor="type" className="text-slate-900 dark:text-slate-100">Project Type</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400" />
+                <HelpCircle className="h-4 w-4 text-slate-400 dark:text-slate-500" />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="max-w-xs">The type of educational content you want to create</p>
@@ -97,7 +97,7 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
           </TooltipProvider>
         </div>
         <Select value={data.type} onValueChange={(value) => updateData({ type: value })}>
-          <SelectTrigger>
+          <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
             <SelectValue placeholder="Select project type" />
           </SelectTrigger>
           <SelectContent>
@@ -108,8 +108,8 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
         </Select>
       </div>
       
-      <Card className="bg-brand-50 border-brand-100">
-        <CardContent className="pt-4 text-sm text-muted-foreground">
+      <Card className="bg-brand-50 dark:bg-brand-900/20 border-brand-100 dark:border-brand-800/30">
+        <CardContent className="pt-4 text-sm text-slate-600 dark:text-slate-400">
           <p>Your project settings can always be modified later from the project configuration page.</p>
         </CardContent>
       </Card>

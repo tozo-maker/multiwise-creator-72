@@ -38,13 +38,13 @@ export const CreateProject: React.FC = () => {
         </div>
         
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Create New Project</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Create New Project</h1>
+          <p className="text-muted-foreground mt-1">
             Set up your new educational content project.
           </p>
         </div>
         
-        <Card className="border border-slate-200 dark:border-slate-700 shadow-sm">
+        <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
           <CardContent className="p-6">
             <ProjectCreationWizard
               templateId="blank"
