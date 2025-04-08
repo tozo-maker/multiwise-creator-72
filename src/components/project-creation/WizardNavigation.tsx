@@ -41,20 +41,16 @@ export function WizardNavigation({
       {!isLastStep ? (
         <Button 
           onClick={onNext} 
-          className={isDark
-            ? "bg-indigo-600 hover:bg-indigo-500 text-white"
-            : "bg-primary hover:bg-primary/90 text-white"
-          }
+          variant={isDark ? "default" : "default"}
+          className="text-white"
         >
           Continue
         </Button>
       ) : (
         <Button 
           onClick={onComplete} 
-          className={isDark
-            ? "bg-indigo-600 hover:bg-indigo-500 text-white"
-            : "bg-primary hover:bg-primary/90 text-white"
-          }
+          variant={isDark ? "default" : "default"}
+          className="text-white"
         >
           Create Project
         </Button>

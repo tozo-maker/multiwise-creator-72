@@ -31,7 +31,7 @@ export const CreateProject: React.FC = () => {
       <div className={`w-full min-h-screen -mt-4 py-6 ${
         isDark ? 'bg-slate-900' : 'bg-slate-50'
       }`}>
-        <div className="w-full">
+        <div className="w-full px-4 md:px-0">
           <div>
             <PageBreadcrumbs items={breadcrumbItems} />
             
