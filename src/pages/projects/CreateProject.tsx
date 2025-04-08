@@ -31,27 +31,29 @@ export const CreateProject: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="space-y-6 w-full max-w-none"
+        className="space-y-6 w-full"
       >
-        <div className="pt-4">
-          <PageBreadcrumbs items={breadcrumbItems} />
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center">
+            <PageBreadcrumbs items={breadcrumbItems} />
+          </div>
+          
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Create New Project</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">
+              Set up your new educational content project.
+            </p>
+          </div>
+          
+          <Card className="border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 w-full">
+            <CardContent className="p-6">
+              <ProjectCreationWizard
+                templateId="blank"
+                onComplete={handleProjectCreated}
+              />
+            </CardContent>
+          </Card>
         </div>
-        
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Create New Project</h1>
-          <p className="text-muted-foreground mt-1 dark:text-slate-400">
-            Set up your new educational content project.
-          </p>
-        </div>
-        
-        <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 w-full">
-          <CardContent className="p-6">
-            <ProjectCreationWizard
-              templateId="blank"
-              onComplete={handleProjectCreated}
-            />
-          </CardContent>
-        </Card>
       </motion.div>
     </ModernLayout>
   );

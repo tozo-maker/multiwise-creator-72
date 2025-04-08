@@ -7,6 +7,19 @@ import { ProjectConfigStep } from './steps/ProjectConfigStep';
 import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { FinalReviewStep } from './steps/FinalReviewStep';
 import { useToast } from '@/hooks/use-toast';
+import { WizardStepIndicator } from '@/components/wizard/WizardStepIndicator';
+
+interface ProjectData {
+  name: string;
+  description: string;
+  type: string;
+  language: string;
+  targetAudience: string;
+  complexity: string;
+  templateId: string;
+  hasKnowledgeBase?: boolean;
+  knowledgeBaseFiles?: string[];
+}
 
 interface ProjectCreationWizardProps {
   templateId: string;
@@ -20,7 +33,7 @@ export function ProjectCreationWizard({
   isMobile = false 
 }: ProjectCreationWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProjectData>({
     name: '',
     description: '',
     type: '',
@@ -33,13 +46,13 @@ export function ProjectCreationWizard({
   
   // Define wizard steps
   const steps = [
-    { title: 'Project Basics', component: ProjectBasicsStep },
-    { title: 'Configuration', component: ProjectConfigStep },
-    { title: 'Knowledge Base', component: KnowledgeBaseStep },
-    { title: 'Review & Create', component: FinalReviewStep },
+    { id: 0, name: 'Project Basics' },
+    { id: 1, name: 'Configuration' },
+    { id: 2, name: 'Knowledge Base' },
+    { id: 3, name: 'Review & Create' }
   ];
   
-  const updateFormData = (data: Partial<typeof formData>) => {
+  const updateFormData = (data: Partial<ProjectData>) => {
     setFormData({ ...formData, ...data });
   };
   
@@ -83,28 +96,69 @@ export function ProjectCreationWizard({
   // Calculate progress percentage
   const progressPercentage = ((currentStep + 1) / steps.length) * 100;
   
+  // Track visited steps to enable navigation
+  const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
+  
+  const hasVisited = (stepId: number) => {
+    return visitedSteps.has(stepId) || stepId <= currentStep;
+  };
+  
+  const goToStep = (stepId: number) => {
+    if (hasVisited(stepId)) {
+      setCurrentStep(stepId);
+    }
+  };
+  
   // Get current component
-  const StepComponent = steps[currentStep].component;
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return <ProjectBasicsStep data={formData} updateData={updateFormData} isMobile={isMobile} />;
+      case 1:
+        return <ProjectConfigStep data={formData} updateData={updateFormData} isMobile={isMobile} />;
+      case 2:
+        return <KnowledgeBaseStep data={formData} updateData={updateFormData} isMobile={isMobile} />;
+      case 3:
+        return <FinalReviewStep data={formData} isMobile={isMobile} />;
+      default:
+        return null;
+    }
+  };
+  
+  // Update visited steps when moving forward
+  React.useEffect(() => {
+    setVisitedSteps(prev => {
+      const updated = new Set(prev);
+      updated.add(currentStep);
+      return updated;
+    });
+  }, [currentStep]);
   
   return (
     <div className="space-y-6 w-full">
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
-          <span>Step {currentStep + 1} of {steps.length}</span>
-          <span>{steps[currentStep].title}</span>
+      <div className="space-y-4">
+        <WizardStepIndicator 
+          steps={steps} 
+          currentStep={currentStep} 
+          hasVisited={hasVisited}
+          onStepClick={goToStep}
+          className="mb-2"
+        />
+        
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
+            <span>Step {currentStep + 1} of {steps.length}</span>
+            <span>{steps[currentStep].name}</span>
+          </div>
+          <Progress value={progressPercentage} className="h-2 bg-slate-100 dark:bg-slate-800" />
         </div>
-        <Progress value={progressPercentage} className="h-2 bg-slate-100 dark:bg-slate-800" />
       </div>
       
       <div className="min-h-[300px] w-full">
-        <StepComponent 
-          data={formData} 
-          updateData={updateFormData}
-          isMobile={isMobile}
-        />
+        {renderStepContent()}
       </div>
       
-      <div className="flex justify-between pt-4">
+      <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
         <Button 
           variant="outline" 
           onClick={prevStep}
@@ -117,14 +171,14 @@ export function ProjectCreationWizard({
         {currentStep < steps.length - 1 ? (
           <Button 
             onClick={nextStep} 
-            className="bg-brand-500 hover:bg-brand-600 text-white"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             Continue
           </Button>
         ) : (
           <Button 
             onClick={handleCreate} 
-            className="bg-brand-500 hover:bg-brand-600 text-white"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             Create Project
           </Button>
