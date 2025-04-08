@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FileText, Download, Trash2, MoreHorizontal, Edit, Eye, Search, Filter, ArrowUpDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -87,7 +88,7 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
       {label}
       {sortField === field && <ArrowUpDown className={`h-3 w-3 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />}
     </Button>;
-  return <div className="space-y-4">
+  return <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-3">
         <div className="relative w-full sm:w-64">
           
@@ -193,7 +194,7 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
         </Table>
       </div>
       
-      <div className="flex justify-between items-center text-sm text-slate-500">
+      <div className="flex justify-between items-center text-sm text-slate-500 mt-4">
         <div>
           Showing {filteredFiles.length} of {files.length} files
         </div>
