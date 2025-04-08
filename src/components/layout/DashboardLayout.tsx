@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { ModernLayout } from './ModernLayout';
 import { motion } from 'framer-motion';
@@ -47,11 +48,6 @@ export const DashboardLayout = React.memo(function DashboardLayout({
   const titleId = pageTitle ? `dashboard-title-${pageTitle.replace(/\s+/g, '-').toLowerCase()}` : undefined;
   const content = <main id={mainId} ref={mainRef} className="space-y-8" role="main" aria-labelledby={titleId} tabIndex={-1} // Allow programmatic focus but not tab focus
   >
-      {(pageTitle || pageDescription) && <header className="mb-8">
-          {pageTitle}
-          {pageDescription}
-        </header>}
-      
       {children}
     </main>;
   return <ModernLayout contentWidth={contentWidth}>
