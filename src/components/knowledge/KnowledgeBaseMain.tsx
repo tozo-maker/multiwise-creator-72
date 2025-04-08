@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,7 +7,7 @@ import { KnowledgeBaseUpload } from './KnowledgeBaseUpload';
 import { KnowledgeBaseCategories, KBCategory } from './KnowledgeBaseCategories';
 import { KnowledgeBaseAnalytics } from './KnowledgeBaseAnalytics';
 import { Button } from '@/components/ui/button';
-import { Plus, SearchIcon, TagIcon, FolderIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -121,14 +122,7 @@ export const KnowledgeBaseMain = () => {
             Manage your educational resources and materials.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant={isDark ? "outline" : "secondary"} className={isDark 
-            ? 'border-slate-700 bg-slate-800' 
-            : 'border-slate-200 bg-slate-100'
-          }>
-            <SearchIcon className="mr-2 h-4 w-4" />
-            Search
-          </Button>
+        <div>
           <Button variant="default">
             <Plus className="mr-2 h-4 w-4" />
             Add Resource

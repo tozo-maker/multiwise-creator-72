@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -5,8 +6,6 @@ import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHea
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { KnowledgeBaseFileList, KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
 import { KnowledgeBaseUpload } from '@/components/knowledge/KnowledgeBaseUpload';
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,9 +36,6 @@ export const KnowledgeBase = () => {
     type: 'Textbook',
     targetLanguage: 'Spanish'
   };
-
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Mock KB files
   const [files, setFiles] = useState<KBFile[]>([{
@@ -79,13 +75,8 @@ export const KnowledgeBase = () => {
     uploadDate: '2023-06-25'
   }]);
   
-  // Filter files based on search query
-  const filteredFiles = searchQuery
-    ? files.filter(file => 
-        file.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        file.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : files;
+  // Use all files since we no longer filter by search
+  const filteredFiles = files;
     
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentEditFile, setCurrentEditFile] = useState<KBFile | null>(null);
@@ -178,20 +169,7 @@ export const KnowledgeBase = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between items-center mb-6">
-              <div className="relative w-64">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className={`h-4 w-4 ${isDark ? "text-slate-400" : "text-slate-500"}`} />
-                </div>
-                <Input
-                  type="search"
-                  placeholder="Search files..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`pl-10 ${isDark ? "bg-slate-700 border-slate-600 placeholder:text-slate-400 text-slate-100" : "bg-white border-slate-300 placeholder:text-slate-400"}`}
-                />
-              </div>
-              
+            <div className="flex justify-end mb-6">
               <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
             </div>
             
