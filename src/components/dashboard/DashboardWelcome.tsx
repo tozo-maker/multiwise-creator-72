@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Video } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface DashboardWelcomeProps {
   userName: string;
@@ -13,6 +14,9 @@ interface DashboardWelcomeProps {
 
 export const DashboardWelcome = ({ userName, hasProjects, className }: DashboardWelcomeProps) => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   const timeOfDay = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -21,14 +25,14 @@ export const DashboardWelcome = ({ userName, hasProjects, className }: Dashboard
   };
 
   return (
-    <Card className={`border-brand-200 dark:border-brand-800/50 bg-gradient-to-br from-brand-50 to-slate-50 dark:from-brand-900/30 dark:to-slate-800/50 ${className}`}>
+    <Card className={`${isDark ? 'dark:border-brand-800/50 dark:from-brand-900/30 dark:to-slate-800/50' : 'border-brand-200 from-brand-50 to-slate-50'} bg-gradient-to-br ${className}`}>
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+            <h2 className={`text-2xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'} mb-2`}>
               {timeOfDay()}, {userName || 'Teacher'}!
             </h2>
-            <p className="text-slate-600 dark:text-slate-300 mb-4">
+            <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} mb-4`}>
               {hasProjects 
                 ? "Continue working on your educational content projects or start something new."
                 : "Ready to create your first educational content project?"}
@@ -43,7 +47,10 @@ export const DashboardWelcome = ({ userName, hasProjects, className }: Dashboard
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               )}
-              <Button variant="outline" className="gap-1 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              <Button 
+                variant="outline" 
+                className={`gap-1 ${isDark ? 'dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+              >
                 <Video className="h-4 w-4" />
                 Watch Tutorial
               </Button>
@@ -53,7 +60,7 @@ export const DashboardWelcome = ({ userName, hasProjects, className }: Dashboard
             <img 
               src="/dashboard-illustration.svg" 
               alt="Dashboard illustration" 
-              className="h-24 w-auto dark:opacity-80"
+              className={`h-24 w-auto ${isDark ? 'dark:opacity-80' : ''}`}
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}

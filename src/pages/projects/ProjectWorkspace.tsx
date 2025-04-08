@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { FileText, LineChart, Sparkles, CalendarClock, FileBox } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Import our new components
 import { ProjectActivityFeed } from '@/components/project/ProjectActivityFeed';
@@ -25,6 +26,8 @@ const ProjectAnalyticsExport = lazy(() =>
 
 export const ProjectWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   // Mock project data - would normally be fetched based on ID
   const project = {
@@ -122,7 +125,7 @@ export const ProjectWorkspace = () => {
         
         {/* Analytics & Exports Section */}
         <ErrorBoundary>
-          <Suspense fallback={<Skeleton className="w-full h-[200px]" />}>
+          <Suspense fallback={<Skeleton className={`w-full h-[200px] ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />}>
             <ProjectAnalyticsExport projectId={projectId} />
           </Suspense>
         </ErrorBoundary>

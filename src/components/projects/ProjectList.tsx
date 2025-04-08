@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ProjectCardProps } from './ProjectCard';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { ProjectListContainer } from './list/ProjectListContainer';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectListProps {
   projects: ProjectCardProps[];
@@ -14,6 +15,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading = 
   const { searchTerm: globalSearchTerm } = useDashboard();
   const [filterType, setFilterType] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'progress'| 'name'>('newest');
+  const { theme } = useTheme();
   
   const filteredProjects = projects
     .filter(project => 

@@ -1,96 +1,101 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
-import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
+import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { ContentItemsCard } from '@/components/content/ContentItemsCard';
-import { QuickContentTemplates } from '@/components/content/QuickContentTemplates';
-import { ProjectOverviewCards } from '@/components/project/ProjectOverviewCards';
-import { ProjectOverviewInfo } from '@/components/project/ProjectOverviewInfo';
+import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 
-const ContentWorkspace: React.FC = () => {
+// Mock data
+const mockContentItems = [
+  {
+    id: '1',
+    title: 'Basic Vocabulary List',
+    description: 'Common words and phrases for beginners',
+    type: 'vocabulary',
+    lastModified: '2 hours ago',
+    status: 'completed'
+  },
+  {
+    id: '2',
+    title: 'Present Tense Conjugation',
+    description: 'Rules and examples for verb conjugation in present tense',
+    type: 'grammar',
+    lastModified: '1 day ago',
+    status: 'in-progress'
+  },
+  {
+    id: '3',
+    title: 'Conversation Practice: Introductions',
+    description: 'Dialogues for practicing introductions in Spanish',
+    type: 'conversation',
+    lastModified: '3 days ago',
+    status: 'review'
+  }
+];
+
+const ContentWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const [projectName, setProjectName] = useState<string>('Loading...');
+  const navigate = useNavigate();
   const { theme } = useTheme();
-  
-  // Mock content items data
-  const contentItems = [
-    {
-      id: '1',
-      title: 'Introduction to Spanish Grammar',
-      type: 'Chapter',
-      status: 'completed' as const,
-      lastModified: '2 days ago'
-    },
-    {
-      id: '2',
-      title: 'Basic Vocabulary: Greetings and Introductions',
-      type: 'Vocabulary List',
-      status: 'draft' as const,
-      lastModified: '1 day ago'
-    },
-    {
-      id: '3',
-      title: 'Present Tense Conjugation',
-      type: 'Grammar Explanation',
-      status: 'in-review' as const,
-      lastModified: '3 hours ago'
-    }
-  ];
+  const isDark = theme === 'dark';
   
   // Mock project data
   const project = {
-    name: 'Spanish Language Course',
-    progress: 65,
-    description: 'A comprehensive Spanish language course for beginners',
-    deadline: 'October 15, 2023',
-    lastModified: '3 hours ago',
-    owner: 'John Doe'
+    id: projectId || '1',
+    name: 'Spanish Language Textbook',
+    type: 'Textbook',
+    targetLanguage: 'Spanish'
   };
-  
-  // Simulate loading project data
-  useEffect(() => {
-    setTimeout(() => {
-      setProjectName(project.name);
-    }, 800);
-  }, []);
   
   const breadcrumbItems = [
     { label: 'Projects', path: '/projects' },
-    { label: projectName, path: `/projects/${projectId}` },
+    { label: project.name, path: `/projects/${projectId}` },
     { label: 'Content' }
   ];
   
   return (
     <ModernLayout contentWidth="wide">
-      <div className={`space-y-6 ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'}`}>
+      <div className="space-y-6">
         <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
-
-        <div>
-          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{projectName}: Content</h1>
-          <p className={`mt-1 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-            Manage educational content for this project
-          </p>
-        </div>
         
-        <ProjectOverviewCards />
+        <ProjectWorkspaceHeader 
+          projectName={project.name}
+          projectType={project.type}
+          targetLanguage={project.targetLanguage}
+        />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <ContentItemsCard
-              projectId={projectId || ''}
-              contentItems={contentItems}
-            />
+        <ProjectWorkspaceTabs projectId={project.id} activeTab="content" />
+        
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className={`text-xl font-semibold mb-2 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+              Content Items
+            </h2>
+            <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+              Manage your educational content for this project
+            </p>
           </div>
           
-          <div className="space-y-6">
-            <QuickContentTemplates projectId={projectId || ''} />
-            <ProjectOverviewInfo project={project} />
-          </div>
+          <Button 
+            onClick={() => navigate(`/projects/${projectId}/content/new`)}
+            className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
+          >
+            <Plus className="h-4 w-4" />
+            Create New Content
+          </Button>
         </div>
+        
+        <ContentItemsCard 
+          projectId={project.id} 
+          contentItems={mockContentItems}
+        />
       </div>
     </ModernLayout>
   );

@@ -12,6 +12,7 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const Dashboard = () => {
   return (
@@ -24,13 +25,15 @@ const Dashboard = () => {
 // Separated component to use hooks within the DashboardProvider context
 const DashboardContent = () => {
   const { isFirstVisit, isLoading } = useDashboard();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 text-brand-500 animate-spin" />
-          <p className="text-slate-500 dark:text-slate-400">Loading your dashboard...</p>
+          <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>Loading your dashboard...</p>
         </div>
       </div>
     );

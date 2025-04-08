@@ -8,12 +8,19 @@ import { ThemeToggle } from './theme/ThemeToggle';
 import { NewProjectButton } from '../projects/NewProjectButton';
 import { HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const ModernTopBar = () => {
   const { toast } = useToast();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
-    <header className="h-16 border-b border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 px-4 flex items-center sticky top-0 z-10">
+    <header className={`h-16 border-b ${
+      isDark 
+        ? 'border-slate-800 bg-slate-900' 
+        : 'border-slate-200 bg-white'
+    } px-4 flex items-center sticky top-0 z-10`}>
       <div className="flex items-center space-x-2">
         <SidebarTrigger />
       </div>
@@ -30,7 +37,11 @@ export const ModernTopBar = () => {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="hidden sm:flex text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+          className={`hidden sm:flex ${
+            isDark
+              ? 'text-slate-400 hover:text-slate-100'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
           onClick={() => {
             toast({
               title: "Help panel opened",

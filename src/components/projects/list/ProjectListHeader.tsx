@@ -1,18 +1,20 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Filter, SortAsc, SortDesc, Download, BarChart } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
+import { Filter, ArrowUpDown } from 'lucide-react';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { useNavigate } from 'react-router-dom';
-import { toast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 import { ProjectCardProps } from '../ProjectCard';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectListHeaderProps {
   projects: ProjectCardProps[];
@@ -29,104 +31,104 @@ export const ProjectListHeader: React.FC<ProjectListHeaderProps> = ({
   sortOrder,
   setSortOrder
 }) => {
-  const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
+  // Get unique project types
   const projectTypes = Array.from(new Set(projects.map(project => project.type)));
   
-  const handleExportData = () => {
-    toast({
-      title: "Export initiated",
-      description: "Your project data is being prepared for export.",
-    });
-    
-    // Simulate export process
-    setTimeout(() => {
-      toast({
-        title: "Export complete",
-        description: "Project data exported successfully.",
-      });
-      console.log("Project data export (would download CSV in production)");
-    }, 1500);
-  };
-  
-  const goToAnalytics = () => {
-    navigate('/analytics');
-  };
-
   return (
-    <div className="flex flex-wrap gap-4 mb-6">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-wrap justify-between items-center mb-4">
+      <div className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+        {projects.length} project{projects.length !== 1 ? 's' : ''}
+      </div>
+      
+      <div className="flex gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              {filterType || 'All Types'}
+            <Button 
+              variant="outline" 
+              size="sm"
+              className={`gap-1 ${
+                isDark 
+                  ? 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700' 
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              <Filter className="h-3.5 w-3.5" />
+              <span>Filter</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setFilterType(null)}>
+          <DropdownMenuContent align="end" className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
+            <DropdownMenuLabel className={isDark ? 'text-slate-300' : 'text-slate-700'}>Filter by Type</DropdownMenuLabel>
+            <DropdownMenuSeparator className={isDark ? 'bg-slate-700' : 'bg-slate-200'} />
+            <DropdownMenuCheckboxItem
+              checked={filterType === null}
+              onCheckedChange={() => setFilterType(null)}
+              className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
+            >
               All Types
-            </DropdownMenuItem>
+            </DropdownMenuCheckboxItem>
+            
             {projectTypes.map(type => (
-              <DropdownMenuItem key={type} onClick={() => setFilterType(type)}>
+              <DropdownMenuCheckboxItem 
+                key={type}
+                checked={filterType === type}
+                onCheckedChange={() => {
+                  setFilterType(filterType === type ? null : type);
+                }}
+                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
+              >
                 {type}
-              </DropdownMenuItem>
+              </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              {sortOrder === 'newest' || sortOrder === 'progress' ? 
-                <SortDesc className="h-4 w-4" /> : 
-                <SortAsc className="h-4 w-4" />
-              }
-              Sort
+            <Button 
+              variant="outline" 
+              size="sm"
+              className={`gap-1 ${
+                isDark 
+                  ? 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700' 
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              <ArrowUpDown className="h-3.5 w-3.5" />
+              <span>Sort</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setSortOrder('newest')}>
-              Newest First
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortOrder('oldest')}>
-              Oldest First
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortOrder('progress')}>
-              Progress
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortOrder('name')}>
-              Name
-            </DropdownMenuItem>
+          <DropdownMenuContent align="end" className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
+            <DropdownMenuRadioGroup value={sortOrder} onValueChange={(value) => setSortOrder(value as any)}>
+              <DropdownMenuRadioItem 
+                value="newest"
+                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
+              >
+                Newest First
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem 
+                value="oldest"
+                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
+              >
+                Oldest First
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem 
+                value="progress"
+                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
+              >
+                Progress (High-Low)
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem 
+                value="name"
+                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
+              >
+                Name (A-Z)
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-      
-      <div className="ml-auto flex gap-2 items-center">
-        {window.location.pathname !== '/dashboard' && projects.length > 0 && (
-          <>
-            <Button 
-              variant="outline" 
-              className="gap-2" 
-              onClick={handleExportData}
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Export</span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="gap-2" 
-              onClick={goToAnalytics}
-            >
-              <BarChart className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
-            </Button>
-          </>
-        )}
       </div>
     </div>
   );

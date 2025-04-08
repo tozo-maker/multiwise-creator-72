@@ -19,6 +19,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   // Map contentWidth to appropriate max-width classes
   const getMaxWidthClass = () => {
@@ -52,7 +53,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
     <SidebarProvider defaultOpen={defaultSidebarState()}>
       <div className={cn(
         "min-h-screen flex w-full",
-        theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'
+        isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'
       )}>
         <ModernSidebar />
         
@@ -61,7 +62,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
             <ModernTopBar />
             <main className={cn(
               "flex-1 overflow-y-auto p-3 md:p-6",
-              theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
+              isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
             )}>
               <div className={cn("mx-auto transition-all", getMaxWidthClass())}>
                 {children}

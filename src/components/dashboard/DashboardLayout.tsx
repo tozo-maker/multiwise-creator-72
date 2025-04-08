@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
   showBreadcrumbs = true
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   const containerAnimation = {
     hidden: { opacity: 0 },
     show: {
@@ -30,7 +34,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   return (
     <motion.div 
-      className="space-y-8"
+      className={`space-y-8 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}
       variants={containerAnimation}
       initial="hidden"
       animate="show"
