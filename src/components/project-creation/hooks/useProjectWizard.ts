@@ -9,7 +9,7 @@ export interface ProjectData {
   language: string;
   targetAudience: string;
   complexity: string;
-  templateId: string; // Required
+  templateId: string; 
   quickStart?: string;
   hasKnowledgeBase?: boolean;
   knowledgeBaseFiles?: string[];

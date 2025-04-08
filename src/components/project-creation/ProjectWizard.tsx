@@ -32,7 +32,7 @@ export function ProjectWizard({ onComplete }: ProjectWizardProps) {
         onStepClick={goToStep}
       />
       
-      <Card className="w-full border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950">
+      <Card className="w-full border-slate-700 bg-slate-800/50 dark:bg-slate-800/50 shadow-lg">
         <div className="p-6">
           <WizardContent 
             currentStep={currentStep} 

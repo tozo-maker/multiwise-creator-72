@@ -21,12 +21,12 @@ export function WizardNavigation({
   const isLastStep = currentStep === stepsCount - 1;
 
   return (
-    <div className="flex justify-between p-6 border-t border-slate-200 dark:border-slate-800">
+    <div className="flex justify-between p-6 border-t border-slate-700">
       <Button 
         variant="outline" 
         onClick={onPrev}
         disabled={isFirstStep}
-        className="border-slate-200 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        className="border-slate-600 dark:border-slate-600 text-slate-300 hover:bg-slate-700"
       >
         Back
       </Button>

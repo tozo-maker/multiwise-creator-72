@@ -72,8 +72,8 @@ export function QuickStartStep({ data, updateData }: QuickStartStepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-4 text-slate-900 dark:text-white">Choose a Starting Point</h2>
-        <p className="text-slate-500 dark:text-slate-400 mb-6">
+        <h2 className="text-2xl font-semibold mb-4 text-slate-100">Choose a Starting Point</h2>
+        <p className="text-slate-400 mb-6">
           Select a template or start from scratch to configure your educational project.
         </p>
       </div>
@@ -82,25 +82,25 @@ export function QuickStartStep({ data, updateData }: QuickStartStepProps) {
         {templates.map((template) => (
           <Card 
             key={template.id}
-            className={`cursor-pointer border-2 transition-all hover:shadow-md ${
+            className={`cursor-pointer border-2 transition-all hover:shadow-md bg-slate-800/30 ${
               data.templateId === template.id 
-                ? 'border-indigo-500 dark:border-indigo-400' 
-                : 'border-slate-200 dark:border-slate-700'
+                ? 'border-indigo-500' 
+                : 'border-slate-700'
             }`}
             onClick={() => handleSelectTemplate(template.id)}
           >
             <CardContent className="p-6 flex items-start gap-4">
               <div className={`p-2 rounded-full ${
                 data.templateId === template.id 
-                  ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' 
-                  : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                  ? 'bg-indigo-900/50 text-indigo-400' 
+                  : 'bg-slate-800 text-slate-400'
               }`}>
                 <template.icon className="h-6 w-6" />
               </div>
               
               <div>
-                <h3 className="font-medium text-slate-900 dark:text-slate-100">{template.name}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <h3 className="font-medium text-slate-100">{template.name}</h3>
+                <p className="text-sm text-slate-400 mt-1">
                   {template.description}
                 </p>
               </div>

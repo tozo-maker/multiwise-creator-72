@@ -38,7 +38,7 @@ export function WizardSteps({
                     "absolute top-4 h-1 w-full left-1/2 -z-10",
                     (hasVisited(steps[index + 1].id) || currentStep === steps[index + 1].id) 
                       ? "bg-indigo-500" 
-                      : "bg-slate-200 dark:bg-slate-700"
+                      : "bg-slate-700"
                   )}
                 />
               )}
@@ -52,7 +52,7 @@ export function WizardSteps({
                   "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2",
                   isActive && "bg-indigo-600 text-white border-indigo-600",
                   isComplete && "bg-indigo-600 text-white border-indigo-600",
-                  !isActive && !isComplete && "bg-white text-slate-500 border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400",
+                  !isActive && !isComplete && "bg-slate-800 text-slate-400 border-slate-700",
                   isClickable && !isActive && "hover:border-indigo-400 cursor-pointer"
                 )}
               >
@@ -63,9 +63,9 @@ export function WizardSteps({
               <span 
                 className={cn(
                   "mt-2 text-xs font-medium hidden md:block",
-                  isActive && "text-indigo-600 dark:text-indigo-400",
-                  isComplete && "text-slate-700 dark:text-slate-300",
-                  !isActive && !isComplete && "text-slate-500 dark:text-slate-500"
+                  isActive && "text-indigo-400",
+                  isComplete && "text-slate-300",
+                  !isActive && !isComplete && "text-slate-500"
                 )}
               >
                 {step.name}
