@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
@@ -12,36 +11,37 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { ContentItem } from '@/components/content/ContentItemsList';
 
 // Mock data - Explicitly typed to match the ContentItem interface
-const mockContentItems: ContentItem[] = [
-  {
-    id: '1',
-    title: 'Basic Vocabulary List',
-    type: 'vocabulary',
-    lastModified: '2 hours ago',
-    status: 'completed'
-  },
-  {
-    id: '2',
-    title: 'Present Tense Conjugation',
-    type: 'grammar',
-    lastModified: '1 day ago',
-    status: 'draft'
-  },
-  {
-    id: '3',
-    title: 'Conversation Practice: Introductions',
-    type: 'conversation',
-    lastModified: '3 days ago',
-    status: 'in-review'
-  }
-];
-
+const mockContentItems: ContentItem[] = [{
+  id: '1',
+  title: 'Basic Vocabulary List',
+  type: 'vocabulary',
+  lastModified: '2 hours ago',
+  status: 'completed'
+}, {
+  id: '2',
+  title: 'Present Tense Conjugation',
+  type: 'grammar',
+  lastModified: '1 day ago',
+  status: 'draft'
+}, {
+  id: '3',
+  title: 'Conversation Practice: Introductions',
+  type: 'conversation',
+  lastModified: '3 days ago',
+  status: 'in-review'
+}];
 const ContentWorkspace = () => {
-  const { projectId } = useParams<{ projectId: string }>();
+  const {
+    projectId
+  } = useParams<{
+    projectId: string;
+  }>();
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const {
+    theme
+  } = useTheme();
   const isDark = theme === 'dark';
-  
+
   // Mock project data
   const project = {
     id: projectId || '1',
@@ -49,25 +49,22 @@ const ContentWorkspace = () => {
     type: 'Textbook',
     targetLanguage: 'Spanish'
   };
-  
-  const breadcrumbItems = [
-    { label: 'Projects', path: '/projects' },
-    { label: project.name, path: `/projects/${projectId}` },
-    { label: 'Content' }
-  ];
-  
-  return (
-    <ModernLayout contentWidth="wide">
+  const breadcrumbItems = [{
+    label: 'Projects',
+    path: '/projects'
+  }, {
+    label: project.name,
+    path: `/projects/${projectId}`
+  }, {
+    label: 'Content'
+  }];
+  return <ModernLayout contentWidth="wide">
       <div className="space-y-6">
         <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
         
-        <ProjectWorkspaceHeader 
-          projectName={project.name}
-          projectType={project.type}
-          targetLanguage={project.targetLanguage}
-        />
+        <ProjectWorkspaceHeader projectName={project.name} projectType={project.type} targetLanguage={project.targetLanguage} />
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="content" />
         
@@ -81,22 +78,11 @@ const ContentWorkspace = () => {
             </p>
           </div>
           
-          <Button 
-            onClick={() => navigate(`/projects/${projectId}/content/new`)}
-            className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
-          >
-            <Plus className="h-4 w-4" />
-            Create New Content
-          </Button>
+          
         </div>
         
-        <ContentItemsCard 
-          projectId={project.id} 
-          contentItems={mockContentItems}
-        />
+        <ContentItemsCard projectId={project.id} contentItems={mockContentItems} />
       </div>
-    </ModernLayout>
-  );
+    </ModernLayout>;
 };
-
 export default ContentWorkspace;
