@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { KnowledgeBaseFileList, KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
@@ -303,7 +303,7 @@ export const KnowledgeBaseAdvanced = () => {
   };
   
   return (
-    <MainLayout>
+    <ModernLayout>
       <ProjectWorkspaceHeader 
         projectName={project.name}
         projectType={project.type}
@@ -676,7 +676,7 @@ export const KnowledgeBaseAdvanced = () => {
           </DialogContent>
         </Dialog>
       )}
-    </MainLayout>
+    </ModernLayout>
   );
 };
 
