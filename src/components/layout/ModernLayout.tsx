@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ModernLayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
   contentWidth = 'wide' 
 }) => {
   const isMobile = useIsMobile();
+  const { theme } = useTheme();
   
   // Map contentWidth to appropriate max-width classes
   const getMaxWidthClass = () => {
@@ -48,13 +50,19 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
 
   return (
     <SidebarProvider defaultOpen={defaultSidebarState()}>
-      <div className="min-h-screen bg-slate-900 dark:bg-slate-900 flex w-full">
+      <div className={cn(
+        "min-h-screen flex w-full",
+        theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'
+      )}>
         <ModernSidebar />
         
         <DashboardProvider>
           <SidebarInset className="flex flex-col w-full">
             <ModernTopBar />
-            <main className="flex-1 overflow-y-auto p-3 md:p-6 bg-slate-900 text-slate-100">
+            <main className={cn(
+              "flex-1 overflow-y-auto p-3 md:p-6",
+              theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
+            )}>
               <div className={cn("mx-auto transition-all", getMaxWidthClass())}>
                 {children}
               </div>

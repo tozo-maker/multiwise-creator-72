@@ -5,6 +5,7 @@ import { ProjectList } from '@/components/projects/ProjectList';
 import { useDashboard, DashboardProvider } from '@/contexts/DashboardContext';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Add a status field to the filtered projects if it doesn't exist already
 const addStatusIfMissing = (projects: any[]) => {
@@ -17,6 +18,7 @@ const addStatusIfMissing = (projects: any[]) => {
 // Create a wrapper component that uses the DashboardProvider
 const ProjectsContent = () => {
   const { filteredProjects: originalFilteredProjects } = useDashboard();
+  const { theme } = useTheme();
   
   // Ensure all projects have a status field
   const filteredProjects = addStatusIfMissing(originalFilteredProjects);
@@ -29,14 +31,14 @@ const ProjectsContent = () => {
     >
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground">
+          <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>Projects</h1>
+          <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
             View and manage all your educational content projects.
           </p>
         </div>
         
         <Tabs defaultValue="all" className="space-y-4">
-          <TabsList>
+          <TabsList className={theme === 'dark' ? '' : 'bg-slate-100'}>
             <TabsTrigger value="all">All Projects</TabsTrigger>
             <TabsTrigger value="recent">Recent</TabsTrigger>
             <TabsTrigger value="active">Active</TabsTrigger>

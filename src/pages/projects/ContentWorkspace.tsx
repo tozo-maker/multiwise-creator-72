@@ -1,90 +1,94 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
-import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
-import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { ContentItemsCard } from '@/components/content/ContentItemsCard';
 import { QuickContentTemplates } from '@/components/content/QuickContentTemplates';
-import { type ContentItem } from '@/components/content/ContentItemsList';
+import { ProjectOverviewCards } from '@/components/project/ProjectOverviewCards';
+import { ProjectOverviewInfo } from '@/components/project/ProjectOverviewInfo';
+import { useTheme } from '@/contexts/ThemeContext';
 
-export const ContentWorkspace = () => {
+const ContentWorkspace: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const [projectName, setProjectName] = useState<string>('Loading...');
+  const { theme } = useTheme();
   
-  // Mock project data - would normally be fetched based on ID
-  const project = {
-    id: projectId || '1',
-    name: 'Spanish Language Textbook',
-    type: 'Textbook',
-    targetLanguage: 'Spanish',
-    lastModified: '2 hours ago',
-    progress: 65
-  };
-  
-  // Mock content items
-  const [contentItems] = useState<ContentItem[]>([
+  // Mock content items data
+  const contentItems = [
     {
       id: '1',
-      title: 'Introduction to Spanish Greetings',
-      type: 'Lesson',
-      status: 'completed',
+      title: 'Introduction to Spanish Grammar',
+      type: 'Chapter',
+      status: 'completed' as const,
       lastModified: '2 days ago'
     },
     {
       id: '2',
-      title: 'Present Tense Conjugation',
-      type: 'Grammar Reference',
-      status: 'completed',
-      lastModified: '1 week ago'
+      title: 'Basic Vocabulary: Greetings and Introductions',
+      type: 'Vocabulary List',
+      status: 'draft' as const,
+      lastModified: '1 day ago'
     },
     {
       id: '3',
-      title: 'Basic Vocabulary - Food and Drinks',
-      type: 'Vocabulary',
-      status: 'draft',
+      title: 'Present Tense Conjugation',
+      type: 'Grammar Explanation',
+      status: 'in-review' as const,
       lastModified: '3 hours ago'
-    },
-    {
-      id: '4',
-      title: 'Practice Exercise - Greetings',
-      type: 'Exercise',
-      status: 'in-review',
-      lastModified: '5 days ago'
     }
-  ]);
+  ];
+  
+  // Mock project data
+  const project = {
+    name: 'Spanish Language Course',
+    progress: 65,
+    description: 'A comprehensive Spanish language course for beginners',
+    deadline: 'October 15, 2023',
+    lastModified: '3 hours ago',
+    owner: 'John Doe'
+  };
+  
+  // Simulate loading project data
+  useEffect(() => {
+    setTimeout(() => {
+      setProjectName(project.name);
+    }, 800);
+  }, []);
   
   const breadcrumbItems = [
     { label: 'Projects', path: '/projects' },
-    { label: project.name, path: `/projects/${projectId}` },
+    { label: projectName, path: `/projects/${projectId}` },
     { label: 'Content' }
   ];
   
   return (
     <ModernLayout contentWidth="wide">
-      <div className="space-y-6 bg-slate-900">
+      <div className={`space-y-6 ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'}`}>
         <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
+
+        <div>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{projectName}: Content</h1>
+          <p className={`mt-1 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+            Manage educational content for this project
+          </p>
+        </div>
         
-        <ProjectWorkspaceHeader 
-          projectName={project.name}
-          projectType={project.type}
-          targetLanguage={project.targetLanguage}
-        />
+        <ProjectOverviewCards />
         
-        <ProjectWorkspaceTabs projectId={project.id} activeTab="content" />
-        
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2">
-            <ContentItemsCard 
-              projectId={project.id} 
-              contentItems={contentItems} 
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <ContentItemsCard
+              projectId={projectId || ''}
+              contentItems={contentItems}
             />
           </div>
           
-          <div>
-            <QuickContentTemplates projectId={project.id} />
+          <div className="space-y-6">
+            <QuickContentTemplates projectId={projectId || ''} />
+            <ProjectOverviewInfo project={project} />
           </div>
         </div>
       </div>
