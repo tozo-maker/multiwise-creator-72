@@ -10,7 +10,7 @@ import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 
-// Mock data
+// Mock data - Updated to match the ContentItem interface
 const mockContentItems = [
   {
     id: '1',
@@ -26,7 +26,7 @@ const mockContentItems = [
     description: 'Rules and examples for verb conjugation in present tense',
     type: 'grammar',
     lastModified: '1 day ago',
-    status: 'in-progress'
+    status: 'draft'  // Changed from 'in-progress' to 'draft' to match the interface
   },
   {
     id: '3',
@@ -34,7 +34,7 @@ const mockContentItems = [
     description: 'Dialogues for practicing introductions in Spanish',
     type: 'conversation',
     lastModified: '3 days ago',
-    status: 'review'
+    status: 'in-review'  // Changed from 'review' to 'in-review' to match the interface
   }
 ];
 
