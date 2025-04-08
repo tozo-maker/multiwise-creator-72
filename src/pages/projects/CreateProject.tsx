@@ -11,6 +11,7 @@ export const CreateProject: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   const handleProjectCreated = (projectId: string) => {
     toast({
@@ -29,7 +30,7 @@ export const CreateProject: React.FC = () => {
   return (
     <ModernLayout contentWidth="wide">
       <div className={`w-full min-h-screen -mt-4 py-6 ${
-        theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'
+        isDark ? 'bg-slate-900' : 'bg-slate-50'
       }`}>
         <div className="w-full">
           <div>
@@ -37,10 +38,10 @@ export const CreateProject: React.FC = () => {
             
             <div className="mb-6">
               <h1 className={`text-3xl font-bold ${
-                theme === 'dark' ? 'text-slate-50' : 'text-slate-900'
+                isDark ? 'text-slate-50' : 'text-slate-900'
               }`}>Create New Project</h1>
               <p className={
-                theme === 'dark' ? 'text-slate-400 mt-1' : 'text-slate-600 mt-1'
+                isDark ? 'text-slate-400 mt-1' : 'text-slate-600 mt-1'
               }>
                 Configure your educational content project by following these steps.
               </p>

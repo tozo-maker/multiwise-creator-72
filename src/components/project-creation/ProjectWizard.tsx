@@ -5,6 +5,7 @@ import { WizardSteps } from './WizardSteps';
 import { WizardContent } from './WizardContent';
 import { WizardNavigation } from './WizardNavigation';
 import { useProjectWizard } from './hooks/useProjectWizard';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectWizardProps {
   onComplete: (projectId: string) => void;
@@ -23,6 +24,9 @@ export function ProjectWizard({ onComplete }: ProjectWizardProps) {
     handleCreate
   } = useProjectWizard(onComplete);
   
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   return (
     <div className="w-full space-y-6">
       <WizardSteps 
@@ -32,7 +36,11 @@ export function ProjectWizard({ onComplete }: ProjectWizardProps) {
         onStepClick={goToStep}
       />
       
-      <Card className="w-full border-slate-700 bg-slate-800/50 dark:bg-slate-800/50 shadow-lg">
+      <Card className={`w-full ${
+        isDark 
+          ? "border-slate-700 bg-slate-800/50 shadow-lg" 
+          : "border-slate-200 bg-white shadow-sm"
+      }`}>
         <div className="p-6">
           <WizardContent 
             currentStep={currentStep} 

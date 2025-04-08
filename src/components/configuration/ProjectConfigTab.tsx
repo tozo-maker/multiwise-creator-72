@@ -19,7 +19,9 @@ export const ProjectConfigTab: React.FC<ProjectConfigTabProps> = ({ configData, 
   
   return (
     <div className={`${isDark ? 'text-slate-300' : 'text-slate-700'} space-y-8`}>
-      <p className={`mb-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Configure the project type, subjects, and educational standards.</p>
+      <p className={`mb-6 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+        Configure the project type, subjects, and educational standards.
+      </p>
       
       <ProjectTypeSelector 
         projectType={configData.projectType}

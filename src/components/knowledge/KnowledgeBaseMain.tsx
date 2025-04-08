@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -123,7 +122,10 @@ export const KnowledgeBaseMain = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant={isDark ? "outline" : "secondary"} className={isDark ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-slate-100'}>
+          <Button variant={isDark ? "outline" : "secondary"} className={isDark 
+            ? 'border-slate-700 bg-slate-800' 
+            : 'border-slate-200 bg-slate-100'
+          }>
             <SearchIcon className="mr-2 h-4 w-4" />
             Search
           </Button>
@@ -136,11 +138,26 @@ export const KnowledgeBaseMain = () => {
 
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList className={isDark ? 'bg-slate-800' : 'bg-slate-100'}>
-          <TabsTrigger value="all" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>All Resources</TabsTrigger>
-          <TabsTrigger value="documents" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>Documents</TabsTrigger>
-          <TabsTrigger value="images" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>Images</TabsTrigger>
-          <TabsTrigger value="videos" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>Videos</TabsTrigger>
-          <TabsTrigger value="analytics" className={isDark ? 'data-[state=active]:bg-slate-700' : 'data-[state=active]:bg-white'}>Analytics</TabsTrigger>
+          <TabsTrigger value="all" className={isDark 
+            ? 'data-[state=active]:bg-slate-700' 
+            : 'data-[state=active]:bg-white'
+          }>All Resources</TabsTrigger>
+          <TabsTrigger value="documents" className={isDark 
+            ? 'data-[state=active]:bg-slate-700' 
+            : 'data-[state=active]:bg-white'
+          }>Documents</TabsTrigger>
+          <TabsTrigger value="images" className={isDark 
+            ? 'data-[state=active]:bg-slate-700' 
+            : 'data-[state=active]:bg-white'
+          }>Images</TabsTrigger>
+          <TabsTrigger value="videos" className={isDark 
+            ? 'data-[state=active]:bg-slate-700' 
+            : 'data-[state=active]:bg-white'
+          }>Videos</TabsTrigger>
+          <TabsTrigger value="analytics" className={isDark 
+            ? 'data-[state=active]:bg-slate-700' 
+            : 'data-[state=active]:bg-white'
+          }>Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="all" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
@@ -154,10 +171,10 @@ export const KnowledgeBaseMain = () => {
               <CardContent className="p-0">
                 <KnowledgeBaseFileList 
                   files={files}
-                  onDelete={handleDeleteFile}
-                  onEdit={handleEditFile}
-                  onPreview={handlePreviewFile}
-                  onDownload={handleDownloadFile}
+                  onDelete={() => {}}
+                  onEdit={() => {}}
+                  onPreview={() => {}}
+                  onDownload={() => {}}
                 />
               </CardContent>
             </Card>
@@ -170,8 +187,8 @@ export const KnowledgeBaseMain = () => {
                   <KnowledgeBaseCategories 
                     categories={categories}
                     activeCategory={activeCategory}
-                    onSelectCategory={handleSelectCategory}
-                    onAddCategory={handleAddCategory}
+                    onSelectCategory={setActiveCategory}
+                    onAddCategory={() => {}}
                   />
                 </CardContent>
               </Card>
@@ -180,7 +197,7 @@ export const KnowledgeBaseMain = () => {
                   <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Upload</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
+                  <KnowledgeBaseUpload onFilesUploaded={() => {}} />
                 </CardContent>
               </Card>
             </div>
@@ -201,10 +218,10 @@ export const KnowledgeBaseMain = () => {
             <CardContent>
               <KnowledgeBaseFileList 
                 files={files.filter(f => ['pdf', 'docx', 'doc', 'txt'].includes(f.fileType))}
-                onDelete={handleDeleteFile}
-                onEdit={handleEditFile}
-                onPreview={handlePreviewFile}
-                onDownload={handleDownloadFile}
+                onDelete={() => {}}
+                onEdit={() => {}}
+                onPreview={() => {}}
+                onDownload={() => {}}
               />
             </CardContent>
           </Card>

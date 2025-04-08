@@ -8,6 +8,7 @@ import { HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card, CardContent } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectBasicsStepProps {
   data: {
@@ -25,21 +26,29 @@ interface ProjectBasicsStepProps {
 export function ProjectBasicsStep({ data, updateData, isMobile = false }: ProjectBasicsStepProps) {
   const languageOptions = ['English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Arabic'];
   const complexityOptions = ['Beginner', 'Intermediate', 'Advanced', 'Mixed'];
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold mb-4 text-slate-100">Project Name</h2>
-        <p className="text-slate-400 mb-6">Name your project and get started.</p>
+        <h2 className={`text-2xl font-semibold mb-4 ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+          Project Name
+        </h2>
+        <p className={`mb-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          Name your project and get started.
+        </p>
       </div>
       
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="name" className="text-slate-200 font-medium">Project Name</Label>
+          <Label htmlFor="name" className={`font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+            Project Name
+          </Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400" />
+                <HelpCircle className={`h-4 w-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="max-w-xs">Give your project a descriptive name</p>
@@ -52,20 +61,23 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
           placeholder="Enter project name"
           value={data.name}
           onChange={(e) => updateData({ name: e.target.value })}
-          className="border-slate-700 bg-slate-800/70 text-slate-200"
+          className={isDark 
+            ? "border-slate-700 bg-slate-800/70 text-slate-200" 
+            : "border-slate-300 bg-white text-slate-900"
+          }
         />
-        <p className="text-sm text-slate-400 mt-1">
+        <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           This name will be used to identify your project throughout the system
         </p>
       </div>
       
       <div className="space-y-6">
         <div className="flex items-center gap-2">
-          <Label className="text-slate-200 font-medium">Approach</Label>
+          <Label className={`font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>Approach</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400" />
+                <HelpCircle className={`h-4 w-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="max-w-xs">Choose how you want to start your project</p>
@@ -82,7 +94,9 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
           <Card 
             className={`border-2 ${data.quickStart === 'template' 
               ? 'border-indigo-500' 
-              : 'border-slate-700'} p-0 cursor-pointer bg-slate-800/30`}
+              : isDark ? 'border-slate-700' : 'border-slate-200'} p-0 cursor-pointer ${
+                isDark ? 'bg-slate-800/30' : 'bg-white'
+              }`}
             onClick={() => updateData({ quickStart: 'template' })}
           >
             <CardContent className="p-0">
@@ -91,8 +105,10 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
                   <RadioGroupItem value="template" id="template" />
                 </div>
                 <div>
-                  <Label htmlFor="template" className="font-medium text-base text-slate-200">Start with a Template</Label>
-                  <p className="text-sm text-slate-400">
+                  <Label htmlFor="template" className={`font-medium text-base ${
+                    isDark ? 'text-slate-200' : 'text-slate-800'
+                  }`}>Start with a Template</Label>
+                  <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     Choose from pre-configured templates for common educational materials.
                   </p>
                 </div>
@@ -103,7 +119,9 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
           <Card 
             className={`border-2 ${data.quickStart === 'custom' 
               ? 'border-indigo-500' 
-              : 'border-slate-700'} p-0 cursor-pointer bg-slate-800/30`}
+              : isDark ? 'border-slate-700' : 'border-slate-200'} p-0 cursor-pointer ${
+                isDark ? 'bg-slate-800/30' : 'bg-white'
+              }`}
             onClick={() => updateData({ quickStart: 'custom' })}
           >
             <CardContent className="p-0">
@@ -112,8 +130,10 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
                   <RadioGroupItem value="custom" id="custom" />
                 </div>
                 <div>
-                  <Label htmlFor="custom" className="font-medium text-base text-slate-200">Custom Configuration</Label>
-                  <p className="text-sm text-slate-400">
+                  <Label htmlFor="custom" className={`font-medium text-base ${
+                    isDark ? 'text-slate-200' : 'text-slate-800'
+                  }`}>Custom Configuration</Label>
+                  <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     Configure your project from scratch with full control over all settings.
                   </p>
                 </div>
@@ -124,7 +144,9 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
           <Card 
             className={`border-2 ${data.quickStart === 'duplicate' 
               ? 'border-indigo-500' 
-              : 'border-slate-700'} p-0 cursor-pointer bg-slate-800/30`}
+              : isDark ? 'border-slate-700' : 'border-slate-200'} p-0 cursor-pointer ${
+                isDark ? 'bg-slate-800/30' : 'bg-white'
+              }`}
             onClick={() => updateData({ quickStart: 'duplicate' })}
           >
             <CardContent className="p-0">
@@ -133,8 +155,10 @@ export function ProjectBasicsStep({ data, updateData, isMobile = false }: Projec
                   <RadioGroupItem value="duplicate" id="duplicate" />
                 </div>
                 <div>
-                  <Label htmlFor="duplicate" className="font-medium text-base text-slate-200">Duplicate Existing Project</Label>
-                  <p className="text-sm text-slate-400">
+                  <Label htmlFor="duplicate" className={`font-medium text-base ${
+                    isDark ? 'text-slate-200' : 'text-slate-800'
+                  }`}>Duplicate Existing Project</Label>
+                  <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     Clone an existing project as a starting point.
                   </p>
                 </div>
