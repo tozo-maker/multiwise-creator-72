@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ModernLayout } from './ModernLayout';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -22,8 +22,17 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const { isDark } = useTheme();
   
+  // Set page title for better accessibility
+  useEffect(() => {
+    if (pageTitle) {
+      document.title = `${pageTitle} | MultiGuide Dashboard`;
+    } else {
+      document.title = 'MultiGuide Dashboard';
+    }
+  }, [pageTitle]);
+  
   const content = (
-    <div className="space-y-8">
+    <div className="space-y-8" role="region" aria-label="Dashboard Content">
       {(pageTitle || pageDescription) && (
         <div className="mb-8">
           {pageTitle && (
@@ -38,7 +47,8 @@ export function DashboardLayout({
             <p className={cn(
               "text-sm",
               isDark ? "text-slate-400" : "text-slate-600"
-            )}>
+            )}
+            aria-describedby={pageTitle ? `dashboard-title-${pageTitle.replace(/\s+/g, '-').toLowerCase()}` : undefined}>
               {pageDescription}
             </p>
           )}
@@ -56,6 +66,7 @@ export function DashboardLayout({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
+          aria-live="polite"
         >
           {content}
         </motion.div>

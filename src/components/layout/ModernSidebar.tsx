@@ -1,6 +1,6 @@
 
-import React, { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useCallback } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -24,13 +24,14 @@ import {
   SidebarMenu,
   useSidebar
 } from '@/components/ui/sidebar';
-import { SidebarNavItems } from './sidebar/SidebarMenu';
-import { SidebarAccountMenu } from './sidebar/SidebarAccountMenu';
+import { SidebarNavItems } from '@/components/layout/sidebar/SidebarMenu';
+import { SidebarAccountMenu } from '@/components/layout/sidebar/SidebarAccountMenu';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const ModernSidebar = () => {
   const { state, setOpen } = useSidebar();
   const { theme } = useTheme();
+  const location = useLocation();
   
   // Save sidebar state to localStorage when it changes
   useEffect(() => {
@@ -39,27 +40,40 @@ export const ModernSidebar = () => {
     }
   }, [state]);
   
+  // Add keyboard shortcut to toggle sidebar
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'm' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      setOpen(state !== 'expanded');
+    }
+  }, [state, setOpen]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+  
   const mainNavItems = [
     {
-      icon: <LayoutDashboard />,
+      icon: <LayoutDashboard aria-hidden="true" />,
       label: 'Dashboard',
       to: '/dashboard',
       tooltip: 'Dashboard'
     },
     {
-      icon: <BookText />,
+      icon: <BookText aria-hidden="true" />,
       label: 'Projects',
       to: '/projects',
       tooltip: 'Projects'
     },
     {
-      icon: <LineChart />,
+      icon: <LineChart aria-hidden="true" />,
       label: 'Analytics',
       to: '/analytics',
       tooltip: 'Analytics'
     },
     {
-      icon: <Database />,
+      icon: <Database aria-hidden="true" />,
       label: 'Knowledge Base',
       to: '/knowledge-base',
       tooltip: 'Knowledge Base'
@@ -67,19 +81,29 @@ export const ModernSidebar = () => {
   ];
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon" style={{ "--sidebar-width-icon": "4rem" } as React.CSSProperties}>
+    <Sidebar 
+      variant="sidebar" 
+      collapsible="icon" 
+      style={{ "--sidebar-width-icon": "4rem" } as React.CSSProperties}
+      aria-label="Main Sidebar"
+      aria-expanded={state === "expanded"}
+    >
       <SidebarHeader>
-        <Link to="/" className="flex items-center gap-2 px-2 py-3">
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 px-2 py-3"
+          aria-label="Home"
+        >
           {state === "expanded" ? (
             <>
               <div className="h-8 w-8 rounded-md bg-brand-500 flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-white" />
+                <BookOpen className="h-5 w-5 text-white" aria-hidden="true" />
               </div>
               <span className="text-xl font-bold text-sidebar-foreground">MultiGuide</span>
             </>
           ) : (
             <div className="h-8 w-8 mx-auto rounded-md bg-brand-500 flex items-center justify-center">
-              <BookOpen className="h-5 w-5 text-white" />
+              <BookOpen className="h-5 w-5 text-white" aria-hidden="true" />
             </div>
           )}
         </Link>
@@ -111,6 +135,3 @@ export const ModernSidebar = () => {
     </Sidebar>
   );
 };
-
-// Add missing import
-import { Link } from 'react-router-dom';

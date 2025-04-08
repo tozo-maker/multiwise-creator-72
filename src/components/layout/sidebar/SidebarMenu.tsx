@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { KeyboardEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface SidebarMenuItemProps {
   icon: React.ReactNode;
@@ -21,6 +22,16 @@ export const SidebarMenuLink: React.FC<SidebarMenuItemProps> = ({
   tooltip,
   isActive,
 }) => {
+  const { isDark } = useTheme();
+  
+  const handleKeyDown = (e: KeyboardEvent<HTMLAnchorElement>) => {
+    // Navigate on Enter or Space
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      window.location.href = to;
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ x: 5 }}
@@ -31,8 +42,20 @@ export const SidebarMenuLink: React.FC<SidebarMenuItemProps> = ({
           asChild 
           isActive={isActive}
           tooltip={tooltip || label}
+          aria-current={isActive ? 'page' : undefined}
         >
-          <Link to={to} className="transition-colors duration-200">
+          <Link 
+            to={to} 
+            className="transition-colors duration-200"
+            onKeyDown={handleKeyDown}
+            aria-label={`Navigate to ${label}`}
+            role="menuitem"
+            tabIndex={0}
+            style={{ 
+              outline: 'none',
+              boxShadow: 'none'
+            }}
+          >
             {icon}
             <span>{label}</span>
           </Link>
@@ -46,7 +69,7 @@ interface SidebarNavItemsProps {
   items: SidebarMenuItemProps[];
 }
 
-export const SidebarNavItems: React.FC<SidebarNavItemsProps> = ({ items }) => {
+export const SidebarNavItems: React.FC<SidebarNavItemsProps> = React.memo(({ items }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   
@@ -83,6 +106,8 @@ export const SidebarNavItems: React.FC<SidebarNavItemsProps> = ({ items }) => {
       initial="hidden"
       animate="show"
       className={cn(isMobile ? "px-2" : "")}
+      role="menu"
+      aria-label="Main Navigation"
     >
       {items.map((item) => (
         <motion.div key={item.to} variants={itemVariants}>
@@ -97,4 +122,6 @@ export const SidebarNavItems: React.FC<SidebarNavItemsProps> = ({ items }) => {
       ))}
     </motion.div>
   );
-};
+});
+
+SidebarNavItems.displayName = 'SidebarNavItems';

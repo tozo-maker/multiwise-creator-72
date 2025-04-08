@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -9,7 +9,7 @@ interface ProjectWorkspaceTabsProps {
   activeTab?: string;
 }
 
-export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({ 
+export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.memo(({ 
   projectId,
   activeTab 
 }) => {
@@ -30,7 +30,7 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
     return currentPath.includes(`/projects/${projectId}/${tabPath}`);
   };
   
-  const tabs = [
+  const tabs = useMemo(() => [
     { id: 'overview', label: 'Overview', path: `/projects/${projectId}` },
     { id: 'content', label: 'Content', path: `/projects/${projectId}/content` },
     { id: 'analysis', label: 'Analysis', path: `/projects/${projectId}/analysis` },
@@ -38,12 +38,16 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
     { id: 'knowledge-base', label: 'Knowledge Base', path: `/projects/${projectId}/knowledge-base` },
     { id: 'configuration', label: 'Configuration', path: `/projects/${projectId}/configuration` },
     { id: 'snapshots', label: 'Snapshots', path: `/projects/${projectId}/snapshots` },
-  ];
+  ], [projectId]);
   
   return (
-    <div className={`border-b mb-6 overflow-x-auto ${
-      isDark ? 'border-slate-700' : 'border-slate-200'
-    }`}>
+    <div 
+      className={`border-b mb-6 overflow-x-auto ${
+        isDark ? 'border-slate-700' : 'border-slate-200'
+      }`}
+      role="tablist"
+      aria-label="Project Navigation Tabs"
+    >
       <div className="flex space-x-8">
         {tabs.map((tab) => (
           <Link
@@ -59,6 +63,11 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
                   ? "text-slate-400 hover:text-slate-300"
                   : "text-slate-600 hover:text-slate-900"
             )}
+            role="tab"
+            aria-selected={isTabActive(tab.id)}
+            aria-controls={`panel-${tab.id}`}
+            id={`tab-${tab.id}`}
+            tabIndex={isTabActive(tab.id) ? 0 : -1}
           >
             {tab.label}
           </Link>
@@ -66,4 +75,6 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
       </div>
     </div>
   );
-};
+});
+
+ProjectWorkspaceTabs.displayName = 'ProjectWorkspaceTabs';
