@@ -22,7 +22,7 @@ export const ContentItemsCard: React.FC<ContentItemsCardProps> = ({ projectId, c
   return (
     <Card className={isDark 
       ? "bg-slate-800 border-slate-700" 
-      : "bg-white border-slate-200"
+      : "bg-white border-slate-200 shadow-sm"
     }>
       <CardHeader className="pb-3">
         <CardTitle className={`text-xl flex justify-between items-center ${
