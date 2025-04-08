@@ -16,7 +16,6 @@ const mockContentItems: ContentItem[] = [
   {
     id: '1',
     title: 'Basic Vocabulary List',
-    description: 'Common words and phrases for beginners',
     type: 'vocabulary',
     lastModified: '2 hours ago',
     status: 'completed'
@@ -24,18 +23,16 @@ const mockContentItems: ContentItem[] = [
   {
     id: '2',
     title: 'Present Tense Conjugation',
-    description: 'Rules and examples for verb conjugation in present tense',
     type: 'grammar',
     lastModified: '1 day ago',
-    status: 'draft'  // Changed from 'in-progress' to 'draft' to match the interface
+    status: 'draft'
   },
   {
     id: '3',
     title: 'Conversation Practice: Introductions',
-    description: 'Dialogues for practicing introductions in Spanish',
     type: 'conversation',
     lastModified: '3 days ago',
-    status: 'in-review'  // Changed from 'review' to 'in-review' to match the interface
+    status: 'in-review'
   }
 ];
 
