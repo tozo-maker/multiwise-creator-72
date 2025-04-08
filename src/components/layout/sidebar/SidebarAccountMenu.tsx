@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Settings, HelpCircle } from 'lucide-react';
+import { LogOut, User, Settings } from 'lucide-react';
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 
@@ -48,18 +48,6 @@ export const SidebarAccountMenu = () => {
           <Link to="/settings">
             <Settings />
             <span>Account Settings</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-      
-      <SidebarMenuItem>
-        <SidebarMenuButton 
-          asChild 
-          tooltip="Help"
-        >
-          <Link to="/help">
-            <HelpCircle />
-            <span>Help</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>

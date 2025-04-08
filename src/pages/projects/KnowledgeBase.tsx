@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
+
 export const KnowledgeBase = () => {
   const {
     projectId
@@ -36,6 +37,9 @@ export const KnowledgeBase = () => {
     type: 'Textbook',
     targetLanguage: 'Spanish'
   };
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Mock KB files
   const [files, setFiles] = useState<KBFile[]>([{
@@ -74,6 +78,15 @@ export const KnowledgeBase = () => {
     size: '4.1 MB',
     uploadDate: '2023-06-25'
   }]);
+  
+  // Filter files based on search query
+  const filteredFiles = searchQuery
+    ? files.filter(file => 
+        file.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        file.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : files;
+    
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentEditFile, setCurrentEditFile] = useState<KBFile | null>(null);
   const [editedDescription, setEditedDescription] = useState('');
@@ -167,14 +180,28 @@ export const KnowledgeBase = () => {
           <CardContent>
             <div className="flex justify-between items-center mb-6">
               <div className="relative w-64">
-                
-                
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className={`h-4 w-4 ${isDark ? "text-slate-400" : "text-slate-500"}`} />
+                </div>
+                <Input
+                  type="search"
+                  placeholder="Search files..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`pl-10 ${isDark ? "bg-slate-700 border-slate-600 placeholder:text-slate-400 text-slate-100" : "bg-white border-slate-300 placeholder:text-slate-400"}`}
+                />
               </div>
               
               <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
             </div>
             
-            <KnowledgeBaseFileList files={files} onDelete={handleDeleteFile} onEdit={handleEditDescription} onPreview={handlePreviewFile} onDownload={handleDownloadFile} />
+            <KnowledgeBaseFileList 
+              files={filteredFiles} 
+              onDelete={handleDeleteFile} 
+              onEdit={handleEditDescription} 
+              onPreview={handlePreviewFile} 
+              onDownload={handleDownloadFile} 
+            />
           </CardContent>
         </Card>
         
@@ -206,4 +233,5 @@ export const KnowledgeBase = () => {
       </div>
     </ModernLayout>;
 };
+
 export default KnowledgeBase;

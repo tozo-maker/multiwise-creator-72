@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { SearchBar } from '@/components/layout/search/SearchBar';
@@ -14,13 +15,11 @@ import { ThemeTooltip } from '@/components/shared/ThemeTooltip';
 export const ModernTopBar = React.memo(function ModernTopBar() {
   const { toast } = useToast();
   const { isDark } = useTheme();
+  const navigate = useNavigate();
 
   const handleHelpClick = React.useCallback(() => {
-    toast({
-      title: "Help panel opened",
-      description: "Here you can find helpful tips and guides.",
-    });
-  }, [toast]);
+    navigate('/help');
+  }, [navigate]);
 
   return (
     <header 
@@ -49,13 +48,13 @@ export const ModernTopBar = React.memo(function ModernTopBar() {
         
         <ThemeToggle />
         
-        <ThemeTooltip content="Get help">
+        <ThemeTooltip content="Help">
           <ThemeButton 
             variant="ghost" 
             size="icon" 
             className="hidden sm:flex"
             onClick={handleHelpClick}
-            aria-label="Open help panel"
+            aria-label="Open help page"
           >
             <HelpCircle className="h-5 w-5" />
           </ThemeButton>

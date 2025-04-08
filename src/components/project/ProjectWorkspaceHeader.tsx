@@ -1,25 +1,30 @@
+
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTheme } from '@/contexts/ThemeContext';
+
 interface ProjectWorkspaceHeaderProps {
   projectName: string;
   projectType: string;
   targetLanguage: string;
 }
+
 export const ProjectWorkspaceHeader: React.FC<ProjectWorkspaceHeaderProps> = ({
   projectName,
   projectType,
   targetLanguage
 }) => {
   const navigate = useNavigate();
+  const { projectId } = useParams<{ projectId: string }>();
   const {
     theme
   } = useTheme();
   const isDark = theme === 'dark';
+  
   return <div className="flex items-center justify-between mb-6">
       <div className="flex items-center space-x-4">
         <Tooltip>
@@ -44,7 +49,22 @@ export const ProjectWorkspaceHeader: React.FC<ProjectWorkspaceHeaderProps> = ({
       </div>
       
       <div className="flex items-center space-x-2">
-        
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(`/projects/${projectId}/configuration`)}
+              className={isDark ? "text-slate-400 hover:text-white hover:bg-slate-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}
+            >
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Project Settings</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Project Settings</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>;
 };
