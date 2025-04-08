@@ -11,11 +11,14 @@ import { Label } from '@/components/ui/label';
 import { FileText, Plus } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const AnalysisWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const [analysisType, setAnalysisType] = useState('readability');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   // Mock project data - would normally be fetched based on ID
   const project = {
@@ -57,25 +60,39 @@ export const AnalysisWorkspace = () => {
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="analysis" />
         
-        <Card className="bg-slate-800 border-slate-700">
+        <Card className={isDark 
+          ? 'bg-slate-800 border-slate-700' 
+          : 'bg-white border-slate-200'
+        }>
           <CardHeader>
-            <CardTitle className="text-xl text-slate-100">Content Analysis</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardTitle className={`text-xl ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+              Content Analysis
+            </CardTitle>
+            <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-600'}>
               Analyze your educational content for readability, standards alignment, and more
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="analysisType" className="text-slate-300">Analysis Type</Label>
+                <Label htmlFor="analysisType" className={isDark ? 'text-slate-300' : 'text-slate-700'}>
+                  Analysis Type
+                </Label>
                 <Select 
                   value={analysisType} 
                   onValueChange={setAnalysisType}
                 >
-                  <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-slate-200">
+                  <SelectTrigger className={`w-full ${
+                    isDark 
+                      ? 'bg-slate-700 border-slate-600 text-slate-200' 
+                      : 'bg-white border-slate-300 text-slate-900'
+                  }`}>
                     <SelectValue placeholder="Select analysis type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+                  <SelectContent className={isDark 
+                    ? 'bg-slate-800 border-slate-700 text-slate-200' 
+                    : 'bg-white border-slate-200 text-slate-900'
+                  }>
                     <SelectItem value="readability">Readability Analysis</SelectItem>
                     <SelectItem value="standards">Standards Alignment</SelectItem>
                     <SelectItem value="language">Language Proficiency Level</SelectItem>
@@ -87,25 +104,45 @@ export const AnalysisWorkspace = () => {
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-slate-300">Additional Context Files (Optional)</Label>
-                  <Button variant="outline" size="sm" className="gap-1 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-slate-100">
+                  <Label className={isDark ? 'text-slate-300' : 'text-slate-700'}>
+                    Additional Context Files (Optional)
+                  </Label>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={`gap-1 ${
+                      isDark 
+                        ? 'border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-slate-100' 
+                        : 'border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
                     <FileText className="h-4 w-4" />
                     Select from Knowledge Base
                   </Button>
                 </div>
-                <div className="border border-dashed border-slate-600 rounded-md p-6 text-center bg-slate-800/50">
-                  <p className="text-sm text-slate-400">
+                <div className={`border border-dashed rounded-md p-6 text-center ${
+                  isDark 
+                    ? 'border-slate-600 bg-slate-800/50 text-slate-400' 
+                    : 'border-slate-300 bg-slate-50/50 text-slate-500'
+                }`}>
+                  <p className="text-sm">
                     No context files selected. Select files from your Knowledge Base to guide the analysis.
                   </p>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="instructions" className="text-slate-300">Analysis Instructions (Optional)</Label>
+                <Label htmlFor="instructions" className={isDark ? 'text-slate-300' : 'text-slate-700'}>
+                  Analysis Instructions (Optional)
+                </Label>
                 <Textarea 
                   id="instructions" 
                   placeholder="Provide any specific instructions for the analysis..."
-                  className="min-h-[100px] bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500"
+                  className={`min-h-[100px] ${
+                    isDark 
+                      ? 'bg-slate-700 border-slate-600 text-slate-200 placeholder-slate-500' 
+                      : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                  }`}
                 />
               </div>
               

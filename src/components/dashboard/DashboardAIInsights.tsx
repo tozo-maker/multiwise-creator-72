@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, BarChart, PieChart, TrendingUp, TrendingDown } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface AIInsight {
   id: string;
@@ -21,6 +22,9 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({
   insights,
   className
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   // Default insights if none provided
   const defaultInsights: AIInsight[] = [
     { 
@@ -79,21 +83,36 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({
 
   return (
     <div className={`${className}`}>
-      <h2 className="text-xl font-semibold mb-3 dark:text-white">AI Insights</h2>
+      <h2 className={`text-xl font-semibold mb-3 ${
+        isDark ? 'text-white' : 'text-slate-900'
+      }`}>AI Insights</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {displayInsights.map((insight) => (
-          <Card key={insight.id} className="hover:shadow-md dark:hover:shadow-slate-800/30 transition-all border-slate-200 dark:border-slate-700 dark:bg-slate-800">
+          <Card 
+            key={insight.id} 
+            className={`hover:shadow-md transition-all ${
+              isDark
+                ? 'dark:hover:shadow-slate-800/30 border-slate-700 bg-slate-800'
+                : 'hover:shadow-slate-200/50 border-slate-200 bg-white'
+            }`}
+          >
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
-                <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                  isDark ? 'bg-slate-700' : 'bg-slate-100'
+                }`}>
                   {insight.icon}
                 </div>
                 {getTrendIcon(insight.trend, insight.percentage)}
               </div>
             </CardHeader>
             <CardContent>
-              <h3 className="font-semibold text-slate-900 dark:text-white">{insight.title}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{insight.description}</p>
+              <h3 className={`font-semibold ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>{insight.title}</h3>
+              <p className={`text-sm mt-1 ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              }`}>{insight.description}</p>
             </CardContent>
           </Card>
         ))}

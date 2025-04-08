@@ -12,9 +12,12 @@ import { SystemConfigTab } from '@/components/configuration/SystemConfigTab';
 import { ProjectConfigTab } from '@/components/configuration/ProjectConfigTab';
 import { LanguageContentTab } from '@/components/configuration/LanguageContentTab';
 import { SaveConfigurationButton } from '@/components/configuration/SaveConfigurationButton';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const ConfigurationWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   const project = {
     id: projectId || '1',
@@ -98,19 +101,53 @@ export const ConfigurationWorkspace = () => {
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="configuration" />
         
-        <Card className="bg-slate-800 border-slate-700">
+        <Card className={isDark 
+          ? 'bg-slate-800 border-slate-700' 
+          : 'bg-white border-slate-200'
+        }>
           <CardHeader>
-            <CardTitle className="text-xl text-slate-100">Project Configuration</CardTitle>
-            <CardDescription className="text-slate-400">
+            <CardTitle className={`text-xl ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+              Project Configuration
+            </CardTitle>
+            <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-600'}>
               Edit your project settings and parameters
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="system" className="space-y-6">
-              <TabsList className="bg-slate-700 p-1 w-fit">
-                <TabsTrigger value="system" className="data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white px-4">System</TabsTrigger>
-                <TabsTrigger value="project" className="data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white px-4">Project</TabsTrigger>
-                <TabsTrigger value="language" className="data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white px-4">Language & Content</TabsTrigger>
+              <TabsList className={`p-1 w-fit ${
+                isDark ? 'bg-slate-700' : 'bg-slate-200'
+              }`}>
+                <TabsTrigger 
+                  value="system" 
+                  className={`px-4 ${
+                    isDark 
+                      ? 'data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white' 
+                      : 'data-[state=active]:bg-white text-slate-700 data-[state=active]:text-slate-900'
+                  }`}
+                >
+                  System
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="project" 
+                  className={`px-4 ${
+                    isDark 
+                      ? 'data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white' 
+                      : 'data-[state=active]:bg-white text-slate-700 data-[state=active]:text-slate-900'
+                  }`}
+                >
+                  Project
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="language" 
+                  className={`px-4 ${
+                    isDark 
+                      ? 'data-[state=active]:bg-slate-600 text-slate-300 data-[state=active]:text-white' 
+                      : 'data-[state=active]:bg-white text-slate-700 data-[state=active]:text-slate-900'
+                  }`}
+                >
+                  Language & Content
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="system">

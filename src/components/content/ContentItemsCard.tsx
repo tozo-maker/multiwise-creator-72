@@ -17,15 +17,16 @@ export const ContentItemsCard: React.FC<ContentItemsCardProps> = ({ projectId, c
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   return (
-    <Card className={theme === 'dark' 
-      ? "bg-slate-900 border-slate-800" 
+    <Card className={isDark 
+      ? "bg-slate-800 border-slate-700" 
       : "bg-white border-slate-200"
     }>
       <CardHeader className="pb-3">
         <CardTitle className={`text-xl flex justify-between items-center ${
-          theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+          isDark ? 'text-slate-100' : 'text-slate-900'
         }`}>
           <span>Content Items</span>
           <Button
@@ -37,7 +38,7 @@ export const ContentItemsCard: React.FC<ContentItemsCardProps> = ({ projectId, c
             New Content
           </Button>
         </CardTitle>
-        <CardDescription className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>
+        <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-600'}>
           Manage your educational content items
         </CardDescription>
       </CardHeader>

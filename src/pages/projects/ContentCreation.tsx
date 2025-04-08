@@ -6,9 +6,12 @@ import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHea
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { ContentCreationForm } from '@/components/project/ContentCreationForm';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const ContentCreation = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   // Mock project data
   const project = {
@@ -41,8 +44,12 @@ export const ContentCreation = () => {
         <ProjectWorkspaceTabs projectId={project.id} activeTab="content" />
         
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Create Content</h2>
-          <p className="text-muted-foreground">
+          <h2 className={`text-xl font-semibold mb-2 ${
+            isDark ? 'text-slate-100' : 'text-slate-900'
+          }`}>
+            Create Content
+          </h2>
+          <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
             Generate new content with AI assistance using your project configuration and knowledge base.
           </p>
         </div>

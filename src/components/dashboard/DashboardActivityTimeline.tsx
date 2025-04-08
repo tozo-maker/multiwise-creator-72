@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileEdit, FileText, Upload, Save, Download, Clock, Check } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ActivityItem {
   id: string;
@@ -20,6 +21,9 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   activities,
   className 
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   // Default activities if none provided
   const defaultActivities: ActivityItem[] = [
     { 
@@ -62,24 +66,47 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   const displayActivities = activities || defaultActivities;
 
   return (
-    <Card className={`${className} border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800 backdrop-blur-sm`}>
+    <Card className={`${className} border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow ${
+      isDark 
+        ? 'dark:hover:shadow-slate-800/30 dark:bg-slate-800 backdrop-blur-sm' 
+        : 'hover:shadow-slate-200/30 bg-white'
+    }`}>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold dark:text-white">Recent Activity</CardTitle>
-        <CardDescription className="dark:text-slate-400">Your recent project activities</CardDescription>
+        <CardTitle className={`text-lg font-semibold ${
+          isDark ? 'text-white' : 'text-slate-900'
+        }`}>Recent Activity</CardTitle>
+        <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+          Your recent project activities
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {displayActivities.map((activity) => (
-            <div key={activity.id} className="flex items-start pb-3 border-b border-slate-100 dark:border-slate-700 last:border-0 last:pb-0">
-              <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mr-3 flex-shrink-0">
+            <div 
+              key={activity.id} 
+              className={`flex items-start pb-3 border-b last:border-0 last:pb-0 ${
+                isDark ? 'border-slate-700' : 'border-slate-100'
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0 ${
+                isDark ? 'bg-slate-700' : 'bg-slate-100'
+              }`}>
                 {activity.icon}
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-white">{activity.project}</p>
+                <p className={`text-sm font-medium ${
+                  isDark ? 'text-white' : 'text-slate-900'
+                }`}>{activity.project}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{activity.action}</p>
-                  <span className="text-xs text-slate-400 dark:text-slate-500">•</span>
-                  <div className="flex items-center text-xs text-slate-400 dark:text-slate-500">
+                  <p className={`text-xs ${
+                    isDark ? 'text-slate-400' : 'text-slate-500'
+                  }`}>{activity.action}</p>
+                  <span className={`text-xs ${
+                    isDark ? 'text-slate-500' : 'text-slate-400'
+                  }`}>•</span>
+                  <div className={`flex items-center text-xs ${
+                    isDark ? 'text-slate-500' : 'text-slate-400'
+                  }`}>
                     <Clock className="h-3 w-3 mr-1" />
                     {activity.time}
                   </div>

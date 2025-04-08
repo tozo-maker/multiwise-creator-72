@@ -22,10 +22,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Camera, Plus, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const SnapshotsWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { toast } = useToast();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   // Mock project data
   const project = {
@@ -165,8 +168,10 @@ export const SnapshotsWorkspace = () => {
         <ProjectWorkspaceTabs projectId={project.id} activeTab="snapshots" />
         
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-2 text-slate-100">Project Snapshots</h2>
-          <p className="text-slate-400">
+          <h2 className={`text-xl font-semibold mb-2 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+            Project Snapshots
+          </h2>
+          <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
             Save and restore project states at important milestones
           </p>
         </div>
@@ -176,7 +181,11 @@ export const SnapshotsWorkspace = () => {
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
               placeholder="Search snapshots" 
-              className="pl-8 bg-slate-800 border-slate-700 text-slate-300 placeholder-slate-500" 
+              className={`pl-8 ${
+                isDark 
+                  ? 'bg-slate-800 border-slate-700 text-slate-300 placeholder-slate-500' 
+                  : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+              }`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -201,20 +210,34 @@ export const SnapshotsWorkspace = () => {
             ))}
           </div>
         ) : (
-          <Card className="bg-slate-800 border-slate-700">
+          <Card className={isDark 
+            ? 'bg-slate-800 border-slate-700' 
+            : 'bg-white border-slate-200'
+          }>
             <CardContent className="py-12 flex flex-col items-center justify-center text-center">
               {searchQuery ? (
                 <>
-                  <p className="text-slate-400 mb-4">No snapshots match your search criteria</p>
-                  <Button variant="outline" onClick={() => setSearchQuery('')} className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">
+                  <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                    No snapshots match your search criteria
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setSearchQuery('')} 
+                    className={isDark 
+                      ? 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700' 
+                      : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
+                    }
+                  >
                     Clear Search
                   </Button>
                 </>
               ) : (
                 <>
-                  <Camera className="h-12 w-12 text-slate-600 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2 text-slate-100">No Snapshots Yet</h3>
-                  <p className="text-slate-400 mb-4 max-w-md">
+                  <Camera className={`h-12 w-12 mb-4 ${isDark ? 'text-slate-600' : 'text-slate-400'}`} />
+                  <h3 className={`text-lg font-semibold mb-2 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+                    No Snapshots Yet
+                  </h3>
+                  <p className={`mb-4 max-w-md ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     Snapshots let you save the current state of your project 
                     at important milestones so you can easily revert back if needed.
                   </p>
@@ -229,39 +252,58 @@ export const SnapshotsWorkspace = () => {
         
         {/* Create Snapshot Dialog */}
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogContent className="bg-slate-800 border-slate-700 text-slate-100">
+          <DialogContent className={isDark 
+            ? 'bg-slate-800 border-slate-700 text-slate-100' 
+            : 'bg-white border-slate-200 text-slate-900'
+          }>
             <DialogHeader>
-              <DialogTitle className="text-slate-100">Create Project Snapshot</DialogTitle>
-              <DialogDescription className="text-slate-400">
+              <DialogTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>
+                Create Project Snapshot
+              </DialogTitle>
+              <DialogDescription className={isDark ? 'text-slate-400' : 'text-slate-600'}>
                 Save the current state of your project that you can restore later
               </DialogDescription>
             </DialogHeader>
             
             <div className="py-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="snapshotName" className="text-slate-300">Snapshot Name*</Label>
+                <Label htmlFor="snapshotName" className={isDark ? 'text-slate-300' : 'text-slate-700'}>
+                  Snapshot Name*
+                </Label>
                 <Input 
                   id="snapshotName"
                   value={newSnapshotName}
                   onChange={(e) => setNewSnapshotName(e.target.value)}
                   placeholder="e.g., Pre-Review Draft"
-                  className="bg-slate-700 border-slate-600 text-slate-200 placeholder-slate-500"
+                  className={isDark 
+                    ? 'bg-slate-700 border-slate-600 text-slate-200 placeholder-slate-500' 
+                    : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                  }
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="snapshotDescription" className="text-slate-300">Description (Optional)</Label>
+                <Label htmlFor="snapshotDescription" className={isDark ? 'text-slate-300' : 'text-slate-700'}>
+                  Description (Optional)
+                </Label>
                 <Textarea 
                   id="snapshotDescription"
                   value={newSnapshotDescription}
                   onChange={(e) => setNewSnapshotDescription(e.target.value)}
                   placeholder="Briefly describe what's important about this project state..."
                   rows={3}
-                  className="bg-slate-700 border-slate-600 text-slate-200 placeholder-slate-500"
+                  className={isDark 
+                    ? 'bg-slate-700 border-slate-600 text-slate-200 placeholder-slate-500' 
+                    : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                  }
                 />
               </div>
               
-              <div className="bg-slate-900 p-3 rounded-md text-sm text-slate-400">
+              <div className={`p-3 rounded-md text-sm ${
+                isDark 
+                  ? 'bg-slate-900 text-slate-400' 
+                  : 'bg-slate-100 text-slate-600'
+              }`}>
                 <p>Current project state as of {format(new Date(), 'PPP p')} will be saved.</p>
               </div>
             </div>
@@ -270,7 +312,10 @@ export const SnapshotsWorkspace = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setCreateDialogOpen(false)}
-                className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                className={isDark 
+                  ? 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700' 
+                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
+                }
               >
                 Cancel
               </Button>
@@ -287,10 +332,15 @@ export const SnapshotsWorkspace = () => {
         
         {/* Confirm Delete Dialog */}
         <Dialog open={confirmDeleteDialogOpen} onOpenChange={setConfirmDeleteDialogOpen}>
-          <DialogContent className="bg-slate-800 border-slate-700 text-slate-100">
+          <DialogContent className={isDark 
+            ? 'bg-slate-800 border-slate-700 text-slate-100' 
+            : 'bg-white border-slate-200 text-slate-900'
+          }>
             <DialogHeader>
-              <DialogTitle className="text-slate-100">Confirm Deletion</DialogTitle>
-              <DialogDescription className="text-slate-400">
+              <DialogTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>
+                Confirm Deletion
+              </DialogTitle>
+              <DialogDescription className={isDark ? 'text-slate-400' : 'text-slate-600'}>
                 Are you sure you want to delete this snapshot? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
@@ -299,7 +349,10 @@ export const SnapshotsWorkspace = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setConfirmDeleteDialogOpen(false)}
-                className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700"
+                className={isDark 
+                  ? 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700' 
+                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
+                }
               >
                 Cancel
               </Button>
