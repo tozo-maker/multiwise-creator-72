@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,7 +16,6 @@ export const KnowledgeBaseMain = () => {
   const isDark = theme === 'dark';
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   
-  // Sample mock data for files
   const [files, setFiles] = useState<KBFile[]>([
     {
       id: '1',
@@ -45,21 +43,18 @@ export const KnowledgeBaseMain = () => {
     }
   ]);
   
-  // Sample categories
   const categories: KBCategory[] = [
     { id: 'cat1', name: 'Curriculum', count: 2, color: '#3b82f6' },
     { id: 'cat2', name: 'Guidelines', count: 1, color: '#10b981' },
     { id: 'cat3', name: 'References', count: 0, color: '#f59e0b' }
   ];
   
-  // Sample file types for analytics
   const fileTypes = {
     pdf: 2,
     docx: 2,
     txt: 1
   };
 
-  // Event handlers
   const handleDeleteFile = (id: string) => {
     setFiles(files.filter(file => file.id !== id));
     toast({
@@ -157,7 +152,7 @@ export const KnowledgeBaseMain = () => {
         <TabsContent value="all" className="space-y-6 pt-2">
           <div className="grid gap-6 md:grid-cols-3">
             <Card className={`col-span-2 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-3 px-6">
                 <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Recently Added</CardTitle>
                 <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                   Your most recently added knowledge resources
