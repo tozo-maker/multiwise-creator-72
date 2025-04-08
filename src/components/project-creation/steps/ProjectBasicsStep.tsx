@@ -1,118 +1,103 @@
 
 import React from 'react';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { HelpCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProjectBasicsStepProps {
   data: {
     name: string;
     description: string;
-    type: string;
-    templateId: string;
+    language: string;
+    targetAudience: string;
+    complexity: string;
   };
-  updateData: (data: Partial<{
-    name: string;
-    description: string;
-    type: string;
-  }>) => void;
+  updateData: (data: Partial<typeof data>) => void;
   isMobile?: boolean;
 }
 
 export function ProjectBasicsStep({ data, updateData, isMobile = false }: ProjectBasicsStepProps) {
-  const projectTypes = [
-    { value: 'textbook', label: 'Textbook' },
-    { value: 'course', label: 'Course' },
-    { value: 'lesson', label: 'Lesson Plan' },
-    { value: 'assessment', label: 'Assessment' },
-    { value: 'worksheet', label: 'Worksheet' },
-    { value: 'other', label: 'Other' },
-  ];
+  const languageOptions = ['English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Arabic'];
+  const complexityOptions = ['Beginner', 'Intermediate', 'Advanced', 'Mixed'];
   
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="name" className="text-slate-900 dark:text-slate-100">Project Name</Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400 dark:text-slate-500" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">Give your project a descriptive name to easily identify it later</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <Input 
+        <Label htmlFor="name" className="text-slate-900 dark:text-slate-100">Project Name</Label>
+        <Input
           id="name"
+          placeholder="Enter project name"
           value={data.name}
           onChange={(e) => updateData({ name: e.target.value })}
-          placeholder="My Educational Project"
-          className="w-full bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
-          autoFocus
+          className="border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         />
       </div>
       
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="description" className="text-slate-900 dark:text-slate-100">Description</Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400 dark:text-slate-500" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">A brief description of what this project is about</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <Textarea 
+        <Label htmlFor="description" className="text-slate-900 dark:text-slate-100">Description</Label>
+        <Textarea
           id="description"
+          placeholder="Describe your project"
           value={data.description}
           onChange={(e) => updateData({ description: e.target.value })}
-          placeholder="Enter a brief description of your project..."
-          className="min-h-[100px] resize-none bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+          className="min-h-[100px] border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         />
       </div>
       
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="type" className="text-slate-900 dark:text-slate-100">Project Type</Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400 dark:text-slate-500" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">The type of educational content you want to create</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="language" className="text-slate-900 dark:text-slate-100">Primary Language</Label>
+          <Select
+            value={data.language}
+            onValueChange={(value) => updateData({ language: value })}
+          >
+            <SelectTrigger 
+              id="language"
+              className="border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent>
+              {languageOptions.map(lang => (
+                <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={data.type} onValueChange={(value) => updateData({ type: value })}>
-          <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
-            <SelectValue placeholder="Select project type" />
-          </SelectTrigger>
-          <SelectContent>
-            {projectTypes.map((type) => (
-              <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        
+        <div className="space-y-2">
+          <Label htmlFor="complexity" className="text-slate-900 dark:text-slate-100">Complexity Level</Label>
+          <Select
+            value={data.complexity}
+            onValueChange={(value) => updateData({ complexity: value })}
+          >
+            <SelectTrigger 
+              id="complexity"
+              className="border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <SelectValue placeholder="Select complexity" />
+            </SelectTrigger>
+            <SelectContent>
+              {complexityOptions.map(level => (
+                <SelectItem key={level} value={level}>{level}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
-      <Card className="bg-brand-50 dark:bg-brand-900/20 border-brand-100 dark:border-brand-800/30">
-        <CardContent className="pt-4 text-sm text-slate-600 dark:text-slate-400">
-          <p>Your project settings can always be modified later from the project configuration page.</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-2">
+        <Label htmlFor="targetAudience" className="text-slate-900 dark:text-slate-100">Target Audience</Label>
+        <Input
+          id="targetAudience"
+          placeholder="Who is this content for?"
+          value={data.targetAudience}
+          onChange={(e) => updateData({ targetAudience: e.target.value })}
+          className="border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+        />
+      </div>
     </div>
   );
 }

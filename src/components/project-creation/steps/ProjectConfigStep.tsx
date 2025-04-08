@@ -1,160 +1,104 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { HelpCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { 
+  BookOpen, 
+  FileText, 
+  PenTool, 
+  Video, 
+  FileQuestion,
+  Presentation
+} from 'lucide-react';
 
 interface ProjectConfigStepProps {
   data: {
-    language: string;
-    targetAudience: string;
-    complexity: string;
+    type: string;
   };
-  updateData: (data: Partial<{
-    language: string;
-    targetAudience: string;
-    complexity: string;
-  }>) => void;
+  updateData: (data: Partial<typeof data>) => void;
   isMobile?: boolean;
 }
 
 export function ProjectConfigStep({ data, updateData, isMobile = false }: ProjectConfigStepProps) {
-  const languages = [
-    'English', 'Spanish', 'French', 'German', 'Chinese', 
-    'Japanese', 'Arabic', 'Russian', 'Portuguese'
+  const projectTypes = [
+    { value: 'textbook', label: 'Textbook', icon: BookOpen, description: 'Comprehensive educational material with chapters' },
+    { value: 'worksheet', label: 'Worksheets', icon: FileText, description: 'Practice exercises and problems' },
+    { value: 'lesson', label: 'Lesson Plans', icon: PenTool, description: 'Structured teaching guides' },
+    { value: 'presentation', label: 'Presentation', icon: Presentation, description: 'Slides and visual aids' },
+    { value: 'assessment', label: 'Assessment', icon: FileQuestion, description: 'Tests, quizzes, and evaluations' },
+    { value: 'multimedia', label: 'Multimedia', icon: Video, description: 'Scripts for videos and interactive content' },
   ];
-  
-  const audiences = [
-    { value: 'elementary', label: 'Elementary School' },
-    { value: 'middle', label: 'Middle School' },
-    { value: 'high', label: 'High School' },
-    { value: 'undergraduate', label: 'Undergraduate' },
-    { value: 'graduate', label: 'Graduate' },
-    { value: 'professional', label: 'Professional' },
-    { value: 'general', label: 'General Audience' },
-  ];
-  
+
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="language">Primary Language</Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">The main language for your educational content</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <Select value={data.language} onValueChange={(value) => updateData({ language: value })}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select language" />
-          </SelectTrigger>
-          <SelectContent>
-            {languages.map((language) => (
-              <SelectItem key={language} value={language}>{language}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div>
+        <h2 className="text-lg font-medium text-slate-900 dark:text-slate-100">Project Type</h2>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+          Choose the type of educational content you want to create
+        </p>
       </div>
       
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="targetAudience">Target Audience</Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <HelpCircle className="h-4 w-4 text-slate-400" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">The primary audience for your educational materials</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <Select value={data.targetAudience} onValueChange={(value) => updateData({ targetAudience: value })}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select target audience" />
-          </SelectTrigger>
-          <SelectContent>
-            {audiences.map((audience) => (
-              <SelectItem key={audience.value} value={audience.value}>{audience.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="complexity">Content Complexity</Label>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="h-4 w-4 text-slate-400" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">How complex should the educational content be</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <Badge variant="outline" className="font-normal">
-            {data.complexity}
-          </Badge>
-        </div>
-        
-        <RadioGroup 
-          value={data.complexity}
-          onValueChange={(value) => updateData({ complexity: value })}
-          className="flex space-x-1"
-        >
-          <div className="grid grid-cols-5 gap-2 w-full">
-            {['Beginner', 'Elementary', 'Intermediate', 'Advanced', 'Expert'].map((level) => (
-              <div 
-                key={level} 
-                className={`
-                  flex flex-col items-center justify-center p-2 rounded-md cursor-pointer border
-                  ${data.complexity === level 
-                    ? 'bg-brand-100 border-brand-400' 
-                    : 'border-slate-200 hover:bg-slate-50'
-                  }
-                `}
-                onClick={() => updateData({ complexity: level })}
+      <RadioGroup 
+        value={data.type} 
+        onValueChange={(value) => updateData({ type: value })}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+      >
+        {projectTypes.map((type) => {
+          const Icon = type.icon;
+          return (
+            <div key={type.value} className="relative">
+              <RadioGroupItem
+                value={type.value}
+                id={type.value}
+                className="sr-only"
+              />
+              <Label
+                htmlFor={type.value}
+                className={`flex flex-col h-full p-4 rounded-lg border cursor-pointer transition-all ${
+                  data.type === type.value
+                    ? "border-brand-500 dark:border-brand-400 bg-brand-50 dark:bg-brand-950/40"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                }`}
               >
-                <RadioGroupItem value={level} id={level} className="sr-only" />
-                <Label htmlFor={level} className="cursor-pointer text-center text-xs">
-                  {level}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </RadioGroup>
-      </div>
-      
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-sm">Enable Interactive Elements</Label>
-              <p className="text-xs text-muted-foreground">
-                Include interactive elements in your content
-              </p>
+                <div className="flex items-start">
+                  <div className={`flex-shrink-0 p-1.5 rounded-md ${
+                    data.type === type.value
+                      ? "bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400"
+                      : "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+                  }`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <div className={`font-medium ${
+                      data.type === type.value
+                        ? "text-brand-700 dark:text-brand-400"
+                        : "text-slate-900 dark:text-slate-100"
+                    }`}>{type.label}</div>
+                    <div className={`text-xs mt-1 ${
+                      data.type === type.value
+                        ? "text-brand-600 dark:text-brand-300"
+                        : "text-slate-500 dark:text-slate-400"
+                    }`}>{type.description}</div>
+                  </div>
+                </div>
+              </Label>
             </div>
-            <Switch defaultChecked />
-          </div>
-        </CardContent>
-      </Card>
+          );
+        })}
+      </RadioGroup>
+      
+      {data.type === 'custom' && (
+        <div className="space-y-2 mt-4">
+          <Label htmlFor="customType" className="text-slate-900 dark:text-slate-100">Custom Type</Label>
+          <Input
+            id="customType"
+            placeholder="Specify your project type"
+            className="border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            onChange={(e) => updateData({ type: e.target.value })}
+          />
+        </div>
+      )}
     </div>
   );
 }

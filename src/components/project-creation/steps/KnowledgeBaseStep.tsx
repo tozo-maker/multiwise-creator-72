@@ -2,183 +2,145 @@
 import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent } from '@/components/ui/card';
-import { HelpCircle, Upload, File, Check, X } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { FileUploader } from './FileUploader';
+import { AlertCircle, Upload } from 'lucide-react';
 
 interface KnowledgeBaseStepProps {
-  data: Record<string, any>;
-  updateData: (data: Record<string, any>) => void;
+  data: any;
+  updateData: (data: any) => void;
   isMobile?: boolean;
 }
 
 export function KnowledgeBaseStep({ data, updateData, isMobile = false }: KnowledgeBaseStepProps) {
-  const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
-  const [files, setFiles] = useState<{name: string, size: string, status: string}[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files).map(file => ({
-        name: file.name,
-        size: formatFileSize(file.size),
-        status: 'waiting'
-      }));
-      
-      setFiles([...files, ...newFiles]);
-    }
+  const [enableKnowledgeBase, setEnableKnowledgeBase] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+
+  const toggleKnowledgeBase = (enabled: boolean) => {
+    setEnableKnowledgeBase(enabled);
+    updateData({ hasKnowledgeBase: enabled });
   };
   
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + ' bytes';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    else return (bytes / 1048576).toFixed(1) + ' MB';
+  const handleFilesSelected = (selectedFiles: File[]) => {
+    setFiles(selectedFiles);
+    updateData({ knowledgeBaseFiles: selectedFiles.map(f => f.name) });
   };
-  
-  const simulateUpload = () => {
-    setUploading(true);
-    setUploadProgress(0);
-    
-    // Update all files to uploading status
-    setFiles(files.map(file => ({ ...file, status: 'uploading' })));
-    
-    // Simulate progress
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        const newProgress = prev + 10;
-        
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setUploading(false);
-          
-          // Mark all files as completed
-          setFiles(files.map(file => ({ ...file, status: 'completed' })));
-          
-          return 100;
-        }
-        
-        return newProgress;
-      });
-    }, 300);
-  };
-  
-  const removeFile = (index: number) => {
-    const newFiles = [...files];
-    newFiles.splice(index, 1);
-    setFiles(newFiles);
-  };
-  
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-0.5">
-          <Label className="text-base font-medium">Initialize Knowledge Base</Label>
-          <p className="text-sm text-muted-foreground">
-            Upload documents to pre-populate your project's knowledge base
+      <div className="flex items-start gap-4 rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 p-4">
+        <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-500 mt-0.5" />
+        <div>
+          <h3 className="font-medium text-amber-800 dark:text-amber-500">Knowledge Base (Optional)</h3>
+          <p className="text-amber-700 dark:text-amber-400 text-sm mt-1">
+            Upload reference documents to improve content generation. This step is optional and can be configured later.
           </p>
         </div>
-        <Switch 
-          checked={useKnowledgeBase} 
-          onCheckedChange={setUseKnowledgeBase} 
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <Label htmlFor="knowledgeBase" className="text-slate-900 dark:text-slate-100">
+            Enable Knowledge Base
+          </Label>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Add reference materials for your project
+          </p>
+        </div>
+        <Switch
+          id="knowledgeBase"
+          checked={enableKnowledgeBase}
+          onCheckedChange={toggleKnowledgeBase}
         />
       </div>
       
-      {useKnowledgeBase && (
-        <>
-          <Card className="border-dashed border-2 cursor-pointer hover:bg-slate-50 transition-colors">
-            <CardContent className="flex flex-col items-center justify-center py-6 text-center">
-              <Upload className="h-8 w-8 text-slate-400 mb-2" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Drop files here or click to upload</p>
-                <p className="text-xs text-muted-foreground">
-                  Support for PDF, DOCX, TXT, and other document formats
+      {enableKnowledgeBase && (
+        <Card className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
+          <div className="space-y-4">
+            <FileUploader 
+              onFilesSelected={handleFilesSelected}
+              maxFiles={5}
+              acceptedFileTypes={['.pdf', '.docx', '.txt', '.md']}
+            />
+            
+            {files.length === 0 && (
+              <div className="text-center py-8">
+                <div className="mx-auto h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                  <Upload className="h-6 w-6 text-slate-500 dark:text-slate-400" />
+                </div>
+                <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">No files uploaded</h3>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Drag and drop files or use the button above
                 </p>
               </div>
-              <Button variant="outline" className="mt-4" onClick={() => document.getElementById('file-upload')?.click()}>
-                Select Files
-              </Button>
-              <input
-                id="file-upload"
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </CardContent>
-          </Card>
-          
-          {files.length > 0 && (
-            <div className="space-y-4">
+            )}
+            
+            {files.length > 0 && (
               <div className="space-y-2">
-                <Label>Files to upload</Label>
-                <div className="space-y-2">
+                <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">Uploaded Files</h3>
+                <ul className="divide-y divide-slate-200 dark:divide-slate-700 rounded-md border border-slate-200 dark:border-slate-700">
                   {files.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 border rounded-md">
-                      <div className="flex items-center space-x-2">
-                        <File className="h-4 w-4 text-slate-400" />
-                        <span className="text-sm">{file.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {file.size}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center">
-                        {file.status === 'completed' ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-6 w-6" 
-                            onClick={() => removeFile(index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+                    <li key={index} className="flex items-center justify-between py-2 px-4 text-sm">
+                      <span className="truncate text-slate-700 dark:text-slate-300">{file.name}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {(file.size / 1024).toFixed(0)} KB
+                      </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
-              
-              {uploading && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Uploading...</span>
-                    <span>{uploadProgress}%</span>
-                  </div>
-                  <Progress value={uploadProgress} className="h-2" />
-                </div>
-              )}
-              
-              {!uploading && files.some(file => file.status !== 'completed') && (
-                <Button 
-                  onClick={simulateUpload}
-                  className="bg-brand-500 hover:bg-brand-600 w-full"
-                >
-                  Upload {files.length} file{files.length !== 1 ? 's' : ''}
-                </Button>
-              )}
+            )}
+            
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              <p>You can also add knowledge base documents after creating your project.</p>
             </div>
-          )}
-          
-          <div className="text-xs text-muted-foreground">
-            <p>The knowledge base helps tailor content to your specific needs.</p>
-            <p>You can always add more documents to your knowledge base later.</p>
           </div>
-        </>
-      )}
-      
-      {!useKnowledgeBase && (
-        <Card>
-          <CardContent className="pt-4 text-sm">
-            <p>You can set up your knowledge base later from the project workspace.</p>
-          </CardContent>
         </Card>
       )}
+      
+      {!enableKnowledgeBase && (
+        <div className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-6 text-center">
+          <p className="text-slate-600 dark:text-slate-300">
+            Knowledge base is disabled. You can enable it later from the project settings.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface FileUploaderProps {
+  onFilesSelected: (files: File[]) => void;
+  maxFiles?: number;
+  acceptedFileTypes?: string[];
+}
+
+// This is just a placeholder component - assume it exists or will be implemented elsewhere
+function FileUploader({ onFilesSelected, maxFiles = 5, acceptedFileTypes }: FileUploaderProps) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const fileArray = Array.from(e.target.files).slice(0, maxFiles);
+      onFilesSelected(fileArray);
+    }
+  };
+
+  return (
+    <div className="flex justify-center">
+      <label className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-6 py-4 transition-colors hover:border-slate-400 dark:hover:border-slate-500">
+        <Upload className="h-6 w-6 text-slate-500 dark:text-slate-400" />
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Click to upload</span>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          {acceptedFileTypes?.join(', ')} (max {maxFiles} files)
+        </span>
+        <input 
+          type="file" 
+          className="hidden" 
+          onChange={handleFileChange} 
+          multiple 
+          accept={acceptedFileTypes?.join(',')} 
+        />
+      </label>
     </div>
   );
 }

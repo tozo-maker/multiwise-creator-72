@@ -87,7 +87,7 @@ export function ProjectCreationWizard({
   const StepComponent = steps[currentStep].component;
   
   return (
-    <div className="space-y-6 py-6">
+    <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
           <span>Step {currentStep + 1} of {steps.length}</span>
