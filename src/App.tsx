@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -50,27 +49,23 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      onSettled: (_, error) => {
-        if (error) {
-          console.error('Query error:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "There was an error loading data. Please try again.",
-          });
-        }
+      onError: (error) => {
+        console.error('Query error:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "There was an error loading data. Please try again.",
+        });
       },
     },
     mutations: {
-      onSettled: (_, error) => {
-        if (error) {
-          console.error('Mutation error:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "There was an error saving your changes. Please try again.",
-          });
-        }
+      onError: (error) => {
+        console.error('Mutation error:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "There was an error saving your changes. Please try again.",
+        });
       }
     }
   }
