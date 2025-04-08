@@ -2,7 +2,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProjectWorkspaceTabsProps {
   projectId: string;
@@ -39,27 +38,23 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({
   ];
   
   return (
-    <div className="border-b border-slate-200 mb-6 overflow-x-auto">
-      <Tabs defaultValue={tabs.find(tab => isTabActive(tab.id))?.id || 'overview'} className="w-full">
-        <TabsList className="bg-transparent h-auto p-0 w-full flex justify-start space-x-2">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className={cn(
-                "h-10 px-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none",
-                "border-b-2 transition-colors font-medium",
-                isTabActive(tab.id)
-                  ? "border-brand-500 text-brand-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
-              )}
-              asChild
-            >
-              <Link to={tab.path} className="flex items-center">{tab.label}</Link>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+    <div className="border-b border-slate-200 dark:border-slate-800 mb-6 overflow-x-auto">
+      <div className="flex space-x-8">
+        {tabs.map((tab) => (
+          <Link
+            key={tab.id}
+            to={tab.path}
+            className={cn(
+              "pb-2 relative text-sm font-medium",
+              isTabActive(tab.id)
+                ? "text-brand-500 dark:text-brand-400 border-b-2 border-brand-500 dark:border-brand-400"
+                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+            )}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 };

@@ -11,7 +11,7 @@ import { ChevronRight, FileText, LineChart, Sparkles, CalendarClock, FileBox, Al
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 // Lazy load the analytics component for better performance
@@ -38,6 +38,7 @@ export const ProjectWorkspace = () => {
   };
   
   const breadcrumbItems = [
+    { label: 'Dashboard', path: '/dashboard' },
     { label: 'Projects', path: '/projects' },
     { label: project.name }
   ];
@@ -100,29 +101,18 @@ export const ProjectWorkspace = () => {
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
         
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <ProjectWorkspaceHeader 
-            projectName={project.name}
-            projectType={project.type}
-            targetLanguage={project.targetLanguage}
-          />
-          
-          <Button 
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={handleExportProject}
-          >
-            <Download className="h-4 w-4" />
-            Export Project
-          </Button>
-        </div>
+        <ProjectWorkspaceHeader 
+          projectName={project.name}
+          projectType={project.type}
+          targetLanguage={project.targetLanguage}
+        />
         
         <ProjectWorkspaceTabs projectId={project.id} />
         
         {/* Project Overview Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Project Info & Progress */}
-          <Card className="md:col-span-2 border-slate-200">
+          <Card className="md:col-span-2 border-slate-200 dark:border-slate-700">
             <CardHeader className="pb-2">
               <CardTitle className="text-xl">Project Overview</CardTitle>
             </CardHeader>
@@ -131,48 +121,48 @@ export const ProjectWorkspace = () => {
                 {/* Progress bar section */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-slate-700">{project.progress}% Complete</span>
-                    <span className="text-xs text-slate-500">Target: 100%</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{project.progress}% Complete</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Target: 100%</span>
                   </div>
                   <Progress value={project.progress} className="h-2" />
                 </div>
                 
                 {/* Project metadata */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2 text-sm pt-2">
-                  <div className="text-slate-500 font-medium">Description</div>
-                  <div className="text-slate-800">{project.description}</div>
+                  <div className="text-slate-500 dark:text-slate-400 font-medium">Description</div>
+                  <div className="text-slate-800 dark:text-slate-200">{project.description}</div>
                   
-                  <div className="text-slate-500 font-medium">Deadline</div>
-                  <div className="text-slate-800 flex items-center gap-2">
-                    <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
+                  <div className="text-slate-500 dark:text-slate-400 font-medium">Deadline</div>
+                  <div className="text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <CalendarClock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                     {project.deadline}
                   </div>
                   
-                  <div className="text-slate-500 font-medium">Last modified</div>
-                  <div className="text-slate-800">{project.lastModified}</div>
+                  <div className="text-slate-500 dark:text-slate-400 font-medium">Last modified</div>
+                  <div className="text-slate-800 dark:text-slate-200">{project.lastModified}</div>
                   
-                  <div className="text-slate-500 font-medium">Owner</div>
-                  <div className="text-slate-800">{project.owner}</div>
+                  <div className="text-slate-500 dark:text-slate-400 font-medium">Owner</div>
+                  <div className="text-slate-800 dark:text-slate-200">{project.owner}</div>
                 </div>
               </div>
             </CardContent>
           </Card>
           
           {/* Activity feed */}
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 dark:border-slate-700">
             <CardHeader className="pb-2">
               <CardTitle className="text-xl">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {activityItems.map((item, i) => (
-                  <div key={i} className="flex items-start pb-3 border-b border-slate-100 last:border-b-0 last:pb-0">
-                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <item.icon className="h-4 w-4 text-slate-600" />
+                  <div key={i} className="flex items-start pb-3 border-b border-slate-100 dark:border-slate-800 last:border-b-0 last:pb-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mr-3 flex-shrink-0">
+                      <item.icon className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-700">{item.action}</p>
-                      <p className="text-xs text-slate-500">{item.time}</p>
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.action}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{item.time}</p>
                     </div>
                   </div>
                 ))}
@@ -190,19 +180,19 @@ export const ProjectWorkspace = () => {
         
         {/* Quick Actions Grid */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+          <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions.map((action, index) => (
               <Card 
                 key={index} 
-                className={`border-slate-200 hover:shadow-sm transition-shadow overflow-hidden ${
+                className={`border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow overflow-hidden ${
                   action.primary ? 'border-l-4 border-l-brand-500' : ''
                 }`}
               >
                 <CardHeader className="p-4 pb-0">
                   <div className="flex items-start">
                     <div className={`p-2 rounded-md mr-3 ${
-                      action.primary ? 'bg-brand-50 text-brand-600' : 'bg-slate-100 text-slate-600'
+                      action.primary ? 'bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                     }`}>
                       <action.icon className="h-4 w-4" />
                     </div>
@@ -210,7 +200,7 @@ export const ProjectWorkspace = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-2">
-                  <p className="text-sm text-slate-500">{action.description}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{action.description}</p>
                 </CardContent>
                 <CardFooter className="p-4 pt-0">
                   <Button
@@ -231,12 +221,12 @@ export const ProjectWorkspace = () => {
           </div>
         </div>
         
-        {/* Content Management Section */}
+        {/* Project Resources Section */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Project Resources</h2>
+          <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Project Resources</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Content Section */}
-            <Card className="border-slate-200 hover:shadow-sm transition-shadow">
+            <Card className="border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow">
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">Content</CardTitle>
@@ -255,7 +245,7 @@ export const ProjectWorkspace = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1 pb-4">
-                <p className="text-sm text-slate-500 mb-3">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
                   Create and manage educational content for your project.
                 </p>
                 <Button asChild variant="outline" size="sm" className="w-full justify-between">
@@ -268,7 +258,7 @@ export const ProjectWorkspace = () => {
             </Card>
             
             {/* Knowledge Base */}
-            <Card className="border-slate-200 hover:shadow-sm transition-shadow">
+            <Card className="border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow">
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">Knowledge Base</CardTitle>
@@ -287,7 +277,7 @@ export const ProjectWorkspace = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1 pb-4">
-                <p className="text-sm text-slate-500 mb-3">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
                   Manage reference materials and context files for your project.
                 </p>
                 <Button asChild variant="outline" size="sm" className="w-full justify-between">
@@ -300,7 +290,7 @@ export const ProjectWorkspace = () => {
             </Card>
             
             {/* Snapshots */}
-            <Card className="border-slate-200 hover:shadow-sm transition-shadow">
+            <Card className="border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow">
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">Snapshots</CardTitle>
@@ -319,7 +309,7 @@ export const ProjectWorkspace = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-1 pb-4">
-                <p className="text-sm text-slate-500 mb-3">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
                   View and restore previous versions of your project content.
                 </p>
                 <Button asChild variant="outline" size="sm" className="w-full justify-between">

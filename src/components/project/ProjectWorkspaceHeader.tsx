@@ -50,24 +50,15 @@ export const ProjectWorkspaceHeader: React.FC<ProjectWorkspaceHeaderProps> = ({
       </div>
       
       <div className="flex items-center space-x-2">
-        <ThemeToggle />
-        
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2 border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200"
-              onClick={() => navigate(`/projects/${window.location.pathname.split('/')[2]}/configuration`)}
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Manage project settings</p>
-          </TooltipContent>
-        </Tooltip>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2 border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200"
+          onClick={() => navigate(`/projects/${window.location.pathname.split('/')[2]}/configuration`)}
+        >
+          <Settings className="h-4 w-4" />
+          Settings
+        </Button>
       </div>
     </div>
   );
