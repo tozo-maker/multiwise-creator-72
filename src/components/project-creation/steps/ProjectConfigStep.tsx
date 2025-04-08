@@ -16,7 +16,7 @@ interface ProjectConfigStepProps {
     complexity: string;
     templateId: string;
   };
-  updateData: (data: Partial<typeof ProjectConfigStepProps.prototype.data>) => void;
+  updateData: (data: Partial<typeof ProjectConfigStepProps['data']>) => void;
   isMobile?: boolean;
 }
 
