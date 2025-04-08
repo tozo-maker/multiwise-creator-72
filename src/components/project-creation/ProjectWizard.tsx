@@ -42,7 +42,7 @@ export function ProjectWizard({
     targetAudience: '',
     complexity: 'Intermediate',
     quickStart: 'custom',
-    templateId: '', // Default value
+    templateId: 'custom', // Default value
   });
   const { toast } = useToast();
   
