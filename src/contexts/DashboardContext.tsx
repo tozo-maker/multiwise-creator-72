@@ -1,17 +1,8 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { projects, projectStats, activityData, contentGenerationData } from '@/data/mockData';
+import { Project } from '@/types/supabase-custom';
 
 // Define types for our context
-export interface Project {
-  id: string;
-  name: string;
-  targetLanguage: string;
-  type: string;
-  lastModified: string;
-  progress: number;
-}
-
 export interface ProjectStats {
   totalProjects: number;
   activeProjects: number;
