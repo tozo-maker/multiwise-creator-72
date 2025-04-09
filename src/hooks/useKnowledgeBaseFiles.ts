@@ -19,6 +19,7 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
     try {
       setIsLoading(true);
       console.log('Fetching knowledge base files...');
+      console.log('Project ID:', projectId || 'No specific project, fetching all files');
       
       // Build the query
       let query = supabase
@@ -27,7 +28,6 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
         .order('created_at', { ascending: false });
       
       // If projectId is provided, filter by that project
-      // Otherwise, get all files for the user
       if (projectId) {
         query = query.eq('project_id', projectId);
       }
@@ -55,10 +55,10 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
         name: file.name,
         description: file.description || '',
         fileType: file.file_type,
-        size: file.size,
+        size: file.size || 'Unknown',
         uploadDate: new Date(file.created_at).toLocaleDateString(),
-        category: file.category || undefined,
-        url: file.url
+        category: file.category || 'Other',
+        url: file.url || ''
       }));
       
       console.log('Formatted files:', formattedFiles);
@@ -82,10 +82,9 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
     const categoryMap = new Map<string, number>();
     
     filesList.forEach(file => {
-      if (file.category) {
-        const count = categoryMap.get(file.category) || 0;
-        categoryMap.set(file.category, count + 1);
-      }
+      const category = file.category || 'Other';
+      const count = categoryMap.get(category) || 0;
+      categoryMap.set(category, count + 1);
     });
     
     // Generate random colors for categories

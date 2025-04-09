@@ -15,22 +15,35 @@ interface KnowledgeBaseStepProps {
 
 export function KnowledgeBaseStep({ data, updateData, isMobile = false }: KnowledgeBaseStepProps) {
   const [enableKnowledgeBase, setEnableKnowledgeBase] = useState(data.hasKnowledgeBase || false);
-  const [files, setFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedFileNames, setUploadedFileNames] = useState<string[]>(data.knowledgeBaseFiles || []);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleKnowledgeBase = (enabled: boolean) => {
     setEnableKnowledgeBase(enabled);
-    updateData({ hasKnowledgeBase: enabled });
+    updateData({ 
+      hasKnowledgeBase: enabled,
+      // Clear files if disabling
+      knowledgeBaseFiles: enabled ? uploadedFileNames : []
+    });
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
-      const updatedFiles = [...files, ...newFiles];
-      setFiles(updatedFiles);
+      const updatedFiles = [...uploadedFiles, ...newFiles];
+      setUploadedFiles(updatedFiles);
+      
+      // Update file names for ProjectData
+      const updatedFileNames = [
+        ...uploadedFileNames,
+        ...newFiles.map(file => file.name)
+      ];
+      setUploadedFileNames(updatedFileNames);
+      
       updateData({ 
-        knowledgeBaseFiles: updatedFiles.map(file => file.name),
+        knowledgeBaseFiles: updatedFileNames,
         hasKnowledgeBase: true 
       });
     }
@@ -52,22 +65,36 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFiles = Array.from(e.dataTransfer.files);
-      const updatedFiles = [...files, ...droppedFiles];
-      setFiles(updatedFiles);
+      const updatedFiles = [...uploadedFiles, ...droppedFiles];
+      setUploadedFiles(updatedFiles);
+      
+      // Update file names for ProjectData
+      const updatedFileNames = [
+        ...uploadedFileNames,
+        ...droppedFiles.map(file => file.name)
+      ];
+      setUploadedFileNames(updatedFileNames);
+      
       updateData({ 
-        knowledgeBaseFiles: updatedFiles.map(file => file.name),
+        knowledgeBaseFiles: updatedFileNames,
         hasKnowledgeBase: true 
       });
     }
   };
   
   const removeFile = (index: number) => {
-    const updatedFiles = [...files];
+    // Remove from both File[] array and string[] array
+    const updatedFiles = [...uploadedFiles];
     updatedFiles.splice(index, 1);
-    setFiles(updatedFiles);
+    setUploadedFiles(updatedFiles);
+    
+    const updatedFileNames = [...uploadedFileNames];
+    updatedFileNames.splice(index, 1);
+    setUploadedFileNames(updatedFileNames);
+    
     updateData({ 
-      knowledgeBaseFiles: updatedFiles.map(file => file.name),
-      hasKnowledgeBase: updatedFiles.length > 0 
+      knowledgeBaseFiles: updatedFileNames,
+      hasKnowledgeBase: updatedFileNames.length > 0 
     });
   };
   
@@ -155,33 +182,40 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
               </div>
             </div>
             
-            {files.length > 0 && (
+            {uploadedFileNames.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-sm font-medium text-slate-900 dark:text-slate-200 mb-2">Uploaded Files</h3>
                 <ul className="space-y-2">
-                  {files.map((file, index) => (
-                    <li key={index} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-md p-3">
-                      <div className="flex items-center">
-                        <File className="h-4 w-4 text-slate-500 dark:text-slate-400 mr-2" />
-                        <div>
-                          <p className="text-sm font-medium text-slate-900 dark:text-slate-200 truncate max-w-[200px]">
-                            {file.name}
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {formatFileSize(file.size)}
-                          </p>
+                  {uploadedFileNames.map((fileName, index) => {
+                    // Try to get the corresponding File object if available
+                    const fileObj = uploadedFiles[index];
+                    
+                    return (
+                      <li key={index} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-md p-3">
+                        <div className="flex items-center">
+                          <File className="h-4 w-4 text-slate-500 dark:text-slate-400 mr-2" />
+                          <div>
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-200 truncate max-w-[200px]">
+                              {fileName}
+                            </p>
+                            {fileObj && (
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {formatFileSize(fileObj.size)}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => removeFile(index)}
-                      >
-                        <X className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                      </Button>
-                    </li>
-                  ))}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => removeFile(index)}
+                        >
+                          <X className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        </Button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

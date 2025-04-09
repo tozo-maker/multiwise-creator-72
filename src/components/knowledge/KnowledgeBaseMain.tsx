@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { KnowledgeBaseFileList, KBFile } from './KnowledgeBaseFileList';
 import { KnowledgeBaseCategories, KBCategory } from './KnowledgeBaseCategories';
@@ -26,10 +25,9 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
   const [filteredFiles, setFilteredFiles] = useState<KBFile[]>(files);
   const { toast } = useToast();
 
-  // Adapter function that matches the expected signature
+  // Create adapter function that matches the expected signature
   const handleEdit = (id: string) => {
-    // When edit is clicked, we can open a dialog or modal to get the new description
-    // For now, just call onEditFile with empty string and let the parent handle the UI for description input
+    // When edit is clicked, get the file and pass its current description
     const file = files.find(f => f.id === id);
     if (file) {
       onEditFile(id, file.description);
@@ -39,8 +37,11 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
   // Filter files when activeCategory changes
   useEffect(() => {
     if (activeCategory) {
-      const filtered = files.filter(file => file.category === categories.find(c => c.id === activeCategory)?.name);
-      setFilteredFiles(filtered);
+      const categoryName = categories.find(c => c.id === activeCategory)?.name;
+      if (categoryName) {
+        const filtered = files.filter(file => file.category === categoryName);
+        setFilteredFiles(filtered);
+      }
     } else {
       setFilteredFiles(files);
     }
@@ -48,8 +49,16 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 
   // Update filtered files when files prop changes
   useEffect(() => {
-    setFilteredFiles(files);
-  }, [files]);
+    if (activeCategory) {
+      // Keep the current category filter applied
+      const categoryName = categories.find(c => c.id === activeCategory)?.name;
+      if (categoryName) {
+        setFilteredFiles(files.filter(file => file.category === categoryName));
+      }
+    } else {
+      setFilteredFiles(files);
+    }
+  }, [files, activeCategory, categories]);
 
   // Display a message if no files are available
   if (files.length === 0 && !isLoading) {

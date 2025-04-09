@@ -96,11 +96,14 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     
     try {
       const results = fileNames.map(async (fileName) => {
-        const category = fileName.toLowerCase().endsWith('.pdf') 
-          ? 'Documents'
-          : fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.png')
-            ? 'Images'
-            : 'Other';
+        const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
+        
+        const category = 
+          ['pdf', 'doc', 'docx'].includes(fileExtension) ? 'Documents' :
+          ['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension) ? 'Images' :
+          'Other';
+        
+        const fileSize = 'Unknown';
               
         const { data: fileData, error: dbError } = await supabase
           .from('knowledge_base_files')
@@ -109,9 +112,9 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
             user_id: user.id,
             name: fileName,
             description: `File uploaded during project creation for ${projectId}`,
-            file_type: fileName.split('.').pop() || '',
+            file_type: fileExtension,
             category: category,
-            size: 'Unknown',
+            size: fileSize,
             url: ''
           })
           .select()
