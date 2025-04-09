@@ -33,7 +33,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
         return 'max-w-7xl'; 
       case 'wide':
       default:
-        return 'max-w-full'; // Removed fixed padding to match other pages
+        return 'max-w-full'; // Use full width for wide content
     }
   };
 
@@ -66,7 +66,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
             <main 
               id={mainId}
               className={cn(
-                "flex-1 overflow-y-auto p-3 md:p-6",
+                "flex-1 overflow-y-auto p-3 md:p-6 w-full",
                 isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
               )}
               role="main"

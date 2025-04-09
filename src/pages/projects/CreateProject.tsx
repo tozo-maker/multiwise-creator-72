@@ -48,28 +48,24 @@ export const CreateProject: React.FC = () => {
   
   return (
     <DashboardLayout contentWidth="wide">
-      <div className={`w-full min-h-screen -mt-4 py-6 ${
-        isDark ? 'bg-slate-900' : 'bg-slate-50'
-      }`}>
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="mb-6">
-            <PageBreadcrumbs items={breadcrumbItems} />
-            
-            <ThemeCard className="mb-6">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-2xl font-bold">Create New Project</CardTitle>
-                <CardDescription>
-                  Configure your educational content project by following these steps
-                </CardDescription>
-              </CardHeader>
-            </ThemeCard>
-          </div>
+      <div className="w-full py-6">
+        <div className="mb-6">
+          <PageBreadcrumbs items={breadcrumbItems} />
           
-          <div className="w-full">
-            <UnifiedProjectWizard
-              onComplete={handleProjectCreated}
-            />
-          </div>
+          <ThemeCard className="mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-2xl font-bold">Create New Project</CardTitle>
+              <CardDescription>
+                Configure your educational content project by following these steps
+              </CardDescription>
+            </CardHeader>
+          </ThemeCard>
+        </div>
+        
+        <div className="w-full">
+          <UnifiedProjectWizard
+            onComplete={handleProjectCreated}
+          />
         </div>
       </div>
     </DashboardLayout>

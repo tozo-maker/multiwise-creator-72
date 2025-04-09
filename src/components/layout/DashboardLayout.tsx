@@ -4,6 +4,7 @@ import { ModernLayout } from './ModernLayout';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
   contentWidth?: 'default' | 'narrow' | 'wide';
@@ -12,6 +13,7 @@ interface DashboardLayoutProps {
   pageDescription?: string;
   mainId?: string;
 }
+
 export const DashboardLayout = React.memo(function DashboardLayout({
   children,
   contentWidth = 'wide',
@@ -20,9 +22,7 @@ export const DashboardLayout = React.memo(function DashboardLayout({
   pageDescription,
   mainId = 'main-content'
 }: DashboardLayoutProps) {
-  const {
-    isDark
-  } = useTheme();
+  const { isDark } = useTheme();
   const mainRef = useRef<HTMLElement>(null);
 
   // Set page title for better accessibility
@@ -46,22 +46,35 @@ export const DashboardLayout = React.memo(function DashboardLayout({
 
   // Create a valid id from the title for ARIA references
   const titleId = pageTitle ? `dashboard-title-${pageTitle.replace(/\s+/g, '-').toLowerCase()}` : undefined;
-  const content = <main id={mainId} ref={mainRef} className="space-y-8" role="main" aria-labelledby={titleId} tabIndex={-1} // Allow programmatic focus but not tab focus
-  >
+  
+  const content = (
+    <main 
+      id={mainId} 
+      ref={mainRef} 
+      className="space-y-8 w-full" 
+      role="main" 
+      aria-labelledby={titleId} 
+      tabIndex={-1} // Allow programmatic focus but not tab focus
+    >
       {children}
-    </main>;
-  return <ModernLayout contentWidth={contentWidth}>
-      {animate ? <motion.div initial={{
-      opacity: 0,
-      y: 10
-    }} animate={{
-      opacity: 1,
-      y: 0
-    }} transition={{
-      duration: 0.3
-    }} aria-live="polite">
+    </main>
+  );
+  
+  return (
+    <ModernLayout contentWidth={contentWidth}>
+      {animate ? (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.3 }}
+          aria-live="polite"
+          className="w-full"
+        >
           {content}
-        </motion.div> : content}
-    </ModernLayout>;
+        </motion.div>
+      ) : content}
+    </ModernLayout>
+  );
 });
+
 DashboardLayout.displayName = 'DashboardLayout';
