@@ -1,17 +1,14 @@
-
 import React, { useState, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AlertCircle, Upload, File, X } from 'lucide-react';
+import { ProjectData } from '../hooks/useProjectWizard';
 
 interface KnowledgeBaseStepProps {
-  data: {
-    hasKnowledgeBase?: boolean;
-    knowledgeBaseFiles?: File[] | string[];
-  };
-  updateData: (data: Partial<KnowledgeBaseStepProps['data']>) => void;
+  data: ProjectData;
+  updateData: (data: Partial<ProjectData>) => void;
   isMobile?: boolean;
 }
 

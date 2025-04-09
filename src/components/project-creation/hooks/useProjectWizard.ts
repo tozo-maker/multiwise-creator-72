@@ -15,7 +15,7 @@ export interface ProjectData {
   templateId: string;
   quickStart: string;
   hasKnowledgeBase?: boolean;
-  knowledgeBaseFiles?: (string | File)[];
+  knowledgeBaseFiles?: File[];
   deadline?: string;
 }
 

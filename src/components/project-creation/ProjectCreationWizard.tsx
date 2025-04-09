@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -8,19 +7,7 @@ import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { FinalReviewStep } from './steps/FinalReviewStep';
 import { useToast } from '@/hooks/use-toast';
 import { WizardStepIndicator } from '@/components/wizard/WizardStepIndicator';
-
-interface ProjectData {
-  name: string;
-  description: string;
-  type: string;
-  language: string;
-  targetAudience: string;
-  complexity: string;
-  templateId: string;
-  quickStart: string; // Added this property
-  hasKnowledgeBase?: boolean;
-  knowledgeBaseFiles?: string[];
-}
+import { ProjectData } from './hooks/useProjectWizard';
 
 interface ProjectCreationWizardProps {
   templateId: string;
@@ -42,11 +29,10 @@ export function ProjectCreationWizard({
     targetAudience: '',
     complexity: 'Intermediate',
     templateId,
-    quickStart: 'custom', // Added default value
+    quickStart: 'custom',
   });
   const { toast } = useToast();
   
-  // Define wizard steps
   const steps = [
     { id: 0, name: 'Project Basics' },
     { id: 1, name: 'Configuration' },
@@ -59,7 +45,6 @@ export function ProjectCreationWizard({
   };
   
   const nextStep = () => {
-    // Validate before moving to next step
     if (currentStep === 0 && !formData.name) {
       toast({
         title: "Project name required",
@@ -81,24 +66,19 @@ export function ProjectCreationWizard({
   };
   
   const handleCreate = () => {
-    // In a real app, you would send the data to an API
-    // For now, we'll simulate creation with a timeout
     toast({
       title: "Creating project...",
       description: "Your project is being set up."
     });
     
     setTimeout(() => {
-      // Generate a random project ID for demo purposes
       const projectId = 'proj_' + Math.random().toString(36).substr(2, 9);
       onComplete(projectId);
     }, 2000);
   };
   
-  // Calculate progress percentage
   const progressPercentage = ((currentStep + 1) / steps.length) * 100;
   
-  // Track visited steps to enable navigation
   const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
   
   const hasVisited = (stepId: number) => {
@@ -111,7 +91,6 @@ export function ProjectCreationWizard({
     }
   };
   
-  // Get current component
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
@@ -127,7 +106,6 @@ export function ProjectCreationWizard({
     }
   };
   
-  // Update visited steps when moving forward
   React.useEffect(() => {
     setVisitedSteps(prev => {
       const updated = new Set(prev);
