@@ -84,6 +84,7 @@ const KnowledgeBasePage = () => {
           activeCategory={activeCategory}
           totalSize={stats.totalSize}
           fileTypes={stats.fileTypes}
+          activeTab={activeTab}
           onDeleteFile={handleDeleteFile}
           onEditFile={handleEditFile}
           onPreviewFile={(id) => {

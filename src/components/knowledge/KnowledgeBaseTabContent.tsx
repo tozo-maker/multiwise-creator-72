@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { KnowledgeBaseFileSection } from './KnowledgeBaseFileSection';
 import { KnowledgeBaseSidebar } from './KnowledgeBaseSidebar';
 import { KnowledgeBaseAnalytics } from './KnowledgeBaseAnalytics';
@@ -18,6 +18,7 @@ interface KnowledgeBaseTabContentProps {
   activeCategory: string | null;
   totalSize: string;
   fileTypes: Record<string, number>;
+  activeTab: string;
   onDeleteFile: (id: string) => void;
   onEditFile: (id: string) => void;
   onPreviewFile: (id: string) => void;
@@ -35,6 +36,7 @@ export const KnowledgeBaseTabContent: React.FC<KnowledgeBaseTabContentProps> = (
   activeCategory,
   totalSize,
   fileTypes,
+  activeTab,
   onDeleteFile,
   onEditFile,
   onPreviewFile,
@@ -53,7 +55,7 @@ export const KnowledgeBaseTabContent: React.FC<KnowledgeBaseTabContentProps> = (
   };
 
   return (
-    <>
+    <Tabs value={activeTab} className="space-y-6">
       <TabsContent value="all" className="space-y-6 pt-2">
         <div className="grid gap-6 md:grid-cols-3">
           <KnowledgeBaseFileSection
@@ -169,6 +171,6 @@ export const KnowledgeBaseTabContent: React.FC<KnowledgeBaseTabContentProps> = (
           </CardContent>
         </Card>
       </TabsContent>
-    </>
+    </Tabs>
   );
 };

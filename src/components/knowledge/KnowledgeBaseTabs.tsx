@@ -13,7 +13,7 @@ export const KnowledgeBaseTabs: React.FC<KnowledgeBaseTabsProps> = ({
   setActiveTab
 }) => {
   return (
-    <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
       <TabsList className="grid grid-cols-5 h-auto p-1">
         <TabsTrigger value="all" className="flex items-center gap-2 py-2">
           <File className="h-4 w-4" />
