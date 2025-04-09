@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +18,7 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
     
     try {
       setIsLoading(true);
+      console.log('Fetching knowledge base files...');
       
       // Build the query
       let query = supabase
@@ -32,9 +34,20 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
       
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching knowledge base files:', error);
+        throw error;
+      }
       
       console.log('Knowledge Base files fetched:', data);
+      
+      if (!data || data.length === 0) {
+        console.log('No knowledge base files found');
+        setFiles([]);
+        setCategories([]);
+        setIsLoading(false);
+        return;
+      }
       
       // Transform data to match KBFile interface
       const formattedFiles = data.map(file => ({
@@ -48,6 +61,7 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
         url: file.url
       }));
       
+      console.log('Formatted files:', formattedFiles);
       setFiles(formattedFiles);
       
       // Generate categories based on files
@@ -85,11 +99,13 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
       color: categoryColors[index % categoryColors.length]
     }));
     
+    console.log('Generated categories:', categoryList);
     setCategories(categoryList);
   };
 
   useEffect(() => {
     fetchKnowledgeBaseFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, projectId]);
 
   return {

@@ -1,12 +1,15 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { KnowledgeBaseMain } from '@/components/knowledge/KnowledgeBaseMain';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useKnowledgeBaseFiles } from '@/hooks/useKnowledgeBaseFiles';
 import { useKnowledgeBaseOperations } from '@/components/knowledge/KnowledgeBaseOperations';
+import { useToast } from '@/hooks/use-toast';
 
 const KnowledgeBasePage = () => {
+  const { toast } = useToast();
+  
   // Use custom hook for file management
   const { 
     files, 
@@ -28,6 +31,18 @@ const KnowledgeBasePage = () => {
     updateCategories,
     refreshFiles
   });
+
+  // Refresh files when the component mounts
+  useEffect(() => {
+    refreshFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Log data for debugging
+  useEffect(() => {
+    console.log('KnowledgeBasePage - Files loaded:', files);
+    console.log('KnowledgeBasePage - Categories:', categories);
+  }, [files, categories]);
 
   return (
     <DashboardLayout 
