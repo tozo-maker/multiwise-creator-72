@@ -46,7 +46,7 @@ export const ProjectWorkspaceContent: React.FC<ProjectWorkspaceContentProps> = (
         <ProjectOverviewInfo 
           project={{
             progress: project.progress,
-            description: project.description,
+            description: project.description || '',
             deadline: project.deadline || 'Not set',
             lastModified: project.lastModified,
             owner: project.owner || 'Unknown'

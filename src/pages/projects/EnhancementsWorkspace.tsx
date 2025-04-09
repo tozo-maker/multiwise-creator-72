@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
@@ -11,8 +11,9 @@ import { Label } from '@/components/ui/label';
 import { FileText, Sparkles } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { useTheme } from '@/contexts/ThemeContext';
+import { supabase } from '@/integrations/supabase/client';
+import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
 
 export const EnhancementsWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -21,21 +22,41 @@ export const EnhancementsWorkspace = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   
-  // Mock project data - would normally be fetched based on ID
-  const project = {
-    id: projectId || '1',
-    name: 'Spanish Language Textbook',
-    type: 'Textbook',
-    targetLanguage: 'Spanish',
-    lastModified: '2 hours ago',
-    progress: 65
-  };
+  const [project, setProject] = useState({
+    id: projectId || '',
+    name: 'Loading...',
+    type: 'Loading...',
+    targetLanguage: 'Loading...'
+  });
   
-  const breadcrumbItems = [
-    { label: 'Projects', path: '/projects' },
-    { label: project.name, path: `/projects/${projectId}` },
-    { label: 'Enhancements' }
-  ];
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!projectId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setProject({
+            id: data.id,
+            name: data.name,
+            type: data.type,
+            targetLanguage: data.target_language
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching project:', error);
+      }
+    };
+    
+    fetchProject();
+  }, [projectId]);
   
   const handleGenerateEnhancements = () => {
     setIsGenerating(true);
@@ -49,9 +70,7 @@ export const EnhancementsWorkspace = () => {
   return (
     <ModernLayout contentWidth="wide">
       <div className="space-y-6">
-        <div className="pt-4">
-          <PageBreadcrumbs items={breadcrumbItems} />
-        </div>
+        <ProjectBreadcrumbs projectName={project.name} />
       
         <ProjectWorkspaceHeader 
           projectName={project.name}

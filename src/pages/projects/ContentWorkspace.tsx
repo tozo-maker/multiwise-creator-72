@@ -6,13 +6,13 @@ import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { ContentItemsCard } from '@/components/content/ContentItemsCard';
-import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ContentItem } from '@/components/content/ContentItemsList';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
 
 const ContentWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -106,21 +106,10 @@ const ContentWorkspace = () => {
     fetchContentItems();
   }, [projectId, user, toast]);
 
-  const breadcrumbItems = [{
-    label: 'Projects',
-    path: '/projects'
-  }, {
-    label: project.name,
-    path: `/projects/${projectId}`
-  }, {
-    label: 'Content'
-  }];
-
-  return <ModernLayout contentWidth="wide">
+  return (
+    <ModernLayout contentWidth="wide">
       <div className="space-y-6">
-        <div className="pt-4">
-          <PageBreadcrumbs items={breadcrumbItems} />
-        </div>
+        <ProjectBreadcrumbs projectName={project.name} />
         
         <ProjectWorkspaceHeader 
           projectName={project.name} 
@@ -142,7 +131,7 @@ const ContentWorkspace = () => {
           
           <Button 
             onClick={() => navigate(`/projects/${project.id}/content/new`)}
-            className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
+            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             <Plus className="h-4 w-4" />
             New Content
@@ -155,7 +144,8 @@ const ContentWorkspace = () => {
           isLoading={isLoading} 
         />
       </div>
-    </ModernLayout>;
+    </ModernLayout>
+  );
 };
 
 export default ContentWorkspace;

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
@@ -7,36 +7,57 @@ import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfigData } from '@/components/wizard/types';
-import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { SystemConfigTab } from '@/components/configuration/SystemConfigTab';
 import { ProjectConfigTab } from '@/components/configuration/ProjectConfigTab';
 import { LanguageContentTab } from '@/components/configuration/LanguageContentTab';
 import { SaveConfigurationButton } from '@/components/configuration/SaveConfigurationButton';
 import { useTheme } from '@/contexts/ThemeContext';
+import { supabase } from '@/integrations/supabase/client';
+import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
 
 export const ConfigurationWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   
-  const project = {
-    id: projectId || '1',
-    name: 'Spanish Language Textbook',
-    type: 'Textbook',
-    targetLanguage: 'Spanish',
-    lastModified: '2 hours ago',
-    progress: 65
-  };
+  const [project, setProject] = useState({
+    id: projectId || '',
+    name: 'Loading...',
+    type: 'Loading...',
+    targetLanguage: 'Loading...'
+  });
   
-  const breadcrumbItems = [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Projects', path: '/projects' },
-    { label: project.name, path: `/projects/${projectId}` },
-    { label: 'Configuration' }
-  ];
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!projectId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setProject({
+            id: data.id,
+            name: data.name,
+            type: data.type,
+            targetLanguage: data.target_language
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching project:', error);
+      }
+    };
+    
+    fetchProject();
+  }, [projectId]);
   
   const [configData, setConfigData] = useState<ConfigData>({
-    name: 'Spanish Language Textbook',
+    name: project.name,
     quickStart: 'custom',
     
     interfaceLanguage: 'English',
@@ -45,9 +66,9 @@ export const ConfigurationWorkspace = () => {
     outputDetail: 'Detailed',
     systemBehavior: 'Balanced',
     
-    projectType: 'Textbook',
+    projectType: project.type,
     customProjectType: '',
-    subjects: ['Spanish', 'Language Arts'],
+    subjects: [],
     levels: ['Secondary', 'High School'],
     pedagogy: 'Standard',
     customPedagogy: '',
@@ -55,7 +76,7 @@ export const ConfigurationWorkspace = () => {
     wordDistribution: 'balanced',
     wordEnforcement: 'flexible',
     
-    targetLanguage: 'Spanish',
+    targetLanguage: project.targetLanguage,
     goal: 'Teaching',
     complexity: 'Intermediate',
     culturalIntegration: 'Moderate',
@@ -74,6 +95,18 @@ export const ConfigurationWorkspace = () => {
     lastModified: new Date().toISOString()
   });
 
+  // Update configData when project data is fetched
+  useEffect(() => {
+    if (project.name !== 'Loading...') {
+      setConfigData(prevData => ({
+        ...prevData,
+        name: project.name,
+        projectType: project.type,
+        targetLanguage: project.targetLanguage
+      }));
+    }
+  }, [project]);
+
   const updateConfigData = (data: Partial<ConfigData>) => {
     setConfigData({ ...configData, ...data });
   };
@@ -89,9 +122,7 @@ export const ConfigurationWorkspace = () => {
   return (
     <ModernLayout contentWidth="wide">
       <div className="space-y-6">
-        <div className="pt-4">
-          <PageBreadcrumbs items={breadcrumbItems} />
-        </div>
+        <ProjectBreadcrumbs projectName={project.name} />
       
         <ProjectWorkspaceHeader 
           projectName={project.name}

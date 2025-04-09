@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
@@ -21,8 +21,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Plus, Search } from 'lucide-react';
 import { format } from 'date-fns';
-import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
+import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
 
 export const SnapshotsWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -30,22 +31,45 @@ export const SnapshotsWorkspace = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   
-  // Mock project data
-  const project = {
-    id: projectId || '1',
-    name: 'Spanish Language Textbook',
-    type: 'Textbook',
-    targetLanguage: 'Spanish',
-    lastModified: '2 hours ago',
-    progress: 65
-  };
-  
-  const breadcrumbItems = [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Projects', path: '/projects' },
-    { label: project.name, path: `/projects/${projectId}` },
-    { label: 'Snapshots' }
-  ];
+  const [project, setProject] = useState({
+    id: projectId || '',
+    name: 'Loading...',
+    type: 'Loading...',
+    targetLanguage: 'Loading...',
+    lastModified: '',
+    progress: 0
+  });
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!projectId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setProject({
+            id: data.id,
+            name: data.name,
+            type: data.type,
+            targetLanguage: data.target_language,
+            lastModified: new Date(data.updated_at).toLocaleString(),
+            progress: data.progress || 0
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching project:', error);
+      }
+    };
+    
+    fetchProject();
+  }, [projectId]);
   
   // State management
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -54,26 +78,7 @@ export const SnapshotsWorkspace = () => {
   const [newSnapshotName, setNewSnapshotName] = useState('');
   const [newSnapshotDescription, setNewSnapshotDescription] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [snapshots, setSnapshots] = useState<Snapshot[]>([
-    {
-      id: '1',
-      name: 'Initial Draft',
-      createdAt: new Date(2023, 5, 15),
-      description: 'First complete draft of the textbook with basic structure and content.'
-    },
-    {
-      id: '2',
-      name: 'Post-Review Revision',
-      createdAt: new Date(2023, 6, 2),
-      description: 'Major revisions after the first content review. Improved exercises and cultural context.'
-    },
-    {
-      id: '3',
-      name: 'Enhanced Formatting',
-      createdAt: new Date(2023, 6, 18),
-      description: 'Applied consistent formatting and improved visuals throughout all chapters.'
-    }
-  ]);
+  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   
   // Filtered snapshots based on search
   const filteredSnapshots = snapshots.filter(snapshot => 
@@ -155,9 +160,7 @@ export const SnapshotsWorkspace = () => {
   return (
     <ModernLayout contentWidth="wide">
       <div className="space-y-6">
-        <div className="pt-4">
-          <PageBreadcrumbs items={breadcrumbItems} />
-        </div>
+        <ProjectBreadcrumbs projectName={project.name} />
       
         <ProjectWorkspaceHeader 
           projectName={project.name}

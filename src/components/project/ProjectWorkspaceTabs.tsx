@@ -15,7 +15,8 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.m
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const { isDark } = useTheme();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
   const isTabActive = useCallback((tabPath: string) => {
     if (activeTab) {
@@ -60,11 +61,11 @@ export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.m
             key={tab.id}
             to={tab.path}
             className={cn(
-              "pb-2 relative text-sm font-medium outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 rounded px-1",
+              "pb-2 relative text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded px-1",
               isTabActive(tab.id)
                 ? isDark
                   ? "text-indigo-400 border-b-2 border-indigo-500"
-                  : "text-brand-600 border-b-2 border-brand-500"
+                  : "text-indigo-600 border-b-2 border-indigo-500"
                 : isDark
                   ? "text-slate-400 hover:text-slate-300"
                   : "text-slate-600 hover:text-slate-900"
