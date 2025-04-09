@@ -2,6 +2,7 @@
 import React from 'react';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useWizard } from '@/contexts/WizardContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface WizardHeaderProps {
   title?: string;
@@ -17,6 +18,7 @@ export function WizardHeader({
   stepDescriptions 
 }: WizardHeaderProps) {
   const { currentStep } = useWizard();
+  const { isDark } = useTheme();
   
   const stepTitle = stepTitles?.[currentStep];
   const stepDescription = stepDescriptions?.[currentStep];
@@ -25,12 +27,16 @@ export function WizardHeader({
   const displayDescription = stepDescription || description;
 
   return (
-    <CardHeader>
+    <CardHeader className={`${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
       {displayTitle && (
-        <CardTitle>{displayTitle}</CardTitle>
+        <CardTitle className={`${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+          {displayTitle}
+        </CardTitle>
       )}
       {displayDescription && (
-        <CardDescription>{displayDescription}</CardDescription>
+        <CardDescription className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          {displayDescription}
+        </CardDescription>
       )}
     </CardHeader>
   );

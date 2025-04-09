@@ -6,6 +6,7 @@ import { WizardSteps } from './WizardSteps';
 import { WizardContent } from './WizardContent';
 import { WizardNavigation } from './WizardNavigation';
 import { ThemeCard } from '@/components/shared/ThemeCard';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface WizardProps<T extends Record<string, any>> {
   title?: string;
@@ -32,6 +33,8 @@ export function Wizard<T extends Record<string, any>>({
   className = '',
   showStepIndicator = true,
 }: WizardProps<T>) {
+  const { isDark } = useTheme();
+  
   return (
     <WizardProvider 
       steps={steps}
@@ -48,7 +51,7 @@ export function Wizard<T extends Record<string, any>>({
               <WizardSteps />
             )}
             
-            <ThemeCard>
+            <ThemeCard className={`shadow-sm ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
               {(title || description) && (
                 <WizardHeader title={title} description={description} />
               )}

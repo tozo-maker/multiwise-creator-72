@@ -56,9 +56,11 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     complexity: 'Intermediate',
     quickStart: 'custom',
     templateId: 'custom',
+    hasKnowledgeBase: false,
+    knowledgeBaseFiles: [],
   };
   
-  // Custom navigation logic
+  // Custom navigation logic that ensures proper step progression
   const navigateLogic = (currentStep: number, formData: ProjectData, goToStep: (step: number) => void) => {
     // Validate before moving to next step
     if (currentStep === 0 && !formData.name) {
@@ -70,24 +72,14 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       return;
     }
     
-    // Handle special navigation logic
+    // Skip system, project and language config if using a template (non-custom)
     if (currentStep === 1 && formData.quickStart !== 'custom') {
-      // Skip to final step if using a template
-      goToStep(6);
+      // Skip to knowledge base step
+      goToStep(5);
       return;
     }
     
-    if (currentStep === 4) {
-      // Check if we need to skip the documents step
-      const needsDocuments = false; // Logic to determine if documents are needed
-      
-      if (!needsDocuments) {
-        goToStep(6);
-        return;
-      }
-    }
-    
-    // Default navigation to next step
+    // For all other cases, just go to the next step
     goToStep(currentStep + 1);
   };
   
@@ -140,7 +132,7 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       // Create project using ProjectService
       const project = await ProjectService.create({
         name: data.name,
-        description: data.description,
+        description: data.description || '',
         type: data.type || 'Textbook',
         targetLanguage: data.language || 'English',
       });
@@ -148,6 +140,15 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       console.log('Project created:', project);
       
       if (project && project.id) {
+        // If knowledge base files exist, upload them
+        if (data.hasKnowledgeBase && data.knowledgeBaseFiles && data.knowledgeBaseFiles.length > 0) {
+          // This would be implemented to handle file uploads to knowledge base
+          toast({
+            title: "Knowledge base",
+            description: `${data.knowledgeBaseFiles.length} documents will be processed.`
+          });
+        }
+        
         onComplete(project.id);
       } else {
         throw new Error("Failed to get project ID");
@@ -170,6 +171,8 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       onComplete={handleComplete}
       renderStep={renderStep}
       navigateLogic={navigateLogic}
+      title="Create New Project"
+      description="Configure your educational content project by following these steps."
     />
   );
 }

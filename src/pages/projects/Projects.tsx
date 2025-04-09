@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
-import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
+import { DashboardProvider } from '@/contexts/DashboardContext';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from '@/contexts/ThemeContext';
@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/types/supabase-custom';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 // Add a status field to the filtered projects if it doesn't exist already
 const addStatusIfMissing = (projects: any[]) => {
@@ -21,13 +22,10 @@ const addStatusIfMissing = (projects: any[]) => {
 
 // Create a wrapper component that uses the DashboardProvider
 const ProjectsContent = () => {
-  const {
-    theme
-  } = useTheme();
-  const {
-    user
-  } = useAuth();
+  const { theme } = useTheme();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -38,12 +36,11 @@ const ProjectsContent = () => {
         return;
       }
       try {
-        const {
-          data,
-          error
-        } = await supabase.from('projects').select('*').order('created_at', {
-          ascending: false
-        });
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
         if (error) throw error;
         
         console.log('Fetched projects:', data);
@@ -61,33 +58,37 @@ const ProjectsContent = () => {
         setProjects(formattedProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
+        toast({
+          title: "Error fetching projects",
+          description: "There was a problem loading your projects.",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
     };
     fetchProjects();
-  }, [user]);
+  }, [user, toast]);
 
   // Ensure all projects have a status field
   const filteredProjects = addStatusIfMissing(projects);
   
-  return <motion.div initial={{
-    opacity: 0
-  }} animate={{
-    opacity: 1
-  }} transition={{
-    duration: 0.5
-  }}>
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>Projects</h1>
+            <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
+              Projects
+            </h1>
             <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
               View and manage all your educational content projects.
             </p>
           </div>
-          
-          {/* New project button removed from here */}
         </div>
         
         <Tabs defaultValue="all" className="space-y-4">
@@ -111,15 +112,19 @@ const ProjectsContent = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </motion.div>;
+    </motion.div>
+  );
 };
 
 // Main component that wraps the content with DashboardProvider
 export const Projects = () => {
-  return <ModernLayout contentWidth="wide">
+  return (
+    <ModernLayout contentWidth="wide">
       <DashboardProvider>
         <ProjectsContent />
       </DashboardProvider>
-    </ModernLayout>;
+    </ModernLayout>
+  );
 };
+
 export default Projects;
