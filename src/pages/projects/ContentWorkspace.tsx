@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
@@ -13,14 +12,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
-
 const ContentWorkspace = () => {
-  const { projectId } = useParams<{ projectId: string }>();
+  const {
+    projectId
+  } = useParams<{
+    projectId: string;
+  }>();
   const navigate = useNavigate();
-  const { theme } = useTheme();
-  const { user } = useAuth();
+  const {
+    theme
+  } = useTheme();
+  const {
+    user
+  } = useAuth();
   const isDark = theme === 'dark';
-  
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [project, setProject] = useState({
     id: projectId || '',
@@ -29,20 +34,15 @@ const ContentWorkspace = () => {
     targetLanguage: 'Loading...'
   });
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const fetchProject = async () => {
       if (!projectId || !user) return;
-
       try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', projectId)
-          .single();
-
+        const {
+          data,
+          error
+        } = await supabase.from('projects').select('*').eq('id', projectId).single();
         if (error) throw error;
-
         if (data) {
           setProject({
             id: data.id,
@@ -60,22 +60,19 @@ const ContentWorkspace = () => {
         });
       }
     };
-
     const fetchContentItems = async () => {
       if (!projectId || !user) return;
-      
       try {
-        const { data, error } = await supabase
-          .from('content_items')
-          .select('*')
-          .eq('project_id', projectId)
-          .order('created_at', { ascending: false });
-
+        const {
+          data,
+          error
+        } = await supabase.from('content_items').select('*').eq('project_id', projectId).order('created_at', {
+          ascending: false
+        });
         if (error) {
           console.error('Error fetching content items:', error);
           throw error;
         }
-
         if (data && data.length > 0) {
           const formattedItems = data.map(item => ({
             id: item.id,
@@ -101,21 +98,14 @@ const ContentWorkspace = () => {
         setIsLoading(false);
       }
     };
-
     fetchProject();
     fetchContentItems();
   }, [projectId, user, toast]);
-
-  return (
-    <ModernLayout contentWidth="wide">
+  return <ModernLayout contentWidth="wide">
       <div className="space-y-6">
         <ProjectBreadcrumbs projectName={project.name} />
         
-        <ProjectWorkspaceHeader 
-          projectName={project.name} 
-          projectType={project.type} 
-          targetLanguage={project.targetLanguage} 
-        />
+        <ProjectWorkspaceHeader projectName={project.name} projectType={project.type} targetLanguage={project.targetLanguage} />
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="content" />
         
@@ -129,23 +119,11 @@ const ContentWorkspace = () => {
             </p>
           </div>
           
-          <Button 
-            onClick={() => navigate(`/projects/${project.id}/content/new`)}
-            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
-          >
-            <Plus className="h-4 w-4" />
-            New Content
-          </Button>
+          
         </div>
         
-        <ContentItemsCard 
-          projectId={project.id} 
-          contentItems={contentItems} 
-          isLoading={isLoading} 
-        />
+        <ContentItemsCard projectId={project.id} contentItems={contentItems} isLoading={isLoading} />
       </div>
-    </ModernLayout>
-  );
+    </ModernLayout>;
 };
-
 export default ContentWorkspace;
