@@ -31,7 +31,7 @@ export function ProjectWizard({ onComplete }: ProjectWizardProps) {
       <WizardSteps 
         steps={steps}
         currentStep={currentStep}
-        hasVisited={hasVisited}
+        hasVisited={(stepId: number) => hasVisited.includes(stepId)}
         onStepClick={goToStep}
       />
       

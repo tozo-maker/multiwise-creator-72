@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -12,16 +11,14 @@ import { toast } from "@/components/ui/use-toast";
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { useGuidedTour } from "@/components/onboarding/GuidedTour";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
-// Loading component for Suspense fallbacks
 const LoadingScreen = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
   </div>
 );
 
-// Lazy-loaded components for code splitting
 const Dashboard = lazy(() => import("./pages/dashboard/Dashboard"));
 const Projects = lazy(() => import("./pages/projects/Projects"));
 const ProjectWorkspace = lazy(() => import("./pages/projects/ProjectWorkspace"));
@@ -47,7 +44,6 @@ const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
 const CreateProject = lazy(() => import("./pages/projects/CreateProject"));
 const UserProfile = lazy(() => import("./pages/profile/UserProfile"));
 
-// Configure React Query with error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -58,7 +54,6 @@ const queryClient = new QueryClient({
   }
 });
 
-// Add global error handlers to log and display errors
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === 'updated' && event.action.type === 'error') {
     const error = event.action.error;
@@ -124,7 +119,6 @@ const AppContent = () => {
   );
 };
 
-// Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isChecking, setIsChecking] = useState(true);
   const { session, isLoading } = useAuth();
