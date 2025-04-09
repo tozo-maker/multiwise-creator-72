@@ -27,6 +27,7 @@ export type UserProfile = {
   id: string;
   username: string;
   avatarUrl?: string;
+  bio?: string; // Add bio field as optional
   role: 'admin' | 'editor' | 'viewer';
 };
 
