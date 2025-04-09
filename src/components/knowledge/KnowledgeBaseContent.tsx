@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { KnowledgeBaseFileList, KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
 import { KnowledgeBaseUpload } from '@/components/knowledge/KnowledgeBaseUpload';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface KnowledgeBaseContentProps {
   files: KBFile[];
+  isLoading?: boolean;
   onDeleteFile: (id: string) => void;
   onEditDescription: (id: string) => void;
   onPreviewFile: (id: string) => void;
@@ -16,6 +18,7 @@ interface KnowledgeBaseContentProps {
 
 export const KnowledgeBaseContent: React.FC<KnowledgeBaseContentProps> = ({
   files,
+  isLoading = false,
   onDeleteFile,
   onEditDescription,
   onPreviewFile,
@@ -38,13 +41,21 @@ export const KnowledgeBaseContent: React.FC<KnowledgeBaseContentProps> = ({
           <KnowledgeBaseUpload onFilesUploaded={onFilesUploaded} />
         </div>
         
-        <KnowledgeBaseFileList 
-          files={files} 
-          onDelete={onDeleteFile} 
-          onEdit={onEditDescription} 
-          onPreview={onPreviewFile} 
-          onDownload={onDownloadFile} 
-        />
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        ) : (
+          <KnowledgeBaseFileList 
+            files={files} 
+            onDelete={onDeleteFile} 
+            onEdit={onEditDescription} 
+            onPreview={onPreviewFile} 
+            onDownload={onDownloadFile} 
+          />
+        )}
       </CardContent>
     </Card>
   );
