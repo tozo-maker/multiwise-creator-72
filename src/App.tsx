@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -33,7 +32,6 @@ function App() {
   const { isLoading, user } = useAuth();
   const isDark = theme === 'dark';
 
-  // Show loading indicator while checking authentication
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50">
@@ -46,12 +44,10 @@ function App() {
     <div className={isDark ? 'dark' : 'light'}>
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50">
         <Routes>
-          {/* Public Routes */}
           <Route path="/" element={<Index />} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/register" element={<RegisterPage />} />
           
-          {/* Protected Routes */}
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
@@ -61,10 +57,9 @@ function App() {
             <Route path="/help" element={<Help />} />
             <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
             
-            {/* Project routes */}
             <Route path="/projects/create" element={<CreateProject />} />
             <Route path="/projects/:projectId" element={<ProjectWorkspace />} />
-            <Route path="/projects/:projectId/config" element={<ConfigurationWorkspace />} />
+            <Route path="/projects/:projectId/configuration" element={<ConfigurationWorkspace />} />
             <Route path="/projects/:projectId/content" element={<ContentWorkspace />} />
             <Route path="/projects/:projectId/content/create" element={<ContentCreation />} />
             <Route path="/projects/:projectId/content/:contentId" element={<ContentView />} />
@@ -73,9 +68,9 @@ function App() {
             <Route path="/projects/:projectId/snapshots" element={<SnapshotsWorkspace />} />
             <Route path="/projects/:projectId/knowledge-base" element={<KnowledgeBase />} />
             <Route path="/projects/:projectId/knowledge-base/advanced" element={<KnowledgeBaseAdvanced />} />
+            <Route path="/projects/:projectId/config" element={<ConfigurationWorkspace />} />
           </Route>
           
-          {/* Catch All */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

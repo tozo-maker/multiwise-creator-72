@@ -12,43 +12,48 @@ import {
 } from 'recharts';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useDashboard } from '@/contexts/DashboardContext';
+import { ProjectService } from '@/services/ProjectService';
 
 export const ContentTypeDistributionChart = () => {
   const { isDark } = useTheme();
-  const { isDemo, projects } = useDashboard();
+  const { projects } = useDashboard();
   const [contentTypeData, setContentTypeData] = useState([]);
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
   const EMPTY_COLORS = ['#94a3b8'];
   
   useEffect(() => {
-    // Initialize content type data based on user status
-    if (isDemo) {
-      // Demo data for content types
-      setContentTypeData([
-        { name: 'Video', value: 35 },
-        { name: 'Text', value: 25 },
-        { name: 'Interactive', value: 20 },
-        { name: 'Assessment', value: 15 },
-        { name: 'Other', value: 5 },
-      ]);
-    } else if (projects.length > 0) {
-      // For real users with projects, we'd normally fetch this data
-      // For now, let's create some representative data based on projects
-      const types = ['Video', 'Text', 'Interactive', 'Assessment', 'Other'];
-      const typesData = types.map(name => {
-        // Generate slightly randomized values based on project count
-        return {
+    const getContentTypeData = async () => {
+      if (projects.length === 0) {
+        setContentTypeData([{ name: 'No Content', value: 100 }]);
+        return;
+      }
+
+      try {
+        // Group projects by type
+        const typeMap = new Map();
+        
+        projects.forEach(project => {
+          const type = project.type || 'Other';
+          const count = typeMap.get(type) || 0;
+          typeMap.set(type, count + 1);
+        });
+        
+        // Convert to array format needed for the chart
+        const data = Array.from(typeMap.entries()).map(([name, value]) => ({
           name,
-          value: Math.max(5, Math.floor(Math.random() * 20 * projects.length))
-        };
-      });
-      setContentTypeData(typesData);
-    } else {
-      // Empty state for users with no projects
-      setContentTypeData([{ name: 'No Content', value: 100 }]);
-    }
-  }, [isDemo, projects]);
+          value
+        }));
+        
+        setContentTypeData(data.length > 0 ? data : [{ name: 'No Content', value: 100 }]);
+      } catch (error) {
+        console.error('Error getting content type data:', error);
+        setContentTypeData([{ name: 'Error Loading Data', value: 100 }]);
+      }
+    };
+    
+    getContentTypeData();
+  }, [projects]);
   
   return (
     <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800">

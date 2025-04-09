@@ -15,66 +15,64 @@ import {
 } from 'recharts';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useDashboard } from '@/contexts/DashboardContext';
+import { ProjectService } from '@/services/ProjectService';
 
 export const ProjectPerformanceChart = () => {
   const { isDark } = useTheme();
-  const { contentGenerationData, activityData, isDemo, projects } = useDashboard();
+  const { projects } = useDashboard();
   const [performanceData, setPerformanceData] = useState([]);
   
   useEffect(() => {
-    if (contentGenerationData && activityData) {
-      // Only process data if user is demo or has projects
-      if (isDemo || projects.length > 0) {
-        // Create a mapping of months/days to their respective values
-        const contentMap = contentGenerationData.reduce((acc, item) => {
-          acc[item.date] = item.count;
-          return acc;
-        }, {});
-        
-        const activityMap = activityData.reduce((acc, item) => {
-          acc[item.name] = item.value;
-          return acc;
-        }, {});
-        
-        // Generate performance data for the chart
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-        if (isDemo) {
-          // Use demo data with randomization
-          const newPerformanceData = months.map(month => {
-            const contentValue = contentMap[month] || 0;
-            const baseEngagement = Math.min(100, Math.max(50, 40 + contentValue * 2));
-            const baseCompletion = Math.min(100, Math.max(30, 30 + contentValue * 1.5));
-            const baseProgress = Math.min(100, Math.max(20, 20 + contentValue));
-            
-            return {
-              month,
-              engagement: Math.round(baseEngagement),
-              completion: Math.round(baseCompletion),
-              progress: Math.round(baseProgress)
-            };
-          });
-          setPerformanceData(newPerformanceData);
-        } else {
-          // For real users with projects, use actual content generation data
-          const newPerformanceData = months.map(month => {
-            const count = contentMap[month] || 0;
-            return {
-              month,
-              engagement: count > 0 ? Math.round(count * 2 + 10) : 0,
-              completion: count > 0 ? Math.round(count * 1.5 + 5) : 0,
-              progress: count > 0 ? Math.round(count + 15) : 0
-            };
-          });
-          setPerformanceData(newPerformanceData);
-        }
-      } else {
-        // For real users with no projects, show empty data
+    const getPerformanceData = async () => {
+      if (projects.length === 0) {
         setPerformanceData([
           { month: 'No Data', engagement: 0, completion: 0, progress: 0 }
         ]);
+        return;
       }
-    }
-  }, [contentGenerationData, activityData, isDemo, projects]);
+
+      try {
+        // Calculate average progress across projects
+        const avgProgress = projects.reduce((sum, project) => sum + (project.progress || 0), 0) / projects.length;
+        
+        // Create data based on project creation dates
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+        const projectsByMonth = {};
+        
+        // Initialize month data
+        months.forEach(month => {
+          projectsByMonth[month] = 0;
+        });
+        
+        // Group projects by month
+        projects.forEach(project => {
+          const date = new Date(project.lastModified);
+          const month = months[date.getMonth()];
+          projectsByMonth[month] = (projectsByMonth[month] || 0) + 1;
+        });
+        
+        // Generate performance data based on real projects
+        const data = months.map(month => {
+          const count = projectsByMonth[month] || 0;
+          return {
+            month,
+            engagement: count * 10,
+            completion: count * 8,
+            progress: count > 0 ? avgProgress : 0
+          };
+        });
+        
+        setPerformanceData(data);
+      } catch (error) {
+        console.error('Error calculating performance data:', error);
+        setPerformanceData([
+          { month: 'Error', engagement: 0, completion: 0, progress: 0 }
+        ]);
+      }
+    };
+    
+    getPerformanceData();
+  }, [projects]);
   
   return (
     <Card className="border border-slate-200 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-800/30 transition-shadow dark:bg-slate-800">

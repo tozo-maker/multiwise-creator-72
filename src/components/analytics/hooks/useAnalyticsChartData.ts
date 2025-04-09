@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useDashboard } from '@/contexts/DashboardContext';
 
 export const useAnalyticsChartData = () => {
-  const { projects, activityData, contentGenerationData } = useDashboard();
+  const { projects, activityData } = useDashboard();
   
   // Helper function to check if we have data to display
   const hasData = projects.length > 0;
