@@ -19,10 +19,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const { profile, updateProfile } = useAuth();
   const [theme, setThemeState] = useState<Theme>('system');
   const [initialized, setInitialized] = useState(false);
-  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Check if window exists to avoid server-side rendering issues
+  const isDark = typeof window !== 'undefined' ? 
+    theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) 
+    : isDarkMode;
 
+  // Initialize theme from profile or localStorage as fallback
   useEffect(() => {
-    // Initialize theme from profile or localStorage as fallback
     const loadTheme = async () => {
       let themeToUse: Theme;
       
@@ -32,12 +37,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } else {
         // Fallback to localStorage or OS preference
         const savedTheme = localStorage.getItem('theme') as Theme | null;
-        const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         
-        if (savedTheme) {
-          themeToUse = savedTheme;
+        if (typeof window !== 'undefined') {
+          const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          
+          if (savedTheme) {
+            themeToUse = savedTheme;
+          } else {
+            themeToUse = prefersDarkMode ? 'dark' : 'light';
+          }
         } else {
-          themeToUse = prefersDarkMode ? 'dark' : 'light';
+          themeToUse = savedTheme || 'system';
         }
       }
       
@@ -49,13 +59,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     loadTheme();
   }, [profile]);
 
+  // Apply theme to document and set dark mode state
   const applyTheme = (newTheme: Theme) => {
-    if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (typeof window === 'undefined') return;
+    
+    const isDarkTheme = newTheme === 'dark' || 
+      (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      
+    if (isDarkTheme) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
     
+    setIsDarkMode(isDarkTheme);
     localStorage.setItem('theme', newTheme);
   };
 
