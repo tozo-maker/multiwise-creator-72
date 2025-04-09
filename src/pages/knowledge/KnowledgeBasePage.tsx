@@ -8,6 +8,7 @@ import { useKnowledgeBaseOperations } from '@/components/knowledge/KnowledgeBase
 import { useToast } from '@/hooks/use-toast';
 import { KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
 import { KnowledgeBaseDescription } from '@/components/knowledge/KnowledgeBaseDescription';
+import { supabase } from '@/integrations/supabase/client';
 
 const KnowledgeBasePage = () => {
   const { toast } = useToast();
