@@ -41,8 +41,9 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
       }
       
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       // Error is handled in the signIn function
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -52,8 +53,8 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     setIsLoading(true);
     
     try {
-      // Use demo account credentials
-      await signIn('demo@example.com', 'demopassword');
+      // Use demo account credentials - make sure these match what's expected in AuthContext
+      await signIn('demo@example.com', 'password');
       
       // Call success callback if provided
       if (onLoginSuccess) {

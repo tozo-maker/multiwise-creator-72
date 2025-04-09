@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -49,23 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // For now, let's just simulate a loading state and then set a demo user
     const timer = setTimeout(() => {
       // For demo purposes, set a mock user
-      setUser({
-        email: 'demo@example.com',
-        id: '123456',
-      });
-      setProfile({
-        username: 'Demo User',
-        name: 'Demo User',
-        bio: 'This is a demo account',
-        theme: 'system',
-        font_size: 'medium',
-        reduced_motion: false,
-        email_notifications: true,
-        push_notifications: true,
-        two_factor_enabled: false,
-        notification_frequency: 'daily',
-        session_timeout: '30',
-      });
+      setUser(null); // Start with no user logged in
+      setProfile(null);
       setIsLoading(false);
     }, 1000);
 
@@ -77,6 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // In a real app, we would authenticate the user here
       // For demo purposes, let's simulate a successful login
+      console.log('Attempting login with:', { email, password });
+      
       if (email === 'demo@example.com' && password === 'password') {
         setUser({
           email: 'demo@example.com',
