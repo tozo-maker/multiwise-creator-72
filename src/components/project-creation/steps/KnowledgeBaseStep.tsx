@@ -16,7 +16,8 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
   const [enableKnowledgeBase, setEnableKnowledgeBase] = useState(data.hasKnowledgeBase || false);
   const [files, setFiles] = useState<File[]>(
     Array.isArray(data.knowledgeBaseFiles) 
-      ? data.knowledgeBaseFiles.filter(file => file instanceof File) as File[]
+      ? data.knowledgeBaseFiles
+          .filter(file => file instanceof File) as File[]
       : []
   );
   const [isDragging, setIsDragging] = useState(false);
@@ -32,7 +33,10 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
       const newFiles = Array.from(e.target.files);
       const updatedFiles = [...files, ...newFiles];
       setFiles(updatedFiles);
-      updateData({ knowledgeBaseFiles: updatedFiles });
+      updateData({ 
+        knowledgeBaseFiles: updatedFiles.map(file => file.name),
+        hasKnowledgeBase: true 
+      });
     }
   };
   
@@ -54,7 +58,10 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
       const droppedFiles = Array.from(e.dataTransfer.files);
       const updatedFiles = [...files, ...droppedFiles];
       setFiles(updatedFiles);
-      updateData({ knowledgeBaseFiles: updatedFiles });
+      updateData({ 
+        knowledgeBaseFiles: updatedFiles.map(file => file.name),
+        hasKnowledgeBase: true 
+      });
     }
   };
   
@@ -62,7 +69,10 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
     const updatedFiles = [...files];
     updatedFiles.splice(index, 1);
     setFiles(updatedFiles);
-    updateData({ knowledgeBaseFiles: updatedFiles });
+    updateData({ 
+      knowledgeBaseFiles: updatedFiles.map(file => file.name),
+      hasKnowledgeBase: updatedFiles.length > 0 
+    });
   };
   
   const formatFileSize = (bytes: number) => {
