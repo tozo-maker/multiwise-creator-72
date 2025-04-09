@@ -83,7 +83,7 @@ const ContentWorkspace = () => {
     
     fetchProject();
     fetchContentItems();
-  }, [projectId, user, toast]);
+  }, [projectId, user]);
 
   const handleCreateContent = () => {
     if (projectId) {
@@ -91,7 +91,8 @@ const ContentWorkspace = () => {
     }
   };
 
-  return <ModernLayout contentWidth="wide">
+  return (
+    <ModernLayout contentWidth="wide">
       <div className="space-y-6">
         <ProjectBreadcrumbs projectName={project.name} />
         
@@ -117,7 +118,8 @@ const ContentWorkspace = () => {
         
         <ContentItemsCard projectId={project.id} contentItems={contentItems} isLoading={isLoading} />
       </div>
-    </ModernLayout>;
+    </ModernLayout>
+  );
 };
 
 export default ContentWorkspace;

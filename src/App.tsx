@@ -1,13 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { Index } from '@/pages';
-import { Dashboard } from '@/pages/Dashboard';
-import { Projects } from '@/pages/Projects';
+import Index from '@/pages/Index';
+import Dashboard from '@/pages/dashboard/Dashboard';
+import Projects from '@/pages/projects/Projects';
 import { CreateProject } from '@/pages/projects/CreateProject';
 import { ProjectWorkspace } from '@/pages/projects/ProjectWorkspace';
 import { ConfigurationWorkspace } from '@/pages/projects/ConfigurationWorkspace';
-import { ContentWorkspace } from '@/pages/projects/ContentWorkspace';
+import ContentWorkspace from '@/pages/projects/ContentWorkspace';
 import { AnalysisWorkspace } from '@/pages/projects/AnalysisWorkspace';
 import { EnhancementsWorkspace } from '@/pages/projects/EnhancementsWorkspace';
 import { SnapshotsWorkspace } from '@/pages/projects/SnapshotsWorkspace';
@@ -15,11 +16,11 @@ import { KnowledgeBase } from '@/pages/projects/KnowledgeBase';
 import { KnowledgeBaseAdvanced } from '@/pages/projects/KnowledgeBaseAdvanced';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
-import { UserProfile } from '@/pages/profile/UserProfile';
+import UserProfile from '@/pages/profile/UserProfile';
 import { Analytics } from '@/pages/analytics/Analytics';
 import { Settings } from '@/pages/settings/Settings';
 import { Help } from '@/pages/help/Help';
-import { NotFound } from '@/pages/error/NotFound';
+import NotFound from '@/pages/error/NotFound';
 import { PrivateRoute } from '@/components/auth/PrivateRoute';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,7 +29,7 @@ import ContentView from '@/pages/projects/ContentView';
 
 function App() {
   const { theme } = useTheme();
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, user } = useAuth();
   const isDark = theme === 'dark';
 
   // Show loading indicator while checking authentication

@@ -3,48 +3,45 @@ import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface ContentPreviewProps {
-  title: string;
-  generatedContent: string;
+  content: string;
 }
 
-export const ContentPreview: React.FC<ContentPreviewProps> = ({ 
-  title, 
-  generatedContent 
-}) => {
+export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
   const { theme } = useTheme();
-  
+  const isDark = theme === 'dark';
+
+  if (!content) {
+    return (
+      <div className="h-full flex items-center justify-center text-slate-400">
+        Your content preview will appear here
+      </div>
+    );
+  }
+
+  // Very simple markdown-like rendering
+  const renderContent = () => {
+    const lines = content.split('\n');
+    
+    return lines.map((line, index) => {
+      if (line.startsWith('# ')) {
+        return <h1 key={index} className="text-2xl font-bold mb-4">{line.substring(2)}</h1>;
+      } else if (line.startsWith('## ')) {
+        return <h2 key={index} className="text-xl font-semibold mb-3 mt-4">{line.substring(3)}</h2>;
+      } else if (line.startsWith('### ')) {
+        return <h3 key={index} className="text-lg font-medium mb-2 mt-3">{line.substring(4)}</h3>;
+      } else if (line.trim() === '') {
+        return <div key={index} className="h-4"></div>;
+      } else {
+        return <p key={index} className="mb-2">{line}</p>;
+      }
+    });
+  };
+
   return (
-    <>
-      {generatedContent ? (
-        <div className={`border rounded-md p-6 min-h-[500px] ${
-          theme === 'dark' 
-            ? 'bg-slate-800 border-slate-700' 
-            : 'bg-white border-slate-200'
-        }`}>
-          <h2 className={`text-2xl font-bold mb-4 ${
-            theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
-          }`}>{title}</h2>
-          <div className={`prose max-w-none ${
-            theme === 'dark' ? 'prose-invert text-slate-300' : 'text-slate-700'
-          }`}>
-            {generatedContent.split('\n').map((line, i) => (
-              <p key={i} className={!line ? 'mb-4' : ''}>
-                {line || <br />}
-              </p>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className={`border border-dashed rounded-md p-12 text-center ${
-          theme === 'dark' 
-            ? 'border-slate-700 bg-slate-800/50' 
-            : 'border-slate-200 bg-slate-50'
-        }`}>
-          <p className={theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}>
-            No content has been generated yet. Use the AI Assistant to generate content first.
-          </p>
-        </div>
-      )}
-    </>
+    <div className={`prose max-w-none ${isDark ? 'prose-invert' : ''}`}>
+      {renderContent()}
+    </div>
   );
 };
+
+export default ContentPreview;

@@ -1,45 +1,25 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useTheme } from '@/contexts/ThemeContext';
 
-interface ContentFormHeaderProps {
+export interface ContentFormHeaderProps {
   title: string;
-  setTitle: (value: string) => void;
-  identifier: string;
-  setIdentifier: (value: string) => void;
 }
 
-export const ContentFormHeader: React.FC<ContentFormHeaderProps> = ({
-  title,
-  setTitle,
-  identifier,
-  setIdentifier
-}) => {
+export const ContentFormHeader: React.FC<ContentFormHeaderProps> = ({ title }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">Chapter/Section Title</Label>
-          <Input 
-            id="title" 
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter title"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="identifier">Identifier (Optional)</Label>
-          <Input 
-            id="identifier" 
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
-            placeholder="e.g., Chapter 3, Section 2.1"
-          />
-        </div>
-      </div>
+    <div className="mb-6">
+      <h1 className={`text-2xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+        {title}
+      </h1>
+      <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+        Generate and edit content with AI assistance
+      </p>
     </div>
   );
 };
+
+export default ContentFormHeader;

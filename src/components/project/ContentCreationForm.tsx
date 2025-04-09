@@ -1,285 +1,213 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
+import { ContentFormHeader } from './content-form/ContentFormHeader';
+import { ContentTypeSettings } from './content-form/ContentTypeSettings';
+import { ContentPreview } from './content-form/ContentPreview';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
 import { AiChatInterface } from '@/components/content/AiChatInterface';
-import { ContentTypeSettings } from '@/components/project/content-form/ContentTypeSettings';
-import { ContentFormActions } from '@/components/project/content-form/ContentFormActions';
-import { ContentFormHeader } from '@/components/project/content-form/ContentFormHeader';
-import { ContentPreview } from '@/components/project/content-form/ContentPreview';
-import { ContextFilesSection } from '@/components/project/content-form/ContextFilesSection';
-import { KnowledgeBaseDialog } from '@/components/project/content-form/KnowledgeBaseDialog';
-import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useKnowledgeBaseFiles } from '@/hooks/useKnowledgeBaseFiles';
-import { supabase } from '@/integrations/supabase/client';
-import { ContentService, ContentCreateInput } from '@/services/ContentService';
+import { toast } from 'sonner';
+import { ContentService } from '@/services/ContentService';
 
-type ContentType = 'lesson' | 'quiz' | 'worksheet' | 'presentation' | 'assessment' | 'other';
+// Define the content types
+export type ContentType = 'lesson' | 'quiz' | 'activity' | 'assessment' | 'summary';
+export type EducationalLevel = 'elementary' | 'middle' | 'high' | 'college' | 'professional';
 
-interface ContextFile {
-  id: string;
-  name: string;
-  instructions: string;
-}
-
-export const ContentCreationForm: React.FC = () => {
+export const ContentCreationForm = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const { toast } = useToast();
-  const { theme } = useTheme();
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const { files: knowledgeBaseFiles } = useKnowledgeBaseFiles(projectId);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
+  // Form state
   const [title, setTitle] = useState('');
-  const [contentType, setContentType] = useState<ContentType>('lesson');
   const [prompt, setPrompt] = useState('');
-  const [generatedContent, setGeneratedContent] = useState('');
+  const [contentType, setContentType] = useState<ContentType>('lesson');
+  const [targetLevel, setTargetLevel] = useState<EducationalLevel>('high');
+  const [content, setContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [contextFiles, setContextFiles] = useState<ContextFile[]>([]);
-  const [knowledgeBaseDialogOpen, setKnowledgeBaseDialogOpen] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-
-  const generateContent = async () => {
-    if (!projectId || !title || !prompt) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please provide a title and prompt before generating content.',
-        variant: 'destructive'
-      });
+  
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim()) {
+      toast.error('Please enter a title for your content');
       return;
     }
     
-    try {
-      setIsGenerating(true);
-      
-      // Get knowledge base file IDs for context
-      const knowledgeBaseIds = contextFiles.map(file => file.id);
-      
-      const { data, error } = await supabase.functions.invoke('ai-content-generation', {
-        body: {
-          prompt,
-          projectId,
-          contentType,
-          knowledgeBaseIds
-        }
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      console.log('AI Response:', data);
-      setGeneratedContent(data.content || 'No content was generated. Please try again.');
-      
-    } catch (error: any) {
-      console.error('Error generating content:', error);
-      toast({
-        title: 'Generation Failed',
-        description: error.message || 'An error occurred while generating content. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-  
-  const handleSave = async () => {
-    if (!projectId || !title || !generatedContent) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please generate content before saving.',
-        variant: 'destructive'
-      });
+    if (!content.trim()) {
+      toast.error('Please generate or write some content');
       return;
     }
     
     try {
       setIsSaving(true);
       
-      const contentData: ContentCreateInput = {
-        title,
+      if (!projectId) {
+        throw new Error('Project ID is missing');
+      }
+      
+      // Save content to database using ContentService
+      await ContentService.create({
+        title: title,
         type: contentType,
-        content: generatedContent,
+        content: content,
         project_id: projectId,
         status: 'draft'
-      };
-      
-      const savedContent = await ContentService.create(contentData);
-      
-      toast({
-        title: 'Content Saved',
-        description: 'Your content has been saved successfully.'
       });
       
-      // Navigate to the content view page
-      navigate(`/projects/${projectId}/content/${savedContent.id}`);
+      toast.success('Content saved successfully!');
       
+      // Navigate back to content list
+      navigate(`/projects/${projectId}/content`);
     } catch (error: any) {
       console.error('Error saving content:', error);
-      toast({
-        title: 'Save Failed',
-        description: error.message || 'Failed to save content. Please try again.',
-        variant: 'destructive'
-      });
+      toast.error('Failed to save content: ' + (error.message || 'Unknown error'));
     } finally {
       setIsSaving(false);
     }
   };
   
-  const handleOpenKnowledgeBaseDialog = () => {
-    setKnowledgeBaseDialogOpen(true);
-  };
-  
-  const addFilesToContext = () => {
-    const newContextFiles = selectedFiles
-      .map(id => {
-        const file = knowledgeBaseFiles.find(f => f.id === id);
-        if (!file) return null;
-        
-        // Check if file is already in contextFiles
-        const exists = contextFiles.some(cf => cf.id === id);
-        if (exists) return null;
-        
-        return {
-          id: file.id,
-          name: file.name,
-          instructions: `Use information from this ${file.fileType} file to inform the content.`
-        };
-      })
-      .filter(Boolean) as ContextFile[];
+  // Handle content generation from AI
+  const handleContentGeneration = async () => {
+    if (!prompt.trim()) {
+      toast.error('Please enter a prompt for content generation');
+      return;
+    }
     
-    setContextFiles([...contextFiles, ...newContextFiles]);
-    setKnowledgeBaseDialogOpen(false);
+    setIsGenerating(true);
+    
+    try {
+      // Simulate AI generation for now
+      // In a real implementation, this would call a backend API
+      setTimeout(() => {
+        const generatedContent = `# ${title || 'Generated Content'}\n\nThis is a sample ${contentType} generated for ${targetLevel} level education.\n\n${prompt}\n\n## Section 1\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget felis euismod, rhoncus metus id, tristique nisi.\n\n## Section 2\n\nPellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.`;
+        
+        setContent(generatedContent);
+        setIsGenerating(false);
+        toast.success('Content generated successfully!');
+      }, 2000);
+    } catch (error: any) {
+      console.error('Error generating content:', error);
+      toast.error('Failed to generate content: ' + (error.message || 'Unknown error'));
+      setIsGenerating(false);
+    }
   };
   
   return (
     <div className="space-y-6">
-      <Card className={theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
-        <div className="p-6">
-          <ContentFormHeader 
-            title="Create New Content" 
-            description="Use AI to generate educational content for your project"
-          />
-          
-          <Separator className="my-6" />
-          
-          <div className="space-y-6">
-            {/* Title Input */}
-            <div className="space-y-2">
-              <Label htmlFor="title">Content Title</Label>
-              <Input 
-                id="title" 
-                placeholder="Enter a descriptive title for your content" 
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+      <ContentFormHeader title="Create New Content" />
+      
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
+          <div className="p-6 space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title" className={isDark ? 'text-slate-200' : 'text-slate-700'}>
+                  Content Title
+                </Label>
+                <Input
+                  id="title"
+                  placeholder="Enter a title for your content"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={isDark ? 'bg-slate-700 border-slate-600 text-slate-100' : 'bg-white'}
+                  required
+                />
+              </div>
+              
+              <ContentTypeSettings 
+                contentType={contentType} 
+                setContentType={setContentType}
+                targetLevel={targetLevel}
+                setTargetLevel={setTargetLevel}
               />
-            </div>
-            
-            {/* Content Type */}
-            <div className="space-y-2">
-              <Label htmlFor="content-type">Content Type</Label>
-              <Select value={contentType} onValueChange={(value) => setContentType(value as ContentType)}>
-                <SelectTrigger id="content-type">
-                  <SelectValue placeholder="Select a content type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lesson">Lesson Plan</SelectItem>
-                  <SelectItem value="quiz">Quiz</SelectItem>
-                  <SelectItem value="worksheet">Worksheet</SelectItem>
-                  <SelectItem value="presentation">Presentation</SelectItem>
-                  <SelectItem value="assessment">Assessment</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Content Type Settings */}
-            <ContentTypeSettings contentType={contentType} />
-            
-            {/* Context Files */}
-            <ContextFilesSection 
-              contextFiles={contextFiles} 
-              setContextFiles={setContextFiles}
-              openKnowledgeBaseDialog={handleOpenKnowledgeBaseDialog}
-            />
-            
-            {/* AI Prompt Input */}
-            <div className="space-y-2">
-              <Label htmlFor="prompt">Generate Content with AI</Label>
-              <Textarea 
-                id="prompt" 
-                placeholder="Describe the content you want to generate..."
-                className="min-h-[120px]"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-              />
-            </div>
-            
-            {/* AI Generate Button */}
-            <div className="flex justify-end">
-              <Button 
-                onClick={generateContent} 
-                disabled={isGenerating || !prompt}
-                className="bg-brand-600 hover:bg-brand-700"
-              >
-                {isGenerating ? 'Generating...' : 'Generate Content with AI'}
-              </Button>
+              
+              <div className="pt-4">
+                <Label htmlFor="prompt" className={isDark ? 'text-slate-200' : 'text-slate-700'}>
+                  Content Generation Prompt
+                </Label>
+                <Textarea
+                  id="prompt"
+                  placeholder="Describe what content you want to generate..."
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  className={`h-32 ${isDark ? 'bg-slate-700 border-slate-600 text-slate-100' : 'bg-white'}`}
+                />
+                <p className="text-sm mt-2 text-slate-400">
+                  Describe the content you want to create. Be specific about topics, key points, and learning objectives.
+                </p>
+                
+                <div className="mt-4">
+                  <Button
+                    type="button"
+                    onClick={handleContentGeneration}
+                    disabled={isGenerating}
+                    className="bg-brand-600 hover:bg-brand-700 text-white"
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate Content'}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
+        </Card>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
+            <div className="p-6">
+              <h3 className={`text-lg font-medium mb-4 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                Edit Content
+              </h3>
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className={`h-[500px] font-mono text-sm ${isDark ? 'bg-slate-700 border-slate-600 text-slate-100' : 'bg-white'}`}
+                placeholder="Your content will appear here after generation, or you can write it manually..."
+              />
+            </div>
+          </Card>
+          
+          <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
+            <div className="p-6">
+              <h3 className={`text-lg font-medium mb-4 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                Preview
+              </h3>
+              <div className="border h-[500px] overflow-auto p-4 rounded-md bg-white dark:bg-slate-900">
+                <ContentPreview content={content} />
+              </div>
+            </div>
+          </Card>
         </div>
-      </Card>
-      
-      {/* Content Preview */}
-      <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
-        Content Preview
-      </h2>
-      
-      <ContentPreview 
-        title={title} 
-        generatedContent={generatedContent} 
-      />
-      
-      {/* Save & Cancel Buttons */}
-      {generatedContent && (
-        <div className="flex justify-end gap-4">
-          <Button 
-            variant="outline" 
+        
+        <div className="flex justify-end space-x-4">
+          <Button
+            type="button"
+            variant="outline"
             onClick={() => navigate(`/projects/${projectId}/content`)}
+            className={isDark ? 'border-slate-600 text-slate-300' : ''}
           >
             Cancel
           </Button>
-          <Button 
-            onClick={handleSave} 
-            disabled={isSaving || !generatedContent}
-            className="bg-green-600 hover:bg-green-700"
+          <Button
+            type="submit"
+            disabled={isSaving || !title || !content}
+            className="bg-brand-600 hover:bg-brand-700 text-white"
           >
             {isSaving ? 'Saving...' : 'Save Content'}
           </Button>
         </div>
-      )}
-      
-      {/* Knowledge Base Selection Dialog */}
-      <KnowledgeBaseDialog 
-        isOpen={knowledgeBaseDialogOpen}
-        onOpenChange={setKnowledgeBaseDialogOpen}
-        knowledgeBaseFiles={knowledgeBaseFiles.map(file => ({
-          id: file.id,
-          name: file.name,
-          description: file.description
-        }))}
-        selectedFiles={selectedFiles}
-        setSelectedFiles={setSelectedFiles}
-        addFilesToContext={addFilesToContext}
-      />
+      </form>
     </div>
   );
 };
+
+export default ContentCreationForm;
