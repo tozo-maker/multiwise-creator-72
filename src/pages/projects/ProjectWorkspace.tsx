@@ -41,7 +41,8 @@ export const ProjectWorkspace = () => {
     description: '',
     lastModified: '',
     progress: 0,
-    owner: ''
+    owner: '',
+    deadline: 'Not set' // Added missing deadline property
   });
   
   useEffect(() => {
@@ -79,7 +80,8 @@ export const ProjectWorkspace = () => {
             description: data.description || '',
             lastModified: new Date(data.updated_at).toLocaleDateString(),
             progress: data.progress || 0,
-            owner: ''  // Could fetch user info in the future if needed
+            owner: '',  // Could fetch user info in the future if needed
+            deadline: 'Not set' // Set default deadline since it's not in the database yet
           });
         }
       } catch (error) {
