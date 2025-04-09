@@ -20,6 +20,7 @@ interface UserProfile {
   username: string | null;
   avatar_url: string | null;
   bio: string | null; // Add bio field here
+  name: string | null; // Add name field here
   created_at: string;
   updated_at: string;
 }

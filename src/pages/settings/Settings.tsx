@@ -32,6 +32,7 @@ const SettingsContent = ({ defaultTab = 'account' }) => {
   const [isLoading, setIsLoading] = useState(false);
   
   // Account settings
+  const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
@@ -53,18 +54,27 @@ const SettingsContent = ({ defaultTab = 'account' }) => {
   useEffect(() => {
     if (user) {
       setEmail(user.email || '');
+      // Try to extract name from user metadata if available
+      const userData = user.user_metadata;
+      if (userData && userData.name) {
+        setName(userData.name);
+      }
     }
     
     if (profile) {
       setUsername(profile.username || '');
       setBio(profile.bio || '');
+      // If name wasn't set from metadata, try to get it from profile
+      if (!name && profile.name) {
+        setName(profile.name);
+      }
     }
   }, [user, profile]);
   
   const handleSaveAccount = async () => {
     setIsLoading(true);
     try {
-      await updateProfile({ username, bio });
+      await updateProfile({ username, bio, name });
       toast({
         title: "Profile updated",
         description: "Your account information has been updated successfully.",
@@ -150,6 +160,14 @@ const SettingsContent = ({ defaultTab = 'account' }) => {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled
                   description="Your email address cannot be changed."
+                />
+                
+                <ThemeInput
+                  label="Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your full name"
+                  description="Your display name shown across the application."
                 />
                 
                 <ThemeInput
