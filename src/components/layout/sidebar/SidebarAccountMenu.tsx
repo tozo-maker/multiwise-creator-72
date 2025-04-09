@@ -1,38 +1,44 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User, Settings, HelpCircle } from 'lucide-react';
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
+
 export const SidebarAccountMenu = () => {
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const handleLogout = () => {
-    // In a real app, this would call an API to logout
-    localStorage.setItem('isAuthenticated', 'false');
+  const { toast } = useToast();
+  const { signOut } = useAuth();
 
-    // Use the window.handleLogout if it exists (from App.tsx)
-    if (typeof window !== 'undefined' && window.handleLogout) {
-      window.handleLogout();
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been signed out of your account."
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error signing out",
+        description: "An error occurred while signing out."
+      });
     }
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account."
-    });
-    navigate('/');
   };
-  return <>
+  
+  return (
+    <>
       <SidebarMenuItem>
-        <SidebarMenuButton asChild tooltip="Profile Settings">
-          <Link to="/settings?tab=profile">
+        <SidebarMenuButton asChild tooltip="Account Settings">
+          <Link to="/settings?tab=account">
             <User />
-            <span>Profile Settings</span>
+            <span>Account Settings</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
-      
-      
       
       <SidebarMenuItem>
         <SidebarMenuButton asChild tooltip="Help">
@@ -49,8 +55,6 @@ export const SidebarAccountMenu = () => {
           <span>Logout</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
-    </>;
+    </>
+  );
 };
-
-// Add missing import
-import { Link } from 'react-router-dom';

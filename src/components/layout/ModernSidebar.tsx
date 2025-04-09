@@ -27,11 +27,13 @@ import {
 import { SidebarNavItems } from '@/components/layout/sidebar/SidebarMenu';
 import { SidebarAccountMenu } from '@/components/layout/sidebar/SidebarAccountMenu';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const ModernSidebar = () => {
   const { state, setOpen } = useSidebar();
   const { theme } = useTheme();
   const location = useLocation();
+  const { user, profile } = useAuth();
   
   // Save sidebar state to localStorage when it changes
   useEffect(() => {
@@ -121,10 +123,14 @@ export const ModernSidebar = () => {
       </SidebarContent>
       
       <SidebarFooter className="flex flex-col space-y-2">
-        {state === "expanded" && (
+        {state === "expanded" && profile && (
           <div className="mb-4 px-3 py-2">
-            <div className="text-sm font-medium text-slate-900 dark:text-white">John Doe</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400">john.doe@example.com</div>
+            <div className="text-sm font-medium text-slate-900 dark:text-white">
+              {profile.name || profile.username || user?.email}
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              {user?.email}
+            </div>
           </div>
         )}
         
