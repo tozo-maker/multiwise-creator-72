@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileEdit, FileText, Upload, Save, Download, Clock, Check } from 'lucide-react';
+import { FileEdit, FileText, Upload, Save, Download, Clock, Check, AlertCircle } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useDashboard } from '@/contexts/DashboardContext';
 
 interface ActivityItem {
   id: string;
@@ -22,9 +23,10 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
   className 
 }) => {
   const { theme } = useTheme();
+  const { isDemo, projects } = useDashboard();
   const isDark = theme === 'dark';
   
-  // Default activities if none provided
+  // Default activities for demo users
   const defaultActivities: ActivityItem[] = [
     { 
       id: '1', 
@@ -63,7 +65,19 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
     }
   ];
 
-  const displayActivities = activities || defaultActivities;
+  // Empty state for real users with no data
+  const emptyActivities: ActivityItem[] = [
+    { 
+      id: '1', 
+      project: "No projects yet", 
+      action: "Create your first project to get started", 
+      time: "Now",
+      icon: <AlertCircle className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+    }
+  ];
+
+  // Use provided activities, or select between default and empty activities
+  const displayActivities = activities || (isDemo ? defaultActivities : (projects.length > 0 ? defaultActivities : emptyActivities));
 
   return (
     <Card className={`${className} border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow ${
@@ -76,7 +90,7 @@ export const DashboardActivityTimeline: React.FC<DashboardActivityTimelineProps>
           isDark ? 'text-white' : 'text-slate-900'
         }`}>Recent Activity</CardTitle>
         <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-          Your recent project activities
+          {isDemo || projects.length > 0 ? 'Your recent project activities' : 'No recent activities'}
         </CardDescription>
       </CardHeader>
       <CardContent>

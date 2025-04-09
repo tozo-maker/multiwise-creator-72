@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { projectStats as mockProjectStats, activityData as mockActivityData, contentGenerationData as mockContentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
@@ -253,30 +252,24 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
   // Calculate project stats from actual projects
   const calculateProjectStats = (): ProjectStats => {
-    const activeProjects = projects.filter(p => p.status === 'active').length;
-    const completedProjects = projects.filter(p => p.status === 'completed').length;
-    const totalProjects = projects.length;
-    
     if (isDemo) {
-      // For demo users, use mock data for additional stats
-      return {
-        totalProjects,
-        activeProjects,
-        completedProjects,
-        contentCount: mockProjectStats.contentCount,
-        knowledgeBaseFiles: mockProjectStats.knowledgeBaseFiles,
-        averageProgressRate: totalProjects ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
-      };
+      // For demo users, use mock data
+      return mockProjectStats;
     } else {
-      // For real users, calculate from actual projects or return empty stats if no projects
+      // For real users, calculate based on actual projects
+      const activeProjects = projects.filter(p => p.status === 'active').length;
+      const completedProjects = projects.filter(p => p.status === 'completed').length;
+      const totalProjects = projects.length;
+      
+      // Return real stats or empty stats if no projects
       return {
         totalProjects,
         activeProjects,
         completedProjects,
-        // Calculate actual stats from real data
-        contentCount: totalProjects > 0 ? totalProjects * 3 : 0, // Estimate 3 content items per project or 0 if no projects
-        knowledgeBaseFiles: totalProjects > 0 ? Math.max(1, Math.round(totalProjects * 1.5)) : 0, // Estimate or 0 if no projects
-        averageProgressRate: totalProjects ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
+        // Zero values for real users with no projects
+        contentCount: totalProjects > 0 ? totalProjects * 3 : 0,
+        knowledgeBaseFiles: totalProjects > 0 ? Math.max(1, Math.round(totalProjects * 1.5)) : 0,
+        averageProgressRate: totalProjects > 0 ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
       };
     }
   };
@@ -287,9 +280,9 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         projects,
         filteredProjects,
         projectStats: calculateProjectStats(),
-        // For real users, use real data or empty data arrays, never fallback to mock data
-        activityData: isDemo ? mockActivityData : realActivityData.length > 0 ? realActivityData : emptyActivityData,
-        contentGenerationData: isDemo ? mockContentGenerationData : realContentGeneration.length > 0 ? realContentGeneration : emptyContentGenerationData,
+        // For demo users, use mock data. For real users, use real data or empty data arrays
+        activityData: isDemo ? mockActivityData : (realActivityData.length > 0 ? realActivityData : emptyActivityData),
+        contentGenerationData: isDemo ? mockContentGenerationData : (realContentGeneration.length > 0 ? realContentGeneration : emptyContentGenerationData),
         searchTerm,
         setSearchTerm,
         filterType,

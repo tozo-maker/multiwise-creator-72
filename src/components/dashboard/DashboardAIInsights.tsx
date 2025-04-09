@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, BarChart, PieChart, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useDashboard } from '@/contexts/DashboardContext';
 
 interface AIInsight {
   id: string;
@@ -23,9 +24,10 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({
   className
 }) => {
   const { theme } = useTheme();
+  const { isDemo, projects } = useDashboard();
   const isDark = theme === 'dark';
   
-  // Default insights if none provided
+  // Default insights for demo users
   const defaultInsights: AIInsight[] = [
     { 
       id: '1', 
@@ -60,7 +62,40 @@ export const DashboardAIInsights: React.FC<DashboardAIInsightsProps> = ({
     }
   ];
 
-  const displayInsights = insights || defaultInsights;
+  // Insights for real users with no data
+  const emptyInsights: AIInsight[] = [
+    { 
+      id: '1', 
+      title: "Content Engagement", 
+      description: "No engagement data available yet",
+      trend: 'neutral',
+      icon: <LineChart className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+    },
+    { 
+      id: '2', 
+      title: "Project Activity", 
+      description: "Create projects to see activity data", 
+      trend: 'neutral',
+      icon: <BarChart className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+    },
+    { 
+      id: '3', 
+      title: "Completion Rates", 
+      description: "No completion data available yet",
+      trend: 'neutral',
+      icon: <PieChart className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+    },
+    { 
+      id: '4', 
+      title: "Content Performance", 
+      description: "No content performance data available yet",
+      trend: 'neutral',
+      icon: <BarChart className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+    }
+  ];
+
+  // Use provided insights, or select between default and empty insights
+  const displayInsights = insights || (isDemo ? defaultInsights : (projects.length > 0 ? defaultInsights : emptyInsights));
 
   const getTrendIcon = (trend: string, percentage?: number) => {
     if (trend === 'up') {
