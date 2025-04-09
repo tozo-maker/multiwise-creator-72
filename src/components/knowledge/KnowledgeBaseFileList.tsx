@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
-import { FileText, Download, Trash2, MoreHorizontal, Edit, Eye, Filter, ArrowUpDown } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { FileListEmptyState } from './FileListEmptyState';
+import { FileListTable } from './FileListTable';
+import { FileListFilter } from './FileListFilter';
+
 export interface KBFile {
   id: string;
   name: string;
@@ -15,6 +16,7 @@ export interface KBFile {
   tags?: string[];
   url: string;
 }
+
 interface KnowledgeBaseFileListProps {
   files: KBFile[];
   onDelete: (id: string) => void;
@@ -23,6 +25,7 @@ interface KnowledgeBaseFileListProps {
   onDownload: (id: string) => void;
   categories?: string[];
 }
+
 export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
   files,
   onDelete,
@@ -34,37 +37,11 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [sortField, setSortField] = useState<keyof KBFile>('uploadDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
   if (files.length === 0) {
-    return <div className="text-center py-12 bg-white rounded-lg border border-dashed border-slate-300 mx-[24px]">
-        <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-slate-100">
-          <FileText className="h-8 w-8 text-slate-400" />
-        </div>
-        <h3 className="text-lg font-medium text-slate-900 mb-1">No files in Knowledge Base</h3>
-        <p className="text-slate-500 mb-4">Upload files to enhance your project with specific context</p>
-      </div>;
+    return <FileListEmptyState />;
   }
-  const getFileIcon = (fileType: string) => {
-    switch (fileType.toLowerCase()) {
-      case 'pdf':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">PDF</Badge>;
-      case 'docx':
-      case 'doc':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">DOC</Badge>;
-      case 'txt':
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">TXT</Badge>;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">IMG</Badge>;
-      case 'mp4':
-      case 'webm':
-      case 'avi':
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">VID</Badge>;
-      default:
-        return <Badge variant="outline">{fileType.toUpperCase()}</Badge>;
-    }
-  };
+
   const toggleSort = (field: keyof KBFile) => {
     if (field === sortField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -73,6 +50,7 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
       setSortDirection('asc');
     }
   };
+
   const sortedFiles = [...files].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
@@ -80,125 +58,46 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
     const comparison = aValue < bValue ? -1 : 1;
     return sortDirection === 'asc' ? comparison : -comparison;
   });
-  const filteredFiles = categoryFilter ? sortedFiles.filter(file => file.category === categoryFilter) : sortedFiles;
-  const SortButton = ({
-    field,
-    label
-  }: {
-    field: keyof KBFile;
-    label: string;
-  }) => <Button variant="ghost" size="sm" className="h-8 gap-1 font-medium" onClick={() => toggleSort(field)}>
-      {label}
-      {sortField === field && <ArrowUpDown className={`h-3 w-3 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />}
-    </Button>;
-  return <div className="space-y-6">
-      {categories.length > 0 && <div className="flex justify-end mb-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-1">
-                <Filter className="h-4 w-4" />
-                {categoryFilter ? categoryFilter : "All Categories"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setCategoryFilter(null)}>
-                All Categories
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {categories.map(category => <DropdownMenuItem key={category} onClick={() => setCategoryFilter(category)}>
-                  {category}
-                </DropdownMenuItem>)}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>}
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <SortButton field="name" label="File Name" />
-              </TableHead>
-              <TableHead>
-                <SortButton field="description" label="Description" />
-              </TableHead>
-              {categories.length > 0 && <TableHead>
-                  <SortButton field="category" label="Category" />
-                </TableHead>}
-              <TableHead>
-                <SortButton field="fileType" label="Type" />
-              </TableHead>
-              <TableHead>
-                <SortButton field="size" label="Size" />
-              </TableHead>
-              <TableHead>
-                <SortButton field="uploadDate" label="Upload Date" />
-              </TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredFiles.length > 0 ? filteredFiles.map(file => <TableRow key={file.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center space-x-2">
-                      <FileText className="h-4 w-4 text-slate-500" />
-                      <span>{file.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate">
-                    {file.description || "No description"}
-                  </TableCell>
-                  {categories.length > 0 && <TableCell>
-                      {file.category ? <Badge variant="outline">{file.category}</Badge> : <span className="text-slate-400 text-sm">None</span>}
-                    </TableCell>}
-                  <TableCell>{getFileIcon(file.fileType)}</TableCell>
-                  <TableCell>{file.size}</TableCell>
-                  <TableCell>{file.uploadDate}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onPreview(file.id)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDownload(file.id)}>
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => onEdit(file.id)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onDelete(file.id)} className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </TableCell>
-                </TableRow>) : <TableRow>
-                <TableCell colSpan={categories.length > 0 ? 7 : 6} className="text-center py-6 text-slate-500">
-                  No files match your filter criteria
-                </TableCell>
-              </TableRow>}
-          </TableBody>
-        </Table>
-      </div>
+  const filteredFiles = categoryFilter 
+    ? sortedFiles.filter(file => file.category === categoryFilter) 
+    : sortedFiles;
+
+  return (
+    <div className="space-y-6">
+      <FileListFilter
+        categories={categories}
+        categoryFilter={categoryFilter}
+        onCategoryFilterChange={setCategoryFilter}
+      />
+
+      <FileListTable
+        files={filteredFiles}
+        onDelete={onDelete}
+        onEdit={onEdit}
+        onPreview={onPreview}
+        onDownload={onDownload}
+        categories={categories}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSortChange={toggleSort}
+      />
       
       <div className="flex justify-between items-center text-sm text-slate-500 mt-4">
         <div>
           Showing {filteredFiles.length} of {files.length} files
         </div>
-        {categoryFilter && <Button variant="ghost" size="sm" onClick={() => setCategoryFilter(null)} className="h-8 text-xs">
+        {categoryFilter && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setCategoryFilter(null)} 
+            className="h-8 text-xs"
+          >
             Clear Filter
-          </Button>}
+          </Button>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { KnowledgeBaseMain } from '@/components/knowledge/KnowledgeBaseMain';
@@ -18,14 +17,12 @@ import { FileText, BarChart, Image, File, Video } from 'lucide-react';
 const KnowledgeBasePage = () => {
   const { toast } = useToast();
   
-  // Modal state for editing file descriptions
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentFile, setCurrentFile] = useState<KBFile | null>(null);
   const [editedDescription, setEditedDescription] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   
-  // Use custom hook for file management
   const { 
     files, 
     setFiles, 
@@ -35,7 +32,6 @@ const KnowledgeBasePage = () => {
     refreshFiles 
   } = useKnowledgeBaseFiles();
 
-  // Use operations hook for file operations
   const { 
     handleDeleteFile, 
     handleFilesUploaded 
@@ -46,22 +42,19 @@ const KnowledgeBasePage = () => {
     refreshFiles
   });
 
-  // Handler for editing file descriptions
-  const handleEditFile = (id: string, description: string) => {
+  const handleEditFile = (id: string) => {
     const file = files.find(f => f.id === id);
     if (file) {
       setCurrentFile(file);
-      setEditedDescription(description);
+      setEditedDescription(file.description);
       setEditModalOpen(true);
     }
   };
   
-  // Save the edited description
   const saveDescription = async () => {
     if (!currentFile) return;
     
     try {
-      // Call the service to update the description
       const { data, error } = await supabase
         .from('knowledge_base_files')
         .update({ description: editedDescription })
@@ -70,7 +63,6 @@ const KnowledgeBasePage = () => {
         
       if (error) throw error;
       
-      // Update the file in the local state
       setFiles(files.map(file => 
         file.id === currentFile.id 
           ? { ...file, description: editedDescription } 
@@ -82,7 +74,6 @@ const KnowledgeBasePage = () => {
         description: `Description updated for "${currentFile.name}"`
       });
       
-      // Close the modal
       setEditModalOpen(false);
     } catch (error) {
       console.error('Error updating file description:', error);
@@ -94,13 +85,11 @@ const KnowledgeBasePage = () => {
     }
   };
 
-  // Refresh files when the component mounts
   useEffect(() => {
     refreshFiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Calculate filtered files based on active category
   const filteredFiles = activeCategory
     ? files.filter(file => {
         const categoryName = categories.find(c => c.id === activeCategory)?.name;
@@ -108,7 +97,6 @@ const KnowledgeBasePage = () => {
       })
     : files;
 
-  // Calculate total size
   const calculateTotalSize = () => {
     const totalBytes = files.reduce((sum, file) => {
       const sizeStr = file.size;
@@ -133,7 +121,6 @@ const KnowledgeBasePage = () => {
     }
   };
 
-  // Calculate file types
   const calculateFileTypes = () => {
     const fileTypes: Record<string, number> = {};
     files.forEach(file => {
@@ -216,7 +203,6 @@ const KnowledgeBasePage = () => {
           />
         </Tabs>
         
-        {/* Edit Description Dialog */}
         <KnowledgeBaseDescription
           isOpen={editModalOpen}
           onOpenChange={setEditModalOpen}
