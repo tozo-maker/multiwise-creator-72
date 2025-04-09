@@ -19,8 +19,8 @@ interface UserProfile {
   id: string;
   username: string | null;
   avatar_url: string | null;
-  bio: string | null; // Add bio field here
-  name: string | null; // Add name field here
+  bio: string | null;
+  name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -89,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data) {
+        console.log("Fetched profile data:", data); // Debug log
         setProfile(data as UserProfile);
       }
     } catch (error: any) {
@@ -173,6 +174,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     try {
+      console.log("Updating profile with data:", data); // Debug log
+      
       const { error } = await supabase
         .from('profiles')
         .update(data)
@@ -190,6 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: 'Your profile has been updated successfully.',
       });
     } catch (error: any) {
+      console.error('Error updating profile:', error); // Debug log
       toast({
         variant: 'destructive',
         title: 'Error updating profile',

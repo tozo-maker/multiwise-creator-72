@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -51,29 +50,25 @@ const SettingsContent = ({ defaultTab = 'account' }) => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [sessionTimeout, setSessionTimeout] = useState('30');
   
+  // Load user data when user or profile changes
   useEffect(() => {
     if (user) {
       setEmail(user.email || '');
-      // Try to extract name from user metadata if available
-      const userData = user.user_metadata;
-      if (userData && userData.name) {
-        setName(userData.name);
-      }
     }
     
     if (profile) {
       setUsername(profile.username || '');
       setBio(profile.bio || '');
-      // If name wasn't set from metadata, try to get it from profile
-      if (!name && profile.name) {
-        setName(profile.name);
-      }
+      setName(profile.name || '');
+      
+      console.log("Profile loaded:", profile); // Debug log
     }
   }, [user, profile]);
   
   const handleSaveAccount = async () => {
     setIsLoading(true);
     try {
+      console.log("Saving profile with:", { username, bio, name }); // Debug log
       await updateProfile({ username, bio, name });
       toast({
         title: "Profile updated",
@@ -125,7 +120,7 @@ const SettingsContent = ({ defaultTab = 'account' }) => {
           </p>
         </div>
 
-        <Tabs defaultValue={defaultTab} className="space-y-4">
+        <Tabs defaultValue="account" className="space-y-4">
           <TabsList>
             <TabsTrigger value="account" className="flex items-center gap-2">
               <User className="h-4 w-4" />
