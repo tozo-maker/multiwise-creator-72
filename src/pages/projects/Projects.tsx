@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
@@ -8,8 +9,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/types/supabase-custom';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { NewProjectButton } from '@/components/projects/NewProjectButton';
 import { useNavigate } from 'react-router-dom';
 
 // Add a status field to the filtered projects if it doesn't exist already
@@ -83,7 +83,9 @@ const ProjectsContent = () => {
             </p>
           </div>
           
-          
+          <div className="hidden sm:block">
+            <NewProjectButton />
+          </div>
         </div>
         
         <Tabs defaultValue="all" className="space-y-4">

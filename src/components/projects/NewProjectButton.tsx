@@ -13,7 +13,8 @@ export const NewProjectButton: React.FC<NewProjectButtonProps> = ({ className })
   const navigate = useNavigate();
   
   const handleClick = () => {
-    navigate('/projects/new');
+    // Navigate to the project creation page
+    navigate('/projects/create');
   };
   
   return (
