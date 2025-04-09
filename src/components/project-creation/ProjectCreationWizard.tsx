@@ -17,6 +17,7 @@ interface ProjectData {
   targetAudience: string;
   complexity: string;
   templateId: string;
+  quickStart: string; // Added this property
   hasKnowledgeBase?: boolean;
   knowledgeBaseFiles?: string[];
 }
@@ -41,6 +42,7 @@ export function ProjectCreationWizard({
     targetAudience: '',
     complexity: 'Intermediate',
     templateId,
+    quickStart: 'custom', // Added default value
   });
   const { toast } = useToast();
   
