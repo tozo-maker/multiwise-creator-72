@@ -7,13 +7,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ContentItemsList, type ContentItem } from './ContentItemsList';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ContentItemsCardProps {
   projectId: string;
   contentItems: ContentItem[];
+  isLoading?: boolean;
 }
 
-export const ContentItemsCard: React.FC<ContentItemsCardProps> = ({ projectId, contentItems }) => {
+export const ContentItemsCard: React.FC<ContentItemsCardProps> = ({ 
+  projectId, 
+  contentItems,
+  isLoading = false
+}) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { theme } = useTheme();
@@ -43,7 +49,15 @@ export const ContentItemsCard: React.FC<ContentItemsCardProps> = ({ projectId, c
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ContentItemsList contentItems={contentItems} projectId={projectId} />
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        ) : (
+          <ContentItemsList contentItems={contentItems} projectId={projectId} />
+        )}
       </CardContent>
     </Card>
   );

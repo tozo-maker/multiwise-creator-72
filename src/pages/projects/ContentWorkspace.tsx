@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -9,46 +10,94 @@ import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ContentItem } from '@/components/content/ContentItemsList';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
-// Mock data - Explicitly typed to match the ContentItem interface
-const mockContentItems: ContentItem[] = [{
-  id: '1',
-  title: 'Basic Vocabulary List',
-  type: 'vocabulary',
-  lastModified: '2 hours ago',
-  status: 'completed'
-}, {
-  id: '2',
-  title: 'Present Tense Conjugation',
-  type: 'grammar',
-  lastModified: '1 day ago',
-  status: 'draft'
-}, {
-  id: '3',
-  title: 'Conversation Practice: Introductions',
-  type: 'conversation',
-  lastModified: '3 days ago',
-  status: 'in-review'
-}];
 const ContentWorkspace = () => {
-  const {
-    projectId
-  } = useParams<{
-    projectId: string;
-  }>();
+  const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const {
-    theme
-  } = useTheme();
+  const { theme } = useTheme();
+  const { user } = useAuth();
   const isDark = theme === 'dark';
-
-  // Mock project data
-  const project = {
+  
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [project, setProject] = useState({
     id: projectId || '1',
-    name: 'Spanish Language Textbook',
-    type: 'Textbook',
-    targetLanguage: 'Spanish'
-  };
+    name: 'Loading...',
+    type: 'Loading...',
+    targetLanguage: 'Loading...'
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!projectId || !user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setProject({
+            id: data.id,
+            name: data.name,
+            type: data.type,
+            targetLanguage: data.target_language
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching project:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load project details',
+          variant: 'destructive'
+        });
+      }
+    };
+
+    const fetchContentItems = async () => {
+      if (!projectId || !user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('content_items')
+          .select('*')
+          .eq('project_id', projectId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const formattedItems = data.map(item => ({
+          id: item.id,
+          title: item.title,
+          type: item.type,
+          lastModified: new Date(item.updated_at).toLocaleString(),
+          status: item.status
+        }));
+
+        setContentItems(formattedItems);
+      } catch (error) {
+        console.error('Error fetching content items:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load content items',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProject();
+    fetchContentItems();
+  }, [projectId, user]);
+
   const breadcrumbItems = [{
     label: 'Projects',
     path: '/projects'
@@ -58,13 +107,18 @@ const ContentWorkspace = () => {
   }, {
     label: 'Content'
   }];
+
   return <ModernLayout contentWidth="wide">
       <div className="space-y-6">
         <div className="pt-4">
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
         
-        <ProjectWorkspaceHeader projectName={project.name} projectType={project.type} targetLanguage={project.targetLanguage} />
+        <ProjectWorkspaceHeader 
+          projectName={project.name} 
+          projectType={project.type} 
+          targetLanguage={project.targetLanguage} 
+        />
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="content" />
         
@@ -78,11 +132,22 @@ const ContentWorkspace = () => {
             </p>
           </div>
           
-          
+          <Button 
+            onClick={() => navigate(`/projects/${project.id}/content/new`)}
+            className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
+          >
+            <Plus className="h-4 w-4" />
+            New Content
+          </Button>
         </div>
         
-        <ContentItemsCard projectId={project.id} contentItems={mockContentItems} />
+        <ContentItemsCard 
+          projectId={project.id} 
+          contentItems={contentItems} 
+          isLoading={isLoading} 
+        />
       </div>
     </ModernLayout>;
 };
+
 export default ContentWorkspace;
