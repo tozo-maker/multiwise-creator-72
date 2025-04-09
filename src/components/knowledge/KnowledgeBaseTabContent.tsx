@@ -5,7 +5,7 @@ import { KnowledgeBaseFileSection } from './KnowledgeBaseFileSection';
 import { KnowledgeBaseSidebar } from './KnowledgeBaseSidebar';
 import { KnowledgeBaseAnalytics } from './KnowledgeBaseAnalytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { KBFile } from './KnowledgeBaseFileList';
+import { KBFile, KnowledgeBaseFileList } from './KnowledgeBaseFileList';
 import { KBCategory } from './KnowledgeBaseCategories';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Skeleton } from '@/components/ui/skeleton';
