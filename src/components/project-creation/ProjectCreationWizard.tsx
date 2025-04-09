@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -30,6 +31,7 @@ export function ProjectCreationWizard({
     complexity: 'Intermediate',
     templateId,
     quickStart: 'custom',
+    knowledgeBaseFiles: [],
   });
   const { toast } = useToast();
   

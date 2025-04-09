@@ -88,65 +88,68 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     }
   };
   
-  const processKnowledgeBaseFiles = async (projectId: string, files: File[]) => {
+  const processKnowledgeBaseFiles = async (projectId: string, files: (File | string)[]) => {
     if (!user || !files.length) return;
     
     console.log('Processing knowledge base files for project:', projectId);
     console.log('Files to process:', files);
     
     try {
-      const uploadPromises = files.map(async (file) => {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${projectId}/${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `project-files/${fileName}`;
-        
-        console.log('Uploading file:', file.name, 'to path:', filePath);
-        
-        const { error: uploadError } = await supabase.storage
-          .from('project_files')
-          .upload(filePath, file);
+      const uploadPromises = files
+        .filter(file => file instanceof File)
+        .map(async (file) => {
+          const fileObj = file as File;
+          const fileExt = fileObj.name.split('.').pop();
+          const fileName = `${projectId}/${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `project-files/${fileName}`;
           
-        if (uploadError) {
-          console.error('Error uploading file:', uploadError);
-          throw uploadError;
-        }
-        
-        const { data } = supabase.storage
-          .from('project_files')
-          .getPublicUrl(filePath);
+          console.log('Uploading file:', fileObj.name, 'to path:', filePath);
           
-        console.log('File uploaded, public URL:', data.publicUrl);
-        
-        const category = file.type.includes('image') 
-          ? 'Images' 
-          : file.type.includes('pdf') 
-            ? 'Documents' 
-            : 'Other';
+          const { error: uploadError } = await supabase.storage
+            .from('project_files')
+            .upload(filePath, fileObj);
             
-        const { data: fileData, error: dbError } = await supabase
-          .from('knowledge_base_files')
-          .insert({
-            project_id: projectId,
-            user_id: user.id,
-            name: file.name,
-            description: `File uploaded during project creation for ${projectId}`,
-            file_type: fileExt || '',
-            category: category,
-            size: `${(file.size / 1024).toFixed(1)} KB`,
-            url: data.publicUrl
-          })
-          .select()
-          .single();
+          if (uploadError) {
+            console.error('Error uploading file:', uploadError);
+            throw uploadError;
+          }
           
-        if (dbError) {
-          console.error('Error adding file to database:', dbError);
-          throw dbError;
-        }
-        
-        console.log('File added to knowledge base:', fileData);
-        
-        return fileData;
-      });
+          const { data } = supabase.storage
+            .from('project_files')
+            .getPublicUrl(filePath);
+            
+          console.log('File uploaded, public URL:', data.publicUrl);
+          
+          const category = fileObj.type.includes('image') 
+            ? 'Images' 
+            : fileObj.type.includes('pdf') 
+              ? 'Documents' 
+              : 'Other';
+              
+          const { data: fileData, error: dbError } = await supabase
+            .from('knowledge_base_files')
+            .insert({
+              project_id: projectId,
+              user_id: user.id,
+              name: fileObj.name,
+              description: `File uploaded during project creation for ${projectId}`,
+              file_type: fileExt || '',
+              category: category,
+              size: `${(fileObj.size / 1024).toFixed(1)} KB`,
+              url: data.publicUrl
+            })
+            .select()
+            .single();
+            
+          if (dbError) {
+            console.error('Error adding file to database:', dbError);
+            throw dbError;
+          }
+          
+          console.log('File added to knowledge base:', fileData);
+          
+          return fileData;
+        });
       
       const results = await Promise.all(uploadPromises);
       console.log('All files processed successfully:', results);
