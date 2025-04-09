@@ -16,15 +16,18 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 // Memoized stats component for better performance
 export const DashboardStats: React.FC = React.memo(() => {
-  const { projectStats, activityData, contentGenerationData, isLoading } = useDashboard();
+  const { projectStats, activityData, contentGenerationData, isLoading, projects } = useDashboard();
+
+  // Check if we have any data to display
+  const hasNoData = projects.length === 0;
 
   const statCards = [
     {
       title: 'Total Projects',
       value: projectStats.totalProjects,
       icon: <BookText className="h-5 w-5 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />,
-      trend: '+12% from last month',
-      trendUp: true,
+      trend: hasNoData ? 'No projects yet' : '+12% from last month',
+      trendUp: !hasNoData,
       backgroundColor: 'bg-indigo-50 dark:bg-indigo-950/30',
       ariaLabel: 'Total projects count'
     },
@@ -32,8 +35,8 @@ export const DashboardStats: React.FC = React.memo(() => {
       title: 'Active Projects',
       value: projectStats.activeProjects,
       icon: <Activity className="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />,
-      trend: '+5% from last month',
-      trendUp: true,
+      trend: hasNoData ? 'No active projects' : '+5% from last month',
+      trendUp: !hasNoData,
       backgroundColor: 'bg-green-50 dark:bg-green-950/30',
       ariaLabel: 'Active projects count'
     },
@@ -41,8 +44,8 @@ export const DashboardStats: React.FC = React.memo(() => {
       title: 'Content Created',
       value: projectStats.contentCount,
       icon: <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />,
-      trend: '+25% from last month',
-      trendUp: true,
+      trend: hasNoData ? 'No content yet' : '+25% from last month',
+      trendUp: !hasNoData,
       backgroundColor: 'bg-blue-50 dark:bg-blue-950/30',
       ariaLabel: 'Content items count'
     },
@@ -50,8 +53,8 @@ export const DashboardStats: React.FC = React.memo(() => {
       title: 'Knowledge Base Files',
       value: projectStats.knowledgeBaseFiles,
       icon: <Bookmark className="h-5 w-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />,
-      trend: '+8% from last month',
-      trendUp: true,
+      trend: hasNoData ? 'No files uploaded' : '+8% from last month',
+      trendUp: !hasNoData,
       backgroundColor: 'bg-amber-50 dark:bg-amber-950/30',
       ariaLabel: 'Knowledge base files count'
     }

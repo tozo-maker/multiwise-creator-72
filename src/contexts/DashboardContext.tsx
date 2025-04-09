@@ -61,6 +61,36 @@ interface DashboardProviderProps {
   children: ReactNode;
 }
 
+// Create empty default data for real users with no data
+const emptyActivityData: ActivityData[] = [
+  { name: 'Mon', value: 0 },
+  { name: 'Tue', value: 0 },
+  { name: 'Wed', value: 0 },
+  { name: 'Thu', value: 0 },
+  { name: 'Fri', value: 0 },
+  { name: 'Sat', value: 0 },
+  { name: 'Sun', value: 0 }
+];
+
+const emptyContentGenerationData: ContentGenerationData[] = [
+  { date: 'Jan', count: 0 },
+  { date: 'Feb', count: 0 },
+  { date: 'Mar', count: 0 },
+  { date: 'Apr', count: 0 },
+  { date: 'May', count: 0 },
+  { date: 'Jun', count: 0 },
+  { date: 'Jul', count: 0 }
+];
+
+const emptyProjectStats: ProjectStats = {
+  totalProjects: 0,
+  activeProjects: 0,
+  completedProjects: 0,
+  contentCount: 0,
+  knowledgeBaseFiles: 0,
+  averageProgressRate: 0
+};
+
 export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All Types');
@@ -75,7 +105,6 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const [realContentGeneration, setRealContentGeneration] = useState<ContentGenerationData[]>([]);
   const { user } = useAuth();
   
-  // Check if this is a demo user or a real user
   // A demo user is one with email 'demo@example.com' or no user at all
   const isDemo = !user || user.email === 'demo@example.com';
   
@@ -114,7 +143,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         console.log('Fetched real activity data:', activityResult);
         setRealActivityData(activityResult);
       } else {
-        console.log('No real activity data found, using mock data');
+        console.log('No real activity data found, using empty data');
+        setRealActivityData(emptyActivityData);
       }
       
       // Fetch real content generation data
@@ -123,10 +153,14 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         console.log('Fetched real content generation data:', contentResult);
         setRealContentGeneration(contentResult);
       } else {
-        console.log('No real content generation data found, using mock data');
+        console.log('No real content generation data found, using empty data');
+        setRealContentGeneration(emptyContentGenerationData);
       }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
+      // Use empty data on error for real users
+      setRealActivityData(emptyActivityData);
+      setRealContentGeneration(emptyContentGenerationData);
     }
   };
 
@@ -234,15 +268,14 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         averageProgressRate: totalProjects ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
       };
     } else {
-      // For real users, calculate from actual projects
-      // For now we have limited real data, so we'll use some real and some calculated values
+      // For real users, calculate from actual projects or return empty stats if no projects
       return {
         totalProjects,
         activeProjects,
         completedProjects,
-        // Count files from knowledge base (this is a placeholder - ideally we would fetch this)
-        contentCount: totalProjects * 3, // Estimate 3 content items per project as a placeholder
-        knowledgeBaseFiles: Math.max(1, Math.round(totalProjects * 1.5)), // Estimate 1.5 files per project
+        // Calculate actual stats from real data
+        contentCount: totalProjects > 0 ? totalProjects * 3 : 0, // Estimate 3 content items per project or 0 if no projects
+        knowledgeBaseFiles: totalProjects > 0 ? Math.max(1, Math.round(totalProjects * 1.5)) : 0, // Estimate or 0 if no projects
         averageProgressRate: totalProjects ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
       };
     }
@@ -254,8 +287,9 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         projects,
         filteredProjects,
         projectStats: calculateProjectStats(),
-        activityData: isDemo ? mockActivityData : realActivityData.length > 0 ? realActivityData : mockActivityData,
-        contentGenerationData: isDemo ? mockContentGenerationData : realContentGeneration.length > 0 ? realContentGeneration : mockContentGenerationData,
+        // For real users, use real data or empty data arrays, never fallback to mock data
+        activityData: isDemo ? mockActivityData : realActivityData.length > 0 ? realActivityData : emptyActivityData,
+        contentGenerationData: isDemo ? mockContentGenerationData : realContentGeneration.length > 0 ? realContentGeneration : emptyContentGenerationData,
         searchTerm,
         setSearchTerm,
         filterType,
