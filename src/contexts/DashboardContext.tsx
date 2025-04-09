@@ -4,6 +4,7 @@ import { projectStats as mockProjectStats, activityData as mockActivityData, con
 import { Project } from '@/types/supabase-custom';
 import { ProjectService } from '@/services/ProjectService';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 // Define types for our context
 export interface ProjectStats {
@@ -96,6 +97,12 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects:', error);
+      // Show toast notification for the error
+      toast({
+        title: "Error fetching projects",
+        description: "Failed to load your projects. Please try again later.",
+        variant: "destructive"
+      });
       // Still set projects to empty array on error
       setProjects([]);
     } finally {
@@ -127,6 +134,11 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
+      toast({
+        title: "Error fetching analytics",
+        description: "Failed to load analytics data. Please try again later.",
+        variant: "destructive"
+      });
     }
   };
 
