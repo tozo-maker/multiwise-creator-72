@@ -50,9 +50,13 @@ const DashboardContent = () => {
             hasProjects={hasProjects}
           />
           
-          {isDemo && (
+          {isDemo ? (
             <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300 ml-4">
               Demo Mode
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 ml-4">
+              Live Data
             </Badge>
           )}
         </div>

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { projectStats as mockProjectStats, activityData as mockActivityData, contentGenerationData as mockContentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
@@ -76,14 +75,19 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const { user } = useAuth();
   
   // Check if this is a demo user or a real user
-  const isDemo = !user || user.email === 'demo@example.com'; // Adjust demo criteria as needed
+  const isDemo = !user || user.email === 'demo@example.com';
+  
+  console.log('Current user:', user?.email);
+  console.log('Is demo user:', isDemo);
 
   const fetchProjects = async () => {
     if (!user) return;
     
     setIsLoading(true);
     try {
+      console.log('Fetching projects for user:', user.id);
       const data = await ProjectService.getAll();
+      console.log('Fetched projects:', data);
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -96,16 +100,23 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     if (!user || isDemo) return;
     
     try {
+      console.log('Fetching real analytics data for user:', user.id);
       // For real users, fetch real activity data
       const activityResult = await ProjectService.getActivityData();
       if (activityResult && activityResult.length > 0) {
+        console.log('Fetched real activity data:', activityResult);
         setRealActivityData(activityResult);
+      } else {
+        console.log('No real activity data found, using mock data');
       }
       
       // Fetch real content generation data
       const contentResult = await ProjectService.getContentGenerationData();
       if (contentResult && contentResult.length > 0) {
+        console.log('Fetched real content generation data:', contentResult);
         setRealContentGeneration(contentResult);
+      } else {
+        console.log('No real content generation data found, using mock data');
       }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
@@ -121,9 +132,15 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
   useEffect(() => {
     if (user) {
+      console.log('User authenticated, fetching data');
       fetchProjects();
+      
+      // Only fetch analytics data for non-demo users
       if (!isDemo) {
+        console.log('Real user detected, fetching analytics data');
         fetchAnalyticsData();
+      } else {
+        console.log('Demo user detected, using mock data');
       }
     }
   }, [user, isDemo]);

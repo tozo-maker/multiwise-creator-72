@@ -30,6 +30,7 @@ export interface KnowledgeBaseFileInput {
 export const ProjectService = {
   
   async getAll(): Promise<Project[]> {
+    console.log('ProjectService: Fetching all projects');
     const { data, error } = await supabase
       .from('projects')
       .select('*')
@@ -42,8 +43,11 @@ export const ProjectService = {
     
     // Return empty array if no data
     if (!data || data.length === 0) {
+      console.log('ProjectService: No projects found');
       return [];
     }
+    
+    console.log('ProjectService: Found', data.length, 'projects');
     
     // Map the Supabase database format to our frontend format
     return data.map(item => ({
@@ -258,16 +262,23 @@ export const ProjectService = {
   },
   
   async getActivityData(): Promise<ActivityData[]> {
+    console.log('ProjectService: Fetching activity data');
     try {
       const { data: projects, error } = await supabase
         .from('projects')
         .select('created_at');
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching projects for activity data:', error);
+        throw error;
+      }
       
       if (!projects || projects.length === 0) {
+        console.log('ProjectService: No projects found for activity data');
         return [];
       }
+      
+      console.log('ProjectService: Found', projects.length, 'projects for activity data');
       
       // Group projects by day of week
       const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -286,10 +297,13 @@ export const ProjectService = {
       });
       
       // Convert to array format needed for charts
-      return daysOfWeek.map(name => ({
+      const result = daysOfWeek.map(name => ({
         name,
         value: activityByDay[name]
       }));
+      
+      console.log('ProjectService: Activity data by day:', result);
+      return result;
     } catch (error) {
       console.error('Error fetching activity data:', error);
       return [];
@@ -297,6 +311,7 @@ export const ProjectService = {
   },
   
   async getContentGenerationData(): Promise<ContentGenerationData[]> {
+    console.log('ProjectService: Fetching content generation data');
     try {
       // For now we'll use project creation as a proxy for content generation
       // In a real app, you would have a content_items table to query
@@ -304,11 +319,17 @@ export const ProjectService = {
         .from('projects')
         .select('created_at');
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching projects for content generation:', error);
+        throw error;
+      }
       
       if (!projects || projects.length === 0) {
+        console.log('ProjectService: No projects found for content generation');
         return [];
       }
+      
+      console.log('ProjectService: Found', projects.length, 'projects for content generation');
       
       // Group by month
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -329,10 +350,13 @@ export const ProjectService = {
       });
       
       // Convert to array format needed for charts
-      return months.map(date => ({
+      const result = months.map(date => ({
         date,
         count: contentByMonth[date]
       }));
+      
+      console.log('ProjectService: Content generation by month:', result);
+      return result;
     } catch (error) {
       console.error('Error fetching content generation data:', error);
       return [];

@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { AnalyticsOverview } from '@/components/analytics/AnalyticsOverview';
@@ -108,9 +107,13 @@ const AnalyticsContent = () => {
           </p>
         </div>
         
-        {isDemo && (
+        {isDemo ? (
           <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
             Demo Data
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+            Live Data
           </Badge>
         )}
       </div>
