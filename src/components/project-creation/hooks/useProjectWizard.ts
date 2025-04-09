@@ -14,7 +14,8 @@ export interface ProjectData {
   complexity: string;
   templateId: string;
   hasKnowledgeBase?: boolean;
-  knowledgeBaseFiles?: string[];
+  knowledgeBaseFiles?: string[] | File[];
+  deadline?: string;
 }
 
 export interface WizardStep {

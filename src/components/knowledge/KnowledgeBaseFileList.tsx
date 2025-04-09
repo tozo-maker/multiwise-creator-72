@@ -13,6 +13,7 @@ export interface KBFile {
   uploadDate: string;
   category?: string;
   tags?: string[];
+  url: string;
 }
 interface KnowledgeBaseFileListProps {
   files: KBFile[];
