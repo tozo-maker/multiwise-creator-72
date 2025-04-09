@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
@@ -23,28 +22,29 @@ const addStatusIfMissing = (projects: any[]) => {
 
 // Create a wrapper component that uses the DashboardProvider
 const ProjectsContent = () => {
-  const { theme } = useTheme();
-  const { user } = useAuth();
+  const {
+    theme
+  } = useTheme();
+  const {
+    user
+  } = useAuth();
   const navigate = useNavigate();
-  
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
   useEffect(() => {
     const fetchProjects = async () => {
       if (!user) {
         setIsLoading(false);
         return;
       }
-      
       try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .order('created_at', { ascending: false });
-          
+        const {
+          data,
+          error
+        } = await supabase.from('projects').select('*').order('created_at', {
+          ascending: false
+        });
         if (error) throw error;
-        
         const formattedProjects = data.map(item => ({
           id: item.id,
           name: item.name,
@@ -53,9 +53,8 @@ const ProjectsContent = () => {
           targetLanguage: item.target_language,
           lastModified: new Date(item.updated_at).toLocaleDateString(),
           progress: item.progress,
-          status: item.status as 'active' | 'archived' | 'completed',
+          status: item.status as 'active' | 'archived' | 'completed'
         }));
-        
         setProjects(formattedProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -63,19 +62,18 @@ const ProjectsContent = () => {
         setIsLoading(false);
       }
     };
-    
     fetchProjects();
   }, [user]);
-  
+
   // Ensure all projects have a status field
   const filteredProjects = addStatusIfMissing(projects);
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+  return <motion.div initial={{
+    opacity: 0
+  }} animate={{
+    opacity: 1
+  }} transition={{
+    duration: 0.5
+  }}>
       <div className="flex flex-col gap-6">
         <div className="flex justify-between items-center">
           <div>
@@ -85,13 +83,7 @@ const ProjectsContent = () => {
             </p>
           </div>
           
-          <Button 
-            onClick={() => navigate('/projects/create')}
-            className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
-          >
-            <Plus className="h-4 w-4" />
-            New Project
-          </Button>
+          
         </div>
         
         <Tabs defaultValue="all" className="space-y-4">
@@ -108,32 +100,22 @@ const ProjectsContent = () => {
             <ProjectList projects={filteredProjects.slice(0, 3)} isLoading={isLoading} />
           </TabsContent>
           <TabsContent value="active">
-            <ProjectList 
-              projects={filteredProjects.filter(p => p.status === 'active')} 
-              isLoading={isLoading} 
-            />
+            <ProjectList projects={filteredProjects.filter(p => p.status === 'active')} isLoading={isLoading} />
           </TabsContent>
           <TabsContent value="archived">
-            <ProjectList 
-              projects={filteredProjects.filter(p => p.status === 'archived')} 
-              isLoading={isLoading} 
-            />
+            <ProjectList projects={filteredProjects.filter(p => p.status === 'archived')} isLoading={isLoading} />
           </TabsContent>
         </Tabs>
       </div>
-    </motion.div>
-  );
+    </motion.div>;
 };
 
 // Main component that wraps the content with DashboardProvider
 export const Projects = () => {
-  return (
-    <ModernLayout contentWidth="wide">
+  return <ModernLayout contentWidth="wide">
       <DashboardProvider>
         <ProjectsContent />
       </DashboardProvider>
-    </ModernLayout>
-  );
+    </ModernLayout>;
 };
-
 export default Projects;
