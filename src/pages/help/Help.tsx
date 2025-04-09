@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from 'framer-motion';
 import { BookOpen, Video, FileText, HelpCircle, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeCard } from '@/components/shared/ThemeCard';
 
 export const Help = () => {
   return (
@@ -23,12 +24,14 @@ const HelpContent = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Help & Support</h1>
-          <p className="text-muted-foreground">
-            Find resources and support for using MultiGuide effectively.
-          </p>
-        </div>
+        <ThemeCard className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-2xl font-bold">Help & Support</CardTitle>
+            <CardDescription>
+              Find resources and support for using MultiGuide effectively
+            </CardDescription>
+          </CardHeader>
+        </ThemeCard>
 
         <Tabs defaultValue="guides" className="space-y-4">
           <TabsList>

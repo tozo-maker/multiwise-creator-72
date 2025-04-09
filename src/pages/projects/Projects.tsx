@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
@@ -11,16 +10,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/types/supabase-custom';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { ThemeCard } from '@/components/shared/ThemeCard';
+import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-// Add a status field to the filtered projects if it doesn't exist already
 const addStatusIfMissing = (projects: any[]) => {
   return projects.map(project => ({
     ...project,
-    status: project.status || 'active' // Default to 'active' if status is missing
+    status: project.status || 'active'
   }));
 };
 
-// Create a wrapper component that uses the DashboardProvider
 const ProjectsContent = () => {
   const { theme } = useTheme();
   const { user } = useAuth();
@@ -83,7 +82,6 @@ const ProjectsContent = () => {
     fetchProjects();
   }, [user, toast]);
 
-  // Ensure all projects have a status field
   const filteredProjects = addStatusIfMissing(projects);
   
   const handleCreateProject = () => {
@@ -97,16 +95,14 @@ const ProjectsContent = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex flex-col gap-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>
-              Projects
-            </h1>
-            <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-              View and manage all your educational content projects.
-            </p>
-          </div>
-        </div>
+        <ThemeCard className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-2xl font-bold">Projects</CardTitle>
+            <CardDescription>
+              View and manage all your educational content projects
+            </CardDescription>
+          </CardHeader>
+        </ThemeCard>
         
         <Tabs defaultValue="all" className="space-y-4">
           <TabsList className={theme === 'dark' ? '' : 'bg-slate-100'}>
@@ -133,7 +129,6 @@ const ProjectsContent = () => {
   );
 };
 
-// Main component that wraps the content with DashboardProvider
 export const Projects = () => {
   return (
     <ModernLayout contentWidth="wide">

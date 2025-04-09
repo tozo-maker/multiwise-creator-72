@@ -2,8 +2,9 @@
 import React from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { motion } from 'framer-motion';
-import { SettingsHeader } from './components/SettingsHeader';
 import { SettingsTabs } from './components/SettingsTabs';
+import { ThemeCard } from '@/components/shared/ThemeCard';
+import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export const Settings = () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -24,7 +25,14 @@ const SettingsContent = ({ defaultTab = 'account' }) => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex flex-col gap-6">
-        <SettingsHeader />
+        <ThemeCard className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-2xl font-bold">Settings</CardTitle>
+            <CardDescription>
+              Manage your account settings and preferences
+            </CardDescription>
+          </CardHeader>
+        </ThemeCard>
         <SettingsTabs defaultTab={defaultTab} />
       </div>
     </motion.div>

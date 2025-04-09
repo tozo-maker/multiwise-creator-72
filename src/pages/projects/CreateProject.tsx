@@ -7,6 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { UnifiedProjectWizard } from '@/components/project-creation/UnifiedProjectWizard';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { ThemeCard } from '@/components/shared/ThemeCard';
+import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export const CreateProject: React.FC = () => {
   const navigate = useNavigate();
@@ -53,16 +55,14 @@ export const CreateProject: React.FC = () => {
           <div className="mb-6">
             <PageBreadcrumbs items={breadcrumbItems} />
             
-            <div className="mb-6">
-              <h1 className={`text-3xl font-bold ${
-                isDark ? 'text-slate-50' : 'text-slate-900'
-              }`}>Create New Project</h1>
-              <p className={
-                isDark ? 'text-slate-400 mt-1' : 'text-slate-600 mt-1'
-              }>
-                Configure your educational content project by following these steps.
-              </p>
-            </div>
+            <ThemeCard className="mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-2xl font-bold">Create New Project</CardTitle>
+                <CardDescription>
+                  Configure your educational content project by following these steps
+                </CardDescription>
+              </CardHeader>
+            </ThemeCard>
           </div>
           
           <div className="max-w-4xl mx-auto">

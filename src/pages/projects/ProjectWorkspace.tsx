@@ -12,6 +12,8 @@ import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
 import { ProjectWorkspaceContent } from '@/components/project/ProjectWorkspaceContent';
 import { ProjectWorkspaceSkeleton } from '@/components/project/ProjectWorkspaceSkeleton';
 import { useProjectQuickActions } from '@/components/project/ProjectWorkspaceActions';
+import { ThemeCard } from '@/components/shared/ThemeCard';
+import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export const ProjectWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -106,11 +108,14 @@ export const ProjectWorkspace = () => {
     <ModernLayout contentWidth="wide">
       <ProjectBreadcrumbs projectName={project.name} />
       
-      <ProjectWorkspaceHeader 
-        projectName={project.name}
-        projectType={project.type}
-        targetLanguage={project.targetLanguage}
-      />
+      <ThemeCard className="mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-2xl font-bold">{project.name}</CardTitle>
+          <CardDescription>
+            {project.type} project in {project.targetLanguage}
+          </CardDescription>
+        </CardHeader>
+      </ThemeCard>
       
       <ProjectWorkspaceTabs projectId={project.id} />
       
