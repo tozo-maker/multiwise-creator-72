@@ -4,6 +4,7 @@ import { KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
 
 export class KnowledgeBaseService {
   static async deleteFile(id: string) {
+    console.log('Deleting file with ID:', id);
     const { error } = await supabase
       .from('knowledge_base_files')
       .delete()
@@ -15,6 +16,7 @@ export class KnowledgeBaseService {
   }
   
   static async updateFileDescription(id: string, newDescription: string) {
+    console.log('Updating file description for ID:', id, 'New description:', newDescription);
     const { error } = await supabase
       .from('knowledge_base_files')
       .update({ description: newDescription })
@@ -26,6 +28,7 @@ export class KnowledgeBaseService {
   }
   
   static async uploadFiles(userId: string, newFiles: { file: File, description: string }[]) {
+    console.log('Uploading files for user:', userId, 'File count:', newFiles.length);
     const uploadPromises = newFiles.map(async (newFile) => {
       // Upload file to storage
       const fileExt = newFile.file.name.split('.').pop();
@@ -42,6 +45,8 @@ export class KnowledgeBaseService {
       const { data } = supabase.storage
         .from('project_files')
         .getPublicUrl(filePath);
+      
+      console.log('File uploaded, public URL:', data.publicUrl);
         
       // Add to knowledge base files table
       const category = newFile.file.type.includes('image') 
@@ -67,6 +72,8 @@ export class KnowledgeBaseService {
         
       if (dbError) throw dbError;
       
+      console.log('File record created in database:', fileData);
+      
       return {
         id: fileData.id,
         name: fileData.name,
@@ -74,7 +81,8 @@ export class KnowledgeBaseService {
         fileType: fileData.file_type,
         size: fileData.size,
         uploadDate: new Date(fileData.created_at).toLocaleDateString(),
-        category: fileData.category
+        category: fileData.category,
+        url: fileData.url
       };
     });
     

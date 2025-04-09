@@ -10,12 +10,14 @@ interface KnowledgeBaseOperationsProps {
   files: KBFile[];
   setFiles: React.Dispatch<React.SetStateAction<KBFile[]>>;
   updateCategories: (files: KBFile[]) => void;
+  refreshFiles?: () => void;
 }
 
 export const useKnowledgeBaseOperations = ({ 
   files, 
   setFiles, 
-  updateCategories 
+  updateCategories,
+  refreshFiles
 }: KnowledgeBaseOperationsProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -26,9 +28,15 @@ export const useKnowledgeBaseOperations = ({
     try {
       await KnowledgeBaseService.deleteFile(id);
       
+      // Option 1: Update local state
       const updatedFiles = files.filter(file => file.id !== id);
       setFiles(updatedFiles);
       updateCategories(updatedFiles);
+      
+      // Option 2: Refresh from database
+      if (refreshFiles) {
+        refreshFiles();
+      }
       
       toast({
         title: "File deleted",
@@ -50,6 +58,7 @@ export const useKnowledgeBaseOperations = ({
     try {
       await KnowledgeBaseService.updateFileDescription(id, newDescription);
       
+      // Option 1: Update local state
       const updatedFiles = files.map(file => 
         file.id === id 
           ? { ...file, description: newDescription } 
@@ -57,6 +66,11 @@ export const useKnowledgeBaseOperations = ({
       );
       
       setFiles(updatedFiles);
+      
+      // Option 2: Refresh from database
+      if (refreshFiles) {
+        refreshFiles();
+      }
       
       toast({
         title: "File updated",
@@ -77,10 +91,16 @@ export const useKnowledgeBaseOperations = ({
     
     try {
       const uploadedFiles = await KnowledgeBaseService.uploadFiles(user.id, newFiles);
-      const updatedFiles = [...uploadedFiles, ...files];
       
+      // Option 1: Update local state
+      const updatedFiles = [...uploadedFiles, ...files];
       setFiles(updatedFiles);
       updateCategories(updatedFiles);
+      
+      // Option 2: Refresh from database
+      if (refreshFiles) {
+        refreshFiles();
+      }
       
       toast({
         title: "Files uploaded",

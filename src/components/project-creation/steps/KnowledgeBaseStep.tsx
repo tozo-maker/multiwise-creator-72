@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { AlertCircle, Upload, File, X } from 'lucide-react';
 interface KnowledgeBaseStepProps {
   data: {
     hasKnowledgeBase?: boolean;
-    knowledgeBaseFiles?: string[];
+    knowledgeBaseFiles?: File[] | string[];
   };
   updateData: (data: Partial<KnowledgeBaseStepProps['data']>) => void;
   isMobile?: boolean;
@@ -17,8 +17,13 @@ interface KnowledgeBaseStepProps {
 
 export function KnowledgeBaseStep({ data, updateData, isMobile = false }: KnowledgeBaseStepProps) {
   const [enableKnowledgeBase, setEnableKnowledgeBase] = useState(data.hasKnowledgeBase || false);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<File[]>(
+    Array.isArray(data.knowledgeBaseFiles) 
+      ? data.knowledgeBaseFiles.filter(file => file instanceof File) as File[]
+      : []
+  );
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleKnowledgeBase = (enabled: boolean) => {
     setEnableKnowledgeBase(enabled);
@@ -28,10 +33,9 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
-      setFiles([...files, ...newFiles]);
-      updateData({ 
-        knowledgeBaseFiles: [...(data.knowledgeBaseFiles || []), ...newFiles.map(f => f.name)] 
-      });
+      const updatedFiles = [...files, ...newFiles];
+      setFiles(updatedFiles);
+      updateData({ knowledgeBaseFiles: updatedFiles });
     }
   };
   
@@ -51,10 +55,9 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFiles = Array.from(e.dataTransfer.files);
-      setFiles([...files, ...droppedFiles]);
-      updateData({ 
-        knowledgeBaseFiles: [...(data.knowledgeBaseFiles || []), ...droppedFiles.map(f => f.name)] 
-      });
+      const updatedFiles = [...files, ...droppedFiles];
+      setFiles(updatedFiles);
+      updateData({ knowledgeBaseFiles: updatedFiles });
     }
   };
   
@@ -62,16 +65,19 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
     const updatedFiles = [...files];
     updatedFiles.splice(index, 1);
     setFiles(updatedFiles);
-    
-    const updatedFileNames = [...(data.knowledgeBaseFiles || [])];
-    updatedFileNames.splice(index, 1);
-    updateData({ knowledgeBaseFiles: updatedFileNames });
+    updateData({ knowledgeBaseFiles: updatedFiles });
   };
   
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' bytes';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const handleBrowseFilesClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   return (
@@ -118,6 +124,7 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
               <input
                 type="file"
                 id="fileUpload"
+                ref={fileInputRef}
                 multiple
                 className="hidden"
                 onChange={handleFileChange}
@@ -134,7 +141,7 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => document.getElementById('fileUpload')?.click()}
+                  onClick={handleBrowseFilesClick}
                   className="mt-2"
                 >
                   Browse Files

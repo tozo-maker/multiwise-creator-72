@@ -43,6 +43,7 @@ export const KnowledgeBase = () => {
         if (error) throw error;
 
         if (data) {
+          console.log('Project data fetched:', data);
           setProject({
             id: data.id,
             name: data.name,
@@ -64,6 +65,9 @@ export const KnowledgeBase = () => {
       if (!projectId || !user) return;
       
       try {
+        setIsLoading(true);
+        console.log('Fetching files for project:', projectId);
+        
         const { data, error } = await supabase
           .from('knowledge_base_files')
           .select('*')
@@ -72,13 +76,17 @@ export const KnowledgeBase = () => {
 
         if (error) throw error;
 
+        console.log('Knowledge base files fetched:', data);
+        
         const formattedFiles = data.map(file => ({
           id: file.id,
           name: file.name,
           description: file.description || '',
           fileType: file.file_type,
           size: file.size,
-          uploadDate: new Date(file.created_at).toLocaleDateString()
+          uploadDate: new Date(file.created_at).toLocaleDateString(),
+          url: file.url,
+          category: file.category
         }));
 
         setFiles(formattedFiles);
@@ -143,6 +151,7 @@ export const KnowledgeBase = () => {
     if (!user) return;
     
     try {
+      console.log('Deleting file with ID:', id);
       const { error } = await supabase
         .from('knowledge_base_files')
         .delete()
@@ -167,23 +176,30 @@ export const KnowledgeBase = () => {
   };
   
   const handlePreviewFile = (id: string) => {
-    // In a real app this would open a preview
     const file = files.find(f => f.id === id);
-    if (file) {
+    if (file && file.url) {
+      window.open(file.url, '_blank');
+    } else {
       toast({
         title: "File preview",
-        description: `Previewing ${file.name}`
+        description: `Unable to preview ${file?.name || 'file'}`
       });
     }
   };
   
   const handleDownloadFile = (id: string) => {
-    // In a real app this would trigger a download
     const file = files.find(f => f.id === id);
-    if (file) {
+    if (file && file.url) {
+      const link = document.createElement('a');
+      link.href = file.url;
+      link.download = file.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
       toast({
         title: "File download",
-        description: `Downloading ${file.name}`
+        description: `Unable to download ${file?.name || 'file'}`
       });
     }
   };
@@ -192,6 +208,7 @@ export const KnowledgeBase = () => {
     if (!projectId || !user) return;
     
     try {
+      console.log('Uploading files for project:', projectId);
       const uploadPromises = newFiles.map(async (newFile) => {
         // 1. Upload file to storage
         const fileExt = newFile.file.name.split('.').pop();
@@ -208,8 +225,16 @@ export const KnowledgeBase = () => {
         const { data } = supabase.storage
           .from('project_files')
           .getPublicUrl(filePath);
+        
+        console.log('File uploaded, public URL:', data.publicUrl);
           
         // 3. Add to knowledge base files table
+        const category = newFile.file.type.includes('image') 
+          ? 'Images' 
+          : newFile.file.type.includes('pdf') 
+            ? 'Documents' 
+            : 'Other';
+            
         const { data: fileData, error: dbError } = await supabase
           .from('knowledge_base_files')
           .insert({
@@ -219,12 +244,15 @@ export const KnowledgeBase = () => {
             description: newFile.description,
             file_type: fileExt || '',
             size: `${(newFile.file.size / 1024).toFixed(1)} KB`,
-            url: data.publicUrl
+            url: data.publicUrl,
+            category: category
           })
           .select()
           .single();
           
         if (dbError) throw dbError;
+        
+        console.log('File record created in database:', fileData);
         
         return {
           id: fileData.id,
@@ -232,7 +260,9 @@ export const KnowledgeBase = () => {
           description: fileData.description || '',
           fileType: fileData.file_type,
           size: fileData.size,
-          uploadDate: new Date(fileData.created_at).toLocaleDateString()
+          uploadDate: new Date(fileData.created_at).toLocaleDateString(),
+          url: fileData.url,
+          category: fileData.category
         };
       });
       

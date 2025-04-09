@@ -13,7 +13,8 @@ const KnowledgeBasePage = () => {
     setFiles, 
     categories, 
     isLoading, 
-    updateCategories 
+    updateCategories,
+    refreshFiles 
   } = useKnowledgeBaseFiles();
 
   // Use operations hook for file operations
@@ -24,7 +25,8 @@ const KnowledgeBasePage = () => {
   } = useKnowledgeBaseOperations({ 
     files, 
     setFiles, 
-    updateCategories 
+    updateCategories,
+    refreshFiles
   });
 
   return (
