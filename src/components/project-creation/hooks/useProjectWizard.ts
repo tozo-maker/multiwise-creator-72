@@ -3,34 +3,48 @@ import { useState } from 'react';
 import { ProjectService } from '@/services/ProjectService';
 import { toast } from '@/hooks/use-toast';
 
-interface ProjectFormData {
+export interface ProjectData {
   name: string;
   description: string;
   type: string;
-  targetLanguage: string;
-  // Add other form fields as needed
+  language: string;
+  targetAudience: string;
+  complexity: string;
+  templateId: string;
+  hasKnowledgeBase?: boolean;
+  knowledgeBaseFiles?: string[];
+}
+
+export interface WizardStep {
+  id: number;
+  name: string;
 }
 
 export const useProjectWizard = (onComplete: (projectId: string) => void) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [hasVisited, setHasVisited] = useState<number[]>([0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<ProjectFormData>({
+  const [formData, setFormData] = useState<ProjectData>({
     name: '',
     description: '',
     type: 'Textbook', // Default value
-    targetLanguage: 'English', // Default value
+    language: 'English', // Default value
+    targetAudience: 'Students',
+    complexity: 'Intermediate',
+    templateId: 'custom',
   });
   
-  const steps = [
-    { id: 0, label: 'Project Basics' },
-    { id: 1, label: 'Project Configuration' },
-    { id: 2, label: 'Language Settings' },
-    { id: 3, label: 'Knowledge Base' },
-    { id: 4, label: 'Review' },
+  const steps: WizardStep[] = [
+    { id: 0, name: 'Project Basics' },
+    { id: 1, name: 'Quick Start' },
+    { id: 2, name: 'System Config' },
+    { id: 3, name: 'Project Config' },
+    { id: 4, name: 'Language Config' },
+    { id: 5, name: 'Knowledge Base' },
+    { id: 6, name: 'Review' },
   ];
   
-  const updateFormData = (data: Partial<ProjectFormData>) => {
+  const updateFormData = (data: Partial<ProjectData>) => {
     setFormData(prev => ({
       ...prev,
       ...data
@@ -69,7 +83,7 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
         name: formData.name,
         description: formData.description,
         type: formData.type,
-        targetLanguage: formData.targetLanguage,
+        targetLanguage: formData.language,
       });
       
       toast({

@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { WizardSteps } from './WizardSteps';
 import { WizardContent } from './WizardContent';
 import { WizardNavigation } from './WizardNavigation';
-import { useProjectWizard } from './hooks/useProjectWizard';
+import { useProjectWizard, WizardStep } from './hooks/useProjectWizard';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectWizardProps {
