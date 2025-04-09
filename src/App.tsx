@@ -13,6 +13,7 @@ import { AnalysisWorkspace } from '@/pages/projects/AnalysisWorkspace';
 import { EnhancementsWorkspace } from '@/pages/projects/EnhancementsWorkspace';
 import { SnapshotsWorkspace } from '@/pages/projects/SnapshotsWorkspace';
 import { KnowledgeBase } from '@/pages/projects/KnowledgeBase';
+import KnowledgeBasePage from '@/pages/knowledge/KnowledgeBasePage';
 import { KnowledgeBaseAdvanced } from '@/pages/projects/KnowledgeBaseAdvanced';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
@@ -58,6 +59,7 @@ function App() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/help" element={<Help />} />
+            <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
             
             {/* Project routes */}
             <Route path="/projects/create" element={<CreateProject />} />

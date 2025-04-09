@@ -297,22 +297,46 @@ export const ProjectService = {
   async getActivityData(): Promise<ActivityData[]> {
     console.log('ProjectService: Fetching activity data');
     try {
-      const { data: projects, error } = await supabase
-        .from('projects')
-        .select('created_at');
-        
-      if (error) {
-        console.error('Error fetching projects for activity data:', error);
-        throw error;
-      }
+      // Try to get actual activity data from various sources
+      const activitySources = await Promise.all([
+        // Projects created by day
+        supabase
+          .from('projects')
+          .select('created_at'),
+          
+        // Content items created by day  
+        supabase
+          .from('content_items')
+          .select('created_at'),
+          
+        // Knowledge base files uploaded by day
+        supabase
+          .from('knowledge_base_files')
+          .select('created_at')
+      ]);
       
-      if (!projects || projects.length === 0) {
-        console.log('ProjectService: No projects found for activity data');
+      // Check if any errors
+      if (activitySources.some(source => source.error)) {
+        console.error('Error fetching activity data sources:', 
+          activitySources.map(s => s.error).filter(Boolean));
         return [];
       }
       
-      console.log('ProjectService: Found', projects.length, 'projects for activity data');
+      const [projectsData, contentData, filesData] = activitySources.map(s => s.data || []);
       
+      // Combine all dates
+      const allDates = [
+        ...projectsData.map(p => new Date(p.created_at)),
+        ...contentData.map(c => new Date(c.created_at)),
+        ...filesData.map(f => new Date(f.created_at))
+      ];
+      
+      if (allDates.length === 0) {
+        console.log('No activity data found');
+        return [];
+      }
+      
+      // Group by day of week
       const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const activityByDay: Record<string, number> = {};
       
@@ -320,13 +344,14 @@ export const ProjectService = {
         activityByDay[day] = 0;
       });
       
-      projects.forEach(project => {
-        const date = new Date(project.created_at);
+      allDates.forEach(date => {
         const day = daysOfWeek[date.getDay()];
         activityByDay[day]++;
       });
       
-      const result = daysOfWeek.map(name => ({
+      // Sort by days of week (starting with Monday)
+      const sortedDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const result = sortedDays.map(name => ({
         name,
         value: activityByDay[name]
       }));
@@ -342,22 +367,23 @@ export const ProjectService = {
   async getContentGenerationData(): Promise<ContentGenerationData[]> {
     console.log('ProjectService: Fetching content generation data');
     try {
-      const { data: projects, error } = await supabase
-        .from('projects')
-        .select('created_at');
+      // Get content items grouped by month
+      const { data: contentItems, error } = await supabase
+        .from('content_items')
+        .select('created_at')
+        .order('created_at', { ascending: true });
         
       if (error) {
-        console.error('Error fetching projects for content generation:', error);
-        throw error;
-      }
-      
-      if (!projects || projects.length === 0) {
-        console.log('ProjectService: No projects found for content generation');
+        console.error('Error fetching content items:', error);
         return [];
       }
       
-      console.log('ProjectService: Found', projects.length, 'projects for content generation');
+      if (!contentItems || contentItems.length === 0) {
+        console.log('No content items found');
+        return [];
+      }
       
+      // Group by month
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const contentByMonth: Record<string, number> = {};
       
@@ -365,11 +391,10 @@ export const ProjectService = {
         contentByMonth[month] = 0;
       });
       
-      projects.forEach(project => {
-        const date = new Date(project.created_at);
+      contentItems.forEach(item => {
+        const date = new Date(item.created_at);
         const month = months[date.getMonth()];
-        const contentCount = 2 + Math.floor(Math.random() * 3);
-        contentByMonth[month] += contentCount;
+        contentByMonth[month]++;
       });
       
       const result = months.map(date => ({
@@ -385,3 +410,4 @@ export const ProjectService = {
     }
   }
 };
+

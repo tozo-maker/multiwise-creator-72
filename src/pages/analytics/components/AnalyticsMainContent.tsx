@@ -10,6 +10,8 @@ import { AnalyticsEmptyState } from './AnalyticsEmptyState';
 import { ProjectCalendar } from './ProjectCalendar';
 import { ProjectPerformanceChart } from './ProjectPerformanceChart';
 import { ContentTypeDistributionChart } from './ContentTypeDistributionChart';
+import { ThemeCard } from '@/components/shared/ThemeCard';
+import { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 // Lazy-loaded component for performance optimization
 const AnalyticsCharts = lazy(() => import('@/components/analytics/AnalyticsCharts').then(
@@ -17,10 +19,10 @@ const AnalyticsCharts = lazy(() => import('@/components/analytics/AnalyticsChart
 ));
 
 export const AnalyticsMainContent = () => {
-  const { isDemo, projects } = useDashboard();
+  const { projects } = useDashboard();
   
   // Determine if we should show empty states
-  const showEmptyState = !isDemo && projects.length === 0;
+  const showEmptyState = projects.length === 0;
   
   const breadcrumbItems = [
     { label: 'Dashboard', path: '/dashboard' },
@@ -35,23 +37,40 @@ export const AnalyticsMainContent = () => {
       
       <AnalyticsHeader />
       
-      <AnalyticsOverview />
-      
       {showEmptyState ? (
         <AnalyticsEmptyState />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="md:col-span-2">
+          <ThemeCard className="mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl">Analytics Overview</CardTitle>
+              <CardDescription>
+                View key metrics and trends based on real data
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AnalyticsOverview />
+            </CardContent>
+          </ThemeCard>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-7 gap-6 mb-6">
+            <div className="lg:col-span-4">
               <ProjectAnalyticsExport />
             </div>
             
-            <ProjectCalendar />
+            <div className="lg:col-span-3">
+              <ProjectPerformanceChart />
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <ProjectPerformanceChart />
-            <ContentTypeDistributionChart />
+          <div className="grid grid-cols-1 lg:grid-cols-7 gap-6 mb-6">
+            <div className="lg:col-span-4">
+              <ContentTypeDistributionChart />
+            </div>
+            
+            <div className="lg:col-span-3">
+              <ProjectCalendar />
+            </div>
           </div>
           
           <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>

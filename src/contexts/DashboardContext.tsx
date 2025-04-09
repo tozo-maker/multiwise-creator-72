@@ -3,6 +3,7 @@ import { projectStats as mockProjectStats, activityData as mockActivityData, con
 import { Project } from '@/types/supabase-custom';
 import { ProjectService } from '@/services/ProjectService';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 // Define types for our context
 export interface ProjectStats {
@@ -102,14 +103,14 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const [isLoading, setIsLoading] = useState(true);
   const [realActivityData, setRealActivityData] = useState<ActivityData[]>([]);
   const [realContentGeneration, setRealContentGeneration] = useState<ContentGenerationData[]>([]);
+  const [contentItemsCount, setContentItemsCount] = useState(0);
+  const [knowledgeBaseFilesCount, setKnowledgeBaseFilesCount] = useState(0);
   const { user } = useAuth();
   
-  // A demo user is one with email 'demo@example.com' or no user at all
-  const isDemo = !user || user.email === 'demo@example.com';
+  const isDemo = false;
   
   console.log('Current user:', user?.email);
-  console.log('Is demo user:', isDemo);
-
+  
   const fetchProjects = async () => {
     if (!user) {
       setIsLoading(false);
@@ -131,8 +132,44 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     }
   };
 
+  const fetchContentItemsCount = async () => {
+    if (!user) return;
+    
+    try {
+      const { count, error } = await supabase
+        .from('content_items')
+        .select('*', { count: 'exact', head: true });
+        
+      if (error) throw error;
+      
+      console.log('Content items count:', count);
+      setContentItemsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching content items count:', error);
+      setContentItemsCount(0);
+    }
+  };
+  
+  const fetchKnowledgeBaseFilesCount = async () => {
+    if (!user) return;
+    
+    try {
+      const { count, error } = await supabase
+        .from('knowledge_base_files')
+        .select('*', { count: 'exact', head: true });
+        
+      if (error) throw error;
+      
+      console.log('Knowledge base files count:', count);
+      setKnowledgeBaseFilesCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching knowledge base files count:', error);
+      setKnowledgeBaseFilesCount(0);
+    }
+  };
+
   const fetchAnalyticsData = async () => {
-    if (!user || isDemo) return;
+    if (!user) return;
     
     try {
       console.log('Fetching real analytics data for user:', user.id);
@@ -165,29 +202,24 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
 
   const refreshProjects = async () => {
     await fetchProjects();
-    if (!isDemo) {
-      await fetchAnalyticsData();
-    }
+    await fetchContentItemsCount();
+    await fetchKnowledgeBaseFilesCount();
+    await fetchAnalyticsData();
   };
 
   useEffect(() => {
     if (user) {
       console.log('User authenticated, fetching data');
       fetchProjects();
-      
-      // Only fetch analytics data for non-demo users
-      if (!isDemo) {
-        console.log('Real user detected, fetching analytics data');
-        fetchAnalyticsData();
-      } else {
-        console.log('Demo user detected, using mock data');
-      }
+      fetchContentItemsCount();
+      fetchKnowledgeBaseFilesCount();
+      fetchAnalyticsData();
     } else {
       // Reset loading state if no user
       setIsLoading(false);
-      console.log('No user detected, using mock data');
+      console.log('No user detected');
     }
-  }, [user, isDemo]);
+  }, [user]);
   
   useEffect(() => {
     // Check if this is user's first visit to dashboard
@@ -250,28 +282,19 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     setFilteredProjects(filtered);
   }, [searchTerm, filterType, filterLanguage, sortOrder, showActiveOnly, projects]);
 
-  // Calculate project stats from actual projects
   const calculateProjectStats = (): ProjectStats => {
-    if (isDemo) {
-      // For demo users, use mock data
-      return mockProjectStats;
-    } else {
-      // For real users, calculate based on actual projects
-      const activeProjects = projects.filter(p => p.status === 'active').length;
-      const completedProjects = projects.filter(p => p.status === 'completed').length;
-      const totalProjects = projects.length;
-      
-      // Return real stats or empty stats if no projects
-      return {
-        totalProjects,
-        activeProjects,
-        completedProjects,
-        // Zero values for real users with no projects
-        contentCount: totalProjects > 0 ? totalProjects * 3 : 0,
-        knowledgeBaseFiles: totalProjects > 0 ? Math.max(1, Math.round(totalProjects * 1.5)) : 0,
-        averageProgressRate: totalProjects > 0 ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
-      };
-    }
+    const activeProjects = projects.filter(p => p.status === 'active').length;
+    const completedProjects = projects.filter(p => p.status === 'completed').length;
+    const totalProjects = projects.length;
+    
+    return {
+      totalProjects,
+      activeProjects,
+      completedProjects,
+      contentCount: contentItemsCount,
+      knowledgeBaseFiles: knowledgeBaseFilesCount,
+      averageProgressRate: totalProjects > 0 ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
+    };
   };
 
   return (
@@ -280,9 +303,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         projects,
         filteredProjects,
         projectStats: calculateProjectStats(),
-        // For demo users, use mock data. For real users, use real data or empty data arrays
-        activityData: isDemo ? mockActivityData : (realActivityData.length > 0 ? realActivityData : emptyActivityData),
-        contentGenerationData: isDemo ? mockContentGenerationData : (realContentGeneration.length > 0 ? realContentGeneration : emptyContentGenerationData),
+        activityData: realActivityData.length > 0 ? realActivityData : emptyActivityData,
+        contentGenerationData: realContentGeneration.length > 0 ? realContentGeneration : emptyContentGenerationData,
         searchTerm,
         setSearchTerm,
         filterType,
