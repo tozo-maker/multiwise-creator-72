@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -96,6 +97,7 @@ const AppContent = () => {
             <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
             <Route path="/projects/new" element={<ProtectedRoute><CreateProject /></ProtectedRoute>} />
+            <Route path="/projects/create" element={<Navigate to="/projects/new" replace />} />
             <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectWorkspace /></ProtectedRoute>} />
             <Route path="/projects/:projectId/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
             <Route path="/projects/:projectId/knowledge-base/advanced" element={<ProtectedRoute><KnowledgeBaseAdvanced /></ProtectedRoute>} />

@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -41,7 +42,7 @@ export const ProjectWorkspace = () => {
     lastModified: '',
     progress: 0,
     owner: '',
-    deadline: 'Not set' // Added missing deadline property
+    deadline: 'Not set' // Include deadline property
   });
   
   useEffect(() => {
@@ -79,8 +80,8 @@ export const ProjectWorkspace = () => {
             description: data.description || '',
             lastModified: new Date(data.updated_at).toLocaleDateString(),
             progress: data.progress || 0,
-            owner: '',  // Could fetch user info in the future if needed
-            deadline: 'Not set' // Set default deadline since it's not in the database yet
+            owner: data.user_id || '',
+            deadline: data.deadline || 'Not set' // Set deadline from data or default
           });
         }
       } catch (error) {

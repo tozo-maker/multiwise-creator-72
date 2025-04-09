@@ -7,6 +7,7 @@ export interface ProjectCreateInput {
   description?: string;
   type: string;
   targetLanguage: string;
+  deadline?: string;
 }
 
 export interface ProjectUpdateInput {
@@ -16,6 +17,7 @@ export interface ProjectUpdateInput {
   targetLanguage?: string;
   progress?: number;
   status?: 'active' | 'archived' | 'completed';
+  deadline?: string;
 }
 
 export interface KnowledgeBaseFileInput {
@@ -41,7 +43,6 @@ export const ProjectService = {
       throw error;
     }
     
-    // Return empty array if no data
     if (!data || data.length === 0) {
       console.log('ProjectService: No projects found');
       return [];
@@ -49,7 +50,6 @@ export const ProjectService = {
     
     console.log('ProjectService: Found', data.length, 'projects');
     
-    // Map the Supabase database format to our frontend format
     return data.map(item => ({
       id: item.id,
       name: item.name,
@@ -92,7 +92,6 @@ export const ProjectService = {
     try {
       console.log('ProjectService: Creating new project with data:', input);
       
-      // Make sure we have the authenticated user
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) {
         console.error('Error getting authenticated user:', userError);
@@ -105,7 +104,6 @@ export const ProjectService = {
       
       console.log('ProjectService: Authenticated user ID:', userData.user.id);
       
-      // Add user_id to the project data
       const projectData = {
         name: input.name,
         description: input.description || '',
@@ -113,7 +111,8 @@ export const ProjectService = {
         target_language: input.targetLanguage,
         progress: 0,
         status: 'active',
-        user_id: userData.user.id
+        user_id: userData.user.id,
+        deadline: input.deadline || null
       };
       
       const { data, error } = await supabase
@@ -142,6 +141,7 @@ export const ProjectService = {
         lastModified: new Date(data.updated_at).toLocaleDateString(),
         progress: data.progress,
         status: data.status as 'active' | 'archived' | 'completed',
+        deadline: data.deadline || 'Not set'
       };
     } catch (error) {
       console.error('ProjectService: Error in create method:', error);
@@ -150,7 +150,6 @@ export const ProjectService = {
   },
   
   async update(id: string, input: ProjectUpdateInput): Promise<Project> {
-    // Convert from our frontend format to database format
     const dbInput: any = {};
     
     if (input.name !== undefined) dbInput.name = input.name;
@@ -159,6 +158,7 @@ export const ProjectService = {
     if (input.targetLanguage !== undefined) dbInput.target_language = input.targetLanguage;
     if (input.progress !== undefined) dbInput.progress = input.progress;
     if (input.status !== undefined) dbInput.status = input.status;
+    if (input.deadline !== undefined) dbInput.deadline = input.deadline;
     
     const { data, error } = await supabase
       .from('projects')
@@ -181,6 +181,7 @@ export const ProjectService = {
       lastModified: new Date(data.updated_at).toLocaleDateString(),
       progress: data.progress,
       status: data.status as 'active' | 'archived' | 'completed',
+      deadline: data.deadline || 'Not set'
     };
   },
   
@@ -310,23 +311,19 @@ export const ProjectService = {
       
       console.log('ProjectService: Found', projects.length, 'projects for activity data');
       
-      // Group projects by day of week
       const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const activityByDay: Record<string, number> = {};
       
-      // Initialize days with zero counts
       daysOfWeek.forEach(day => {
         activityByDay[day] = 0;
       });
       
-      // Count projects created on each day
       projects.forEach(project => {
         const date = new Date(project.created_at);
         const day = daysOfWeek[date.getDay()];
         activityByDay[day]++;
       });
       
-      // Convert to array format needed for charts
       const result = daysOfWeek.map(name => ({
         name,
         value: activityByDay[name]
@@ -343,8 +340,6 @@ export const ProjectService = {
   async getContentGenerationData(): Promise<ContentGenerationData[]> {
     console.log('ProjectService: Fetching content generation data');
     try {
-      // For now we'll use project creation as a proxy for content generation
-      // In a real app, you would have a content_items table to query
       const { data: projects, error } = await supabase
         .from('projects')
         .select('created_at');
@@ -361,25 +356,20 @@ export const ProjectService = {
       
       console.log('ProjectService: Found', projects.length, 'projects for content generation');
       
-      // Group by month
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const contentByMonth: Record<string, number> = {};
       
-      // Initialize months with zero counts
       months.forEach(month => {
         contentByMonth[month] = 0;
       });
       
-      // Count content created in each month
       projects.forEach(project => {
         const date = new Date(project.created_at);
         const month = months[date.getMonth()];
-        // Assume each project has about 2-4 content items
         const contentCount = 2 + Math.floor(Math.random() * 3);
         contentByMonth[month] += contentCount;
       });
       
-      // Convert to array format needed for charts
       const result = months.map(date => ({
         date,
         count: contentByMonth[date]
