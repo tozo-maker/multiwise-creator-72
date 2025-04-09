@@ -41,9 +41,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
           files={files}
           onDelete={onDeleteFile}
           onEdit={(id, newDescription) => {
-            if (newDescription !== undefined) {
-              onEditFile(id, newDescription);
-            }
+            onEditFile(id, newDescription);
           }}
           onPreview={(id) => {
             const file = files.find(f => f.id === id);
