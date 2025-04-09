@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { KnowledgeBaseFileList, KBFile } from './KnowledgeBaseFileList';
 import { KnowledgeBaseCategories, KBCategory } from './KnowledgeBaseCategories';
 import { KnowledgeBaseUpload } from './KnowledgeBaseUpload';
@@ -21,11 +21,16 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
   onEditFile,
   onFilesUploaded
 }) => {
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="md:col-span-1">
         <KnowledgeBaseCategories 
           categories={categories}
+          activeCategory={activeCategory}
+          onSelectCategory={setActiveCategory}
+          onAddCategory={() => {/* Add implementation later */}}
         />
       </div>
       <div className="md:col-span-3">
@@ -35,7 +40,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
         <KnowledgeBaseFileList 
           files={files}
           onDelete={onDeleteFile}
-          onEdit={onEditFile}
+          onEdit={(id) => onEditFile(id, "")} // We'll update this with proper description handling later
           onPreview={(id) => {
             const file = files.find(f => f.id === id);
             if (file && file.url) window.open(file.url, '_blank');

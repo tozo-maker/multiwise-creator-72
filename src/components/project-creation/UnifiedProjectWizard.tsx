@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Wizard } from '@/components/shared/wizard/Wizard';
 import { WizardStep } from '@/contexts/WizardContext';
@@ -25,7 +24,7 @@ export interface ProjectData {
   templateId: string; 
   quickStart?: string;
   hasKnowledgeBase?: boolean;
-  knowledgeBaseFiles?: File[] | string[];
+  knowledgeBaseFiles?: string[] | File[];
   deadline?: string;
 }
 
@@ -39,7 +38,6 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   
-  // Define wizard steps
   const steps: WizardStep[] = [
     { id: 0, name: 'Project Info' },
     { id: 1, name: 'Quick Start' },
@@ -64,9 +62,7 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     deadline: '',
   };
   
-  // Custom navigation logic that ensures proper step progression
   const navigateLogic = (currentStep: number, formData: ProjectData, goToStep: (step: number) => void) => {
-    // Validate before moving to next step
     if (currentStep === 0 && !formData.name) {
       toast({
         title: "Project name required",
@@ -76,14 +72,11 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       return;
     }
     
-    // Only skip steps 2-4 if using a template (non-custom) and not when going to summary
     if (currentStep === 1 && formData.quickStart !== 'custom' && formData.quickStart !== '') {
-      // Skip directly to documents (step 5)
       goToStep(5);
       return;
     }
     
-    // For all other cases, just go to the next step
     goToStep(currentStep + 1);
   };
   
@@ -116,7 +109,6 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     
     try {
       const uploadPromises = files.map(async (file) => {
-        // 1. Upload file to storage
         const fileExt = file.name.split('.').pop();
         const fileName = `${projectId}/${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `project-files/${fileName}`;
@@ -132,14 +124,12 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
           throw uploadError;
         }
         
-        // 2. Get public URL
         const { data } = supabase.storage
           .from('project_files')
           .getPublicUrl(filePath);
           
         console.log('File uploaded, public URL:', data.publicUrl);
         
-        // 3. Add to knowledge base files table
         const category = file.type.includes('image') 
           ? 'Images' 
           : file.type.includes('pdf') 
@@ -186,7 +176,7 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
   };
   
   const handleComplete = async (data: ProjectData) => {
-    if (isCreating) return; // Prevent multiple submissions
+    if (isCreating) return;
     
     setIsCreating(true);
     
@@ -195,7 +185,6 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       description: "Your project is being set up."
     });
     
-    // Check if user is authenticated
     if (!user) {
       toast({
         title: "Authentication required",
@@ -216,7 +205,6 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
         deadline: data.deadline
       });
       
-      // Create project using ProjectService
       const project = await ProjectService.create({
         name: data.name,
         description: data.description || '',
@@ -228,9 +216,7 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       console.log('Project created successfully:', project);
       
       if (project && project.id) {
-        // If knowledge base files exist, process them
         if (data.hasKnowledgeBase && data.knowledgeBaseFiles && data.knowledgeBaseFiles.length > 0) {
-          // Filter to only include File objects (not strings)
           const filesToUpload = data.knowledgeBaseFiles.filter(file => file instanceof File) as File[];
           
           if (filesToUpload.length > 0) {
@@ -244,7 +230,6 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
           }
         }
         
-        // Clear any saved wizard state
         if (typeof localStorage !== 'undefined') {
           localStorage.removeItem('wizard-form-project-wizard');
         }

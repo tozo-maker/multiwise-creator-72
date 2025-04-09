@@ -58,7 +58,8 @@ export const KnowledgeBaseAdvanced = () => {
       size: '2.5 MB',
       uploadDate: '2023-06-15',
       category: 'curriculum',
-      tags: ['standards', 'official', 'national']
+      tags: ['standards', 'official', 'national'],
+      url: 'https://example.com/files/curriculum-standards.pdf'
     },
     {
       id: '2',
@@ -68,7 +69,8 @@ export const KnowledgeBaseAdvanced = () => {
       size: '1.8 MB',
       uploadDate: '2023-06-18',
       category: 'guidelines',
-      tags: ['style', 'writing', 'rules']
+      tags: ['style', 'writing', 'rules'],
+      url: 'https://example.com/files/style-guide.docx'
     },
     {
       id: '3',
@@ -78,7 +80,8 @@ export const KnowledgeBaseAdvanced = () => {
       size: '3.2 MB',
       uploadDate: '2023-06-20',
       category: 'examples',
-      tags: ['format', 'structure', 'sample']
+      tags: ['format', 'structure', 'sample'],
+      url: 'https://example.com/files/example-chapter.docx'
     },
     {
       id: '4',
@@ -88,7 +91,8 @@ export const KnowledgeBaseAdvanced = () => {
       size: '128 KB',
       uploadDate: '2023-06-22',
       category: 'curriculum',
-      tags: ['terms', 'vocabulary', 'language']
+      tags: ['terms', 'vocabulary', 'language'],
+      url: 'https://example.com/files/terminology.txt'
     },
     {
       id: '5',
@@ -98,7 +102,8 @@ export const KnowledgeBaseAdvanced = () => {
       size: '4.1 MB',
       uploadDate: '2023-06-25',
       category: 'references',
-      tags: ['culture', 'context', 'spanish']
+      tags: ['culture', 'context', 'spanish'],
+      url: 'https://example.com/files/cultural-references.pdf'
     }
   ]);
   
@@ -291,10 +296,11 @@ export const KnowledgeBaseAdvanced = () => {
       size: `${(newFile.file.size / 1024).toFixed(1)} KB`,
       uploadDate: new Date().toISOString().split('T')[0],
       category: '',
-      tags: []
+      tags: [],
+      url: URL.createObjectURL(newFile.file) // Create a temporary URL for the file
     }));
     
-    setFiles([...files, ...addedFiles]);
+    setFiles([...addedFiles, ...files]);
     
     toast({
       title: "Files uploaded",

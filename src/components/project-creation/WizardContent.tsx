@@ -7,7 +7,7 @@ import { FinalReviewStep } from './steps/FinalReviewStep';
 import { QuickStartStep } from './steps/QuickStartStep';
 import { LanguageConfigStep } from './steps/LanguageConfigStep';
 import { SystemConfigStep } from './steps/SystemConfigStep';
-import { ProjectData } from './hooks/useProjectWizard';
+import { ProjectData } from './UnifiedProjectWizard';
 
 interface WizardContentProps {
   currentStep: number;
