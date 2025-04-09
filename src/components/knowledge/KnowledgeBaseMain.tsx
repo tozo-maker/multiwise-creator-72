@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,11 +5,8 @@ import { KnowledgeBaseFileList, KBFile } from './KnowledgeBaseFileList';
 import { KnowledgeBaseUpload } from './KnowledgeBaseUpload';
 import { KnowledgeBaseCategories, KBCategory } from './KnowledgeBaseCategories';
 import { KnowledgeBaseAnalytics } from './KnowledgeBaseAnalytics';
-import { Button } from '@/components/ui/button';
-import { Plus, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { KnowledgeBaseDescription } from './KnowledgeBaseDescription';
 
@@ -132,14 +128,6 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
             Manage your educational resources and materials.
           </p>
         </div>
-        <div>
-          <Button variant="default" className="px-4" onClick={() => {
-            document.getElementById('file-upload-input')?.click();
-          }}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Resource
-          </Button>
-        </div>
       </div>
 
       <Tabs defaultValue="all" className="space-y-6">
@@ -167,18 +155,6 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
         </TabsList>
         
         <TabsContent value="all" className="space-y-6 pt-2">
-          <div className="flex flex-col sm:flex-row mb-4 gap-3">
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search files..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
-          
           <div className="grid gap-6 md:grid-cols-3">
             <Card className={`col-span-2 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
               <CardHeader className="pb-3 px-6">
