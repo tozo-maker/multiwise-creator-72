@@ -1,135 +1,99 @@
 
-import React from 'react';
-import { Filter, ArrowUpDown } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuSeparator,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { ProjectCardProps } from '../ProjectCard';
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { NewProjectButton } from '@/components/projects/NewProjectButton';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Project } from '@/types/supabase-custom';
+
+type SortOrder = 'newest' | 'oldest' | 'progress' | 'name';
 
 interface ProjectListHeaderProps {
-  projects: ProjectCardProps[];
+  projects: Project[];
   filterType: string | null;
   setFilterType: (type: string | null) => void;
-  sortOrder: 'newest' | 'oldest' | 'progress' | 'name';
-  setSortOrder: (order: 'newest' | 'oldest' | 'progress' | 'name') => void;
+  sortOrder: SortOrder;
+  setSortOrder: (order: SortOrder) => void;
 }
 
-export const ProjectListHeader: React.FC<ProjectListHeaderProps> = ({
-  projects,
-  filterType,
-  setFilterType,
-  sortOrder,
-  setSortOrder
+export const ProjectListHeader: React.FC<ProjectListHeaderProps> = React.memo(({ 
+  projects, 
+  filterType, 
+  setFilterType, 
+  sortOrder, 
+  setSortOrder 
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { isDark } = useTheme();
   
-  // Get unique project types
-  const projectTypes = Array.from(new Set(projects.map(project => project.type)));
+  // Get unique project types for filter
+  const projectTypes = useMemo(() => {
+    const types = ['All Types'];
+    const uniqueTypes = new Set<string>();
+    
+    projects.forEach(project => {
+      if (project.type && !uniqueTypes.has(project.type)) {
+        uniqueTypes.add(project.type);
+      }
+    });
+    
+    return [...types, ...Array.from(uniqueTypes)];
+  }, [projects]);
   
   return (
-    <div className="flex flex-wrap justify-between items-center mb-4">
-      <div className={`text-sm font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-        {projects.length} project{projects.length !== 1 ? 's' : ''}
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-4 md:items-center">
+        <div>
+          <Label 
+            htmlFor="filter-type" 
+            className={`text-xs mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+          >
+            Filter by Type
+          </Label>
+          <Select 
+            value={filterType || 'All Types'} 
+            onValueChange={(value) => setFilterType(value === 'All Types' ? null : value)}
+          >
+            <SelectTrigger id="filter-type" className="h-9">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              {projectTypes.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <Label 
+            htmlFor="sort-order" 
+            className={`text-xs mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+          >
+            Sort By
+          </Label>
+          <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
+            <SelectTrigger id="sort-order" className="h-9">
+              <SelectValue placeholder="Newest" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="oldest">Oldest</SelectItem>
+              <SelectItem value="name">Name A-Z</SelectItem>
+              <SelectItem value="progress">Progress</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
-      <div className="flex gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className={`gap-1 ${
-                isDark 
-                  ? 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700' 
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <Filter className="h-3.5 w-3.5" />
-              <span>Filter</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
-            <DropdownMenuLabel className={isDark ? 'text-slate-300' : 'text-slate-700'}>Filter by Type</DropdownMenuLabel>
-            <DropdownMenuSeparator className={isDark ? 'bg-slate-700' : 'bg-slate-200'} />
-            <DropdownMenuCheckboxItem
-              checked={filterType === null}
-              onCheckedChange={() => setFilterType(null)}
-              className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
-            >
-              All Types
-            </DropdownMenuCheckboxItem>
-            
-            {projectTypes.map(type => (
-              <DropdownMenuCheckboxItem 
-                key={type}
-                checked={filterType === type}
-                onCheckedChange={() => {
-                  setFilterType(filterType === type ? null : type);
-                }}
-                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
-              >
-                {type}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className={`gap-1 ${
-                isDark 
-                  ? 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700' 
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <ArrowUpDown className="h-3.5 w-3.5" />
-              <span>Sort</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
-            <DropdownMenuRadioGroup value={sortOrder} onValueChange={(value) => setSortOrder(value as any)}>
-              <DropdownMenuRadioItem 
-                value="newest"
-                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
-              >
-                Newest First
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem 
-                value="oldest"
-                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
-              >
-                Oldest First
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem 
-                value="progress"
-                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
-              >
-                Progress (High-Low)
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem 
-                value="name"
-                className={isDark ? 'text-slate-300 focus:bg-slate-700' : 'text-slate-700 focus:bg-slate-100'}
-              >
-                Name (A-Z)
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <NewProjectButton />
     </div>
   );
-};
+});
+
+ProjectListHeader.displayName = 'ProjectListHeader';

@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,6 +12,7 @@ import { toast } from "@/components/ui/use-toast";
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { useGuidedTour } from "@/components/onboarding/GuidedTour";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { AuthProvider } from '@/contexts/AuthContext';
 
 // Loading component for Suspense fallbacks
 const LoadingScreen = () => (
@@ -43,6 +45,7 @@ const LandingPage = lazy(() => import("./pages/auth/LandingPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
 const CreateProject = lazy(() => import("./pages/projects/CreateProject"));
+const UserProfile = lazy(() => import("./pages/profile/UserProfile"));
 
 // Configure React Query with error handling
 const queryClient = new QueryClient({
@@ -81,60 +84,8 @@ queryClient.getMutationCache().subscribe(event => {
 });
 
 const AppContent = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { startTour, TourComponent } = useGuidedTour();
   
-  useEffect(() => {
-    const hasAuth = localStorage.getItem('isAuthenticated') === 'true';
-    setIsAuthenticated(hasAuth);
-  }, []);
-  
-  const login = () => {
-    localStorage.setItem('isAuthenticated', 'true');
-    setIsAuthenticated(true);
-    toast({
-      title: "Logged in successfully",
-      description: "Welcome to MultiGuide!",
-    });
-    
-    // Check if it's user's first login
-    const isFirstLogin = localStorage.getItem('firstLoginComplete') !== 'true';
-    if (isFirstLogin) {
-      localStorage.setItem('firstLoginComplete', 'true');
-      // Small delay before starting tour
-      setTimeout(() => {
-        startTour();
-      }, 1000);
-    }
-  };
-  
-  const logout = () => {
-    localStorage.setItem('isAuthenticated', 'false');
-    setIsAuthenticated(false);
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully.",
-    });
-  };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.handleLogin = login;
-      window.handleLogout = logout;
-    }
-    
-    return () => {
-      if (typeof window !== 'undefined') {
-        delete window.handleLogin;
-        delete window.handleLogout;
-      }
-    };
-  }, []);
-  
-  if (isAuthenticated === null) {
-    return <LoadingScreen />;
-  }
-
   return (
     <>
       {TourComponent}
@@ -142,52 +93,73 @@ const AppContent = () => {
       <ErrorBoundary>
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
-            <Route path="/auth/login" element={<LoginPage onLoginSuccess={login} />} />
-            <Route path="/auth/register" element={<RegisterPage onRegisterSuccess={login} />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/register" element={<RegisterPage />} />
             
-            <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects" element={isAuthenticated ? <Projects /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/new" element={isAuthenticated ? <CreateProject /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId" element={isAuthenticated ? <ProjectWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/knowledge-base" element={isAuthenticated ? <KnowledgeBase /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/knowledge-base/advanced" element={isAuthenticated ? <KnowledgeBaseAdvanced /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/content" element={isAuthenticated ? <ContentWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/content/new" element={isAuthenticated ? <ContentCreation /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/analysis" element={isAuthenticated ? <AnalysisWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/enhancements" element={isAuthenticated ? <EnhancementsWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/configuration" element={isAuthenticated ? <ConfigurationWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/projects/:projectId/snapshots" element={isAuthenticated ? <SnapshotsWorkspace /> : <Navigate to="/auth/login" />} />
-            <Route path="/analytics" element={isAuthenticated ? <Analytics /> : <Navigate to="/auth/login" />} />
-            <Route path="/knowledge-base" element={isAuthenticated ? <KnowledgeBasePage /> : <Navigate to="/auth/login" />} />
-            <Route path="/help" element={isAuthenticated ? <Help /> : <Navigate to="/auth/login" />} />
-            <Route path="/settings" element={isAuthenticated ? <Settings /> : <Navigate to="/auth/login" />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+            <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+            <Route path="/projects/new" element={<ProtectedRoute><CreateProject /></ProtectedRoute>} />
+            <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectWorkspace /></ProtectedRoute>} />
+            <Route path="/projects/:projectId/knowledge-base" element={<ProtectedRoute><KnowledgeBase /></ProtectedRoute>} />
+            <Route path="/projects/:projectId/knowledge-base/advanced" element={<ProtectedRoute><KnowledgeBaseAdvanced /></ProtectedRoute>} />
+            <Route path="/projects/:projectId/content" element={<ProtectedRoute><ContentWorkspace /></ProtectedRoute>} />
+            <Route path="/projects/:projectId/content/new" element={<ProtectedRoute><ContentCreation /></ProtectedRoute>} />
+            <Route path="/projects/:projectId/analysis" element={<ProtectedRoute><AnalysisWorkspace /></ProtectedRoute>} />
+            <Route path="/projects/:projectId/enhancements" element={<ProtectedRoute><EnhancementsWorkspace /></ProtectedRoute>} />
+            <Route path="/projects/:projectId/configuration" element={<ProtectedRoute><ConfigurationWorkspace /></ProtectedRoute>} />
+            <Route path="/projects/:projectId/snapshots" element={<ProtectedRoute><SnapshotsWorkspace /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+            <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBasePage /></ProtectedRoute>} />
+            <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          {isAuthenticated && (
-            <>
-              <UserHelp />
-              <ContextualHelp />
-            </>
-          )}
+          <UserHelp />
+          <ContextualHelp />
         </Suspense>
       </ErrorBoundary>
     </>
   );
 };
 
+// Protected route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const [isChecking, setIsChecking] = useState(true);
+  const { session, isLoading } = useAuth();
+  
+  useEffect(() => {
+    if (!isLoading) {
+      setIsChecking(false);
+    }
+  }, [isLoading]);
+  
+  if (isChecking || isLoading) {
+    return <LoadingScreen />;
+  }
+  
+  if (!session) {
+    return <Navigate to="/auth/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 const App = () => {
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 };

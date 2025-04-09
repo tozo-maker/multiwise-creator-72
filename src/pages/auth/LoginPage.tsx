@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BookText, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginPageProps {
   onLoginSuccess?: () => void;
@@ -18,61 +19,57 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { signIn, user } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Mock authentication for now
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await signIn(email, password);
       
-      // In a real app, you would verify credentials with an auth service
-      if (email && password) {
-        // Set auth state in localStorage
-        localStorage.setItem('isAuthenticated', 'true');
-        
-        // Call the success callback if provided
-        if (onLoginSuccess) {
-          onLoginSuccess();
-        }
-        
-        toast({
-          title: "Logged in successfully",
-          description: "Welcome back to MultiGuide!",
-        });
-        
-        navigate('/dashboard');
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Login failed",
-          description: "Please check your credentials and try again.",
-        });
-      }
-    }, 1000);
-  };
-  
-  const handleDemoLogin = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Set auth state in localStorage
-      localStorage.setItem('isAuthenticated', 'true');
-      
-      // Call the success callback if provided
+      // Call success callback if provided
       if (onLoginSuccess) {
         onLoginSuccess();
       }
       
-      toast({
-        title: "Demo account accessed",
-        description: "You're now using the demo account.",
-      });
+      navigate('/dashboard');
+    } catch (error) {
+      // Error is handled in the signIn function
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Use demo account credentials
+      await signIn('demo@example.com', 'demopassword');
+      
+      // Call success callback if provided
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
       
       navigate('/dashboard');
-    }, 1000);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Demo login unavailable",
+        description: "Please create an account or contact support.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (

@@ -1,6 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { projects, projectStats, activityData, contentGenerationData } from '@/data/mockData';
+import { projectStats, activityData, contentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
+import { ProjectService } from '@/services/ProjectService';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Define types for our context
 export interface ProjectStats {
@@ -40,6 +43,7 @@ interface DashboardContextType {
   setShowActiveOnly: (show: boolean) => void;
   isLoading: boolean;
   isFirstVisit: boolean;
+  refreshProjects: () => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -62,24 +66,43 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const [filterLanguage, setFilterLanguage] = useState('All Languages');
   const [sortOrder, setSortOrder] = useState('newest');
   const [showActiveOnly, setShowActiveOnly] = useState(false);
-  const [filteredProjects, setFilteredProjects] = useState(projects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+
+  const fetchProjects = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      const data = await ProjectService.getAll();
+      setProjects(data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refreshProjects = async () => {
+    await fetchProjects();
+  };
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
-
+    if (user) {
+      fetchProjects();
+    }
+  }, [user]);
+  
+  useEffect(() => {
     // Check if this is user's first visit to dashboard
     const hasVisited = localStorage.getItem('hasVisitedDashboard');
     if (!hasVisited) {
       setIsFirstVisit(true);
       localStorage.setItem('hasVisitedDashboard', 'true');
     }
-
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -114,10 +137,10 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     filtered = [...filtered].sort((a, b) => {
       switch (sortOrder) {
         case 'newest':
-          // For demo, using id as proxy for creation date
-          return parseInt(b.id) - parseInt(a.id);
+          // For db results, using string comparison of IDs or date comparison
+          return a.id > b.id ? -1 : 1;
         case 'oldest':
-          return parseInt(a.id) - parseInt(b.id);
+          return a.id < b.id ? -1 : 1;
         case 'name-asc':
           return a.name.localeCompare(b.name);
         case 'name-desc':
@@ -132,14 +155,31 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     });
     
     setFilteredProjects(filtered);
-  }, [searchTerm, filterType, filterLanguage, sortOrder, showActiveOnly]);
+  }, [searchTerm, filterType, filterLanguage, sortOrder, showActiveOnly, projects]);
+
+  // Calculate project stats from actual projects
+  const calculateProjectStats = (): ProjectStats => {
+    const activeProjects = projects.filter(p => p.status === 'active').length;
+    const completedProjects = projects.filter(p => p.status === 'completed').length;
+    const totalProjects = projects.length;
+    
+    // For now, use mock data for content count and knowledge base files
+    return {
+      totalProjects,
+      activeProjects,
+      completedProjects,
+      contentCount: projectStats.contentCount,
+      knowledgeBaseFiles: projectStats.knowledgeBaseFiles,
+      averageProgressRate: totalProjects ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
+    };
+  };
 
   return (
     <DashboardContext.Provider
       value={{
         projects,
         filteredProjects,
-        projectStats,
+        projectStats: calculateProjectStats(),
         activityData,
         contentGenerationData,
         searchTerm,
@@ -153,7 +193,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         showActiveOnly,
         setShowActiveOnly,
         isLoading,
-        isFirstVisit
+        isFirstVisit,
+        refreshProjects
       }}
     >
       {children}

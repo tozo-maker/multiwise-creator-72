@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BookText, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface RegisterPageProps {
   onRegisterSuccess?: () => void;
@@ -19,39 +20,40 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { signUp, user } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Mock registration for now
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await signUp(email, password, name);
       
-      // In a real app, you would register the user with an auth service
-      if (name && email && password) {
-        // Set auth state in localStorage
-        localStorage.setItem('isAuthenticated', 'true');
-        
-        // Call the success callback if provided
-        if (onRegisterSuccess) {
-          onRegisterSuccess();
-        }
-        
-        toast({
-          title: "Account created",
-          description: "You've successfully signed up for MultiGuide!",
-        });
-        
-        navigate('/dashboard');
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Registration failed",
-          description: "Please fill out all fields correctly.",
-        });
+      // Call the success callback if provided
+      if (onRegisterSuccess) {
+        onRegisterSuccess();
       }
-    }, 1000);
+      
+      // Show success message
+      toast({
+        title: "Account created",
+        description: "Please check your email to confirm your account.",
+      });
+      
+      // Redirect to login page
+      navigate('/auth/login');
+    } catch (error) {
+      // Error is handled in the signUp function
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
