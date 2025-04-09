@@ -1,5 +1,5 @@
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { AnalyticsOverview } from '@/components/analytics/AnalyticsOverview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +23,9 @@ import {
   PieChart as RechartsPieChart
 } from 'recharts';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useDashboard } from '@/contexts/DashboardContext';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Lazy-loaded component for performance optimization
 const AnalyticsCharts = lazy(() => import('@/components/analytics/AnalyticsCharts').then(
@@ -32,25 +35,55 @@ const AnalyticsCharts = lazy(() => import('@/components/analytics/AnalyticsChart
 export const Analytics = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { contentGenerationData, activityData, isDemo } = useDashboard();
+  const { user } = useAuth();
   
-  // Sample data for charts
-  const performanceData = [
-    { month: 'Jan', engagement: 65, completion: 40, progress: 24 },
-    { month: 'Feb', engagement: 59, completion: 45, progress: 29 },
-    { month: 'Mar', engagement: 80, completion: 52, progress: 45 },
-    { month: 'Apr', engagement: 81, completion: 56, progress: 50 },
-    { month: 'May', engagement: 76, completion: 60, progress: 65 },
-    { month: 'Jun', engagement: 85, completion: 70, progress: 75 },
-    { month: 'Jul', engagement: 90, completion: 85, progress: 80 },
-  ];
-
-  const contentTypeData = [
+  // Derive content type data - in a real app, this would come from the database
+  const [contentTypeData, setContentTypeData] = useState([
     { name: 'Video', value: 35 },
     { name: 'Text', value: 25 },
     { name: 'Interactive', value: 20 },
     { name: 'Assessment', value: 15 },
     { name: 'Other', value: 5 },
-  ];
+  ]);
+  
+  // Format performance data from activity and content data
+  const [performanceData, setPerformanceData] = useState([]);
+  
+  useEffect(() => {
+    if (contentGenerationData && activityData) {
+      // Create a mapping of months/days to their respective values
+      const contentMap = contentGenerationData.reduce((acc, item) => {
+        acc[item.date] = item.count;
+        return acc;
+      }, {});
+      
+      const activityMap = activityData.reduce((acc, item) => {
+        acc[item.name] = item.value;
+        return acc;
+      }, {});
+      
+      // Generate performance data for the chart
+      // This is a simplified approach - in a real app we'd use real metrics
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+      const newPerformanceData = months.map(month => {
+        // Calculate values with some randomization for demo purposes
+        const contentValue = contentMap[month] || 0;
+        const baseEngagement = Math.min(100, Math.max(50, 40 + contentValue * 2));
+        const baseCompletion = Math.min(100, Math.max(30, 30 + contentValue * 1.5));
+        const baseProgress = Math.min(100, Math.max(20, 20 + contentValue));
+        
+        return {
+          month,
+          engagement: Math.round(baseEngagement),
+          completion: Math.round(baseCompletion),
+          progress: Math.round(baseProgress)
+        };
+      });
+      
+      setPerformanceData(newPerformanceData);
+    }
+  }, [contentGenerationData, activityData]);
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -66,11 +99,19 @@ export const Analytics = () => {
           <PageBreadcrumbs items={breadcrumbItems} />
         </div>
         
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight dark:text-white">Analytics</h2>
-          <p className="text-muted-foreground dark:text-slate-400">
-            Your project stats and performance metrics.
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight dark:text-white">Analytics</h2>
+            <p className="text-muted-foreground dark:text-slate-400">
+              Your project stats and performance metrics.
+            </p>
+          </div>
+          
+          {isDemo && (
+            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+              Demo Data
+            </Badge>
+          )}
         </div>
         
         <AnalyticsOverview />

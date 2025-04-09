@@ -9,6 +9,8 @@ import { DashboardLayout as DashboardContentLayout } from '@/components/dashboar
 import { useDashboard } from '@/contexts/DashboardContext';
 import { motion } from 'framer-motion';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Dashboard = () => {
   return (
@@ -25,7 +27,8 @@ const Dashboard = () => {
 
 // Separated component to use hooks within the DashboardProvider context
 const DashboardContent = () => {
-  const { isFirstVisit, isLoading, filteredProjects } = useDashboard();
+  const { isFirstVisit, isLoading, filteredProjects, isDemo } = useDashboard();
+  const { user } = useAuth();
   
   // Memoize the hasProjects value to prevent unnecessary rerenders
   const hasProjects = useMemo(() => filteredProjects.length > 0, [filteredProjects]);
@@ -41,11 +44,18 @@ const DashboardContent = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <DashboardWelcome 
-          userName="John"
-          hasProjects={hasProjects}
-          className="mb-8"
-        />
+        <div className="flex items-center justify-between mb-8">
+          <DashboardWelcome 
+            userName={user?.email?.split('@')[0] || "User"}
+            hasProjects={hasProjects}
+          />
+          
+          {isDemo && (
+            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300 ml-4">
+              Demo Mode
+            </Badge>
+          )}
+        </div>
       </motion.div>
       
       {isFirstVisit && (

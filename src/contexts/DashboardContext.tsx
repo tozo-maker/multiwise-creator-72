@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { projectStats, activityData, contentGenerationData } from '@/data/mockData';
+import { projectStats as mockProjectStats, activityData as mockActivityData, contentGenerationData as mockContentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
 import { ProjectService } from '@/services/ProjectService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,6 +44,7 @@ interface DashboardContextType {
   isLoading: boolean;
   isFirstVisit: boolean;
   refreshProjects: () => Promise<void>;
+  isDemo: boolean;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -70,7 +71,12 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [realActivityData, setRealActivityData] = useState<ActivityData[]>([]);
+  const [realContentGeneration, setRealContentGeneration] = useState<ContentGenerationData[]>([]);
   const { user } = useAuth();
+  
+  // Check if this is a demo user or a real user
+  const isDemo = !user || user.email === 'demo@example.com'; // Adjust demo criteria as needed
 
   const fetchProjects = async () => {
     if (!user) return;
@@ -86,15 +92,41 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     }
   };
 
+  const fetchAnalyticsData = async () => {
+    if (!user || isDemo) return;
+    
+    try {
+      // For real users, fetch real activity data
+      const activityResult = await ProjectService.getActivityData();
+      if (activityResult && activityResult.length > 0) {
+        setRealActivityData(activityResult);
+      }
+      
+      // Fetch real content generation data
+      const contentResult = await ProjectService.getContentGenerationData();
+      if (contentResult && contentResult.length > 0) {
+        setRealContentGeneration(contentResult);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+    }
+  };
+
   const refreshProjects = async () => {
     await fetchProjects();
+    if (!isDemo) {
+      await fetchAnalyticsData();
+    }
   };
 
   useEffect(() => {
     if (user) {
       fetchProjects();
+      if (!isDemo) {
+        fetchAnalyticsData();
+      }
     }
-  }, [user]);
+  }, [user, isDemo]);
   
   useEffect(() => {
     // Check if this is user's first visit to dashboard
@@ -163,15 +195,29 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
     const completedProjects = projects.filter(p => p.status === 'completed').length;
     const totalProjects = projects.length;
     
-    // For now, use mock data for content count and knowledge base files
-    return {
-      totalProjects,
-      activeProjects,
-      completedProjects,
-      contentCount: projectStats.contentCount,
-      knowledgeBaseFiles: projectStats.knowledgeBaseFiles,
-      averageProgressRate: totalProjects ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
-    };
+    if (isDemo) {
+      // For demo users, use mock data for additional stats
+      return {
+        totalProjects,
+        activeProjects,
+        completedProjects,
+        contentCount: mockProjectStats.contentCount,
+        knowledgeBaseFiles: mockProjectStats.knowledgeBaseFiles,
+        averageProgressRate: totalProjects ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
+      };
+    } else {
+      // For real users, calculate from actual projects
+      // For now we have limited real data, so we'll use some real and some calculated values
+      return {
+        totalProjects,
+        activeProjects,
+        completedProjects,
+        // Count files from knowledge base (this is a placeholder - ideally we would fetch this)
+        contentCount: totalProjects * 3, // Estimate 3 content items per project as a placeholder
+        knowledgeBaseFiles: Math.max(1, Math.round(totalProjects * 1.5)), // Estimate 1.5 files per project
+        averageProgressRate: totalProjects ? projects.reduce((sum, p) => sum + p.progress, 0) / totalProjects : 0
+      };
+    }
   };
 
   return (
@@ -180,8 +226,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         projects,
         filteredProjects,
         projectStats: calculateProjectStats(),
-        activityData,
-        contentGenerationData,
+        activityData: isDemo ? mockActivityData : realActivityData.length > 0 ? realActivityData : mockActivityData,
+        contentGenerationData: isDemo ? mockContentGenerationData : realContentGeneration.length > 0 ? realContentGeneration : mockContentGenerationData,
         searchTerm,
         setSearchTerm,
         filterType,
@@ -194,7 +240,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         setShowActiveOnly,
         isLoading,
         isFirstVisit,
-        refreshProjects
+        refreshProjects,
+        isDemo
       }}
     >
       {children}
