@@ -9,7 +9,6 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/types/supabase-custom';
-import { NewProjectButton } from '@/components/projects/NewProjectButton';
 import { useNavigate } from 'react-router-dom';
 
 // Add a status field to the filtered projects if it doesn't exist already
@@ -83,9 +82,7 @@ const ProjectsContent = () => {
             </p>
           </div>
           
-          <div className="hidden sm:block">
-            <NewProjectButton />
-          </div>
+          {/* New project button removed from here */}
         </div>
         
         <Tabs defaultValue="all" className="space-y-4">
