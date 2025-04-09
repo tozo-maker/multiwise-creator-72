@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -105,7 +104,7 @@ export const ProjectWorkspace = () => {
     { label: project.name }
   ];
   
-  // Activity feed items - this could be fetched from Supabase in a real implementation
+  // Activity feed items - fetch these from Supabase in a real implementation
   const activityItems = [
     { action: 'Project created', time: project.lastModified, icon: FileText }
   ];
