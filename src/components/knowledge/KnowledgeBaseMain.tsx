@@ -23,6 +23,16 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
+  // Adapter function that matches the expected signature
+  const handleEdit = (id: string) => {
+    // When edit is clicked, we can open a dialog or modal to get the new description
+    // For now, just call onEditFile with empty string and let the parent handle the UI for description input
+    const file = files.find(f => f.id === id);
+    if (file) {
+      onEditFile(id, file.description);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="md:col-span-1">
@@ -40,7 +50,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
         <KnowledgeBaseFileList 
           files={files}
           onDelete={onDeleteFile}
-          onEdit={(id, newDescription) => onEditFile(id, newDescription)}
+          onEdit={handleEdit}
           onPreview={(id) => {
             const file = files.find(f => f.id === id);
             if (file && file.url) window.open(file.url, '_blank');
