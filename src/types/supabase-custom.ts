@@ -1,11 +1,9 @@
 
-import { Database } from '@/integrations/supabase/types';
-
 // Define custom types that extend or use the Supabase generated types
 export type Project = {
   id: string;
   name: string;
-  description: string;
+  description?: string; // Make description optional
   type: string;
   targetLanguage: string;
   lastModified: string;
@@ -32,5 +30,10 @@ export type UserProfile = {
   role: 'admin' | 'editor' | 'viewer';
 };
 
-// You can still reference the database types when needed
-export type DbUser = Database['public']['Tables']['users']['Row'];
+// Remove the reference to Database['public']['Tables']['users'] since it doesn't exist
+// and create a simplified DbUser type
+export type DbUser = {
+  id: string;
+  email?: string;
+  created_at?: string;
+};

@@ -5,6 +5,7 @@ export const projects = [
   {
     id: '1',
     name: 'Spanish Language Textbook',
+    description: 'Comprehensive textbook for teaching Spanish language',
     targetLanguage: 'Spanish',
     type: 'Textbook',
     lastModified: '2 hours ago',
@@ -13,6 +14,7 @@ export const projects = [
   {
     id: '2',
     name: 'French Beginner Workbook',
+    description: 'Exercise book for beginners learning French',
     targetLanguage: 'French',
     type: 'Workbook',
     lastModified: '3 days ago',
@@ -21,6 +23,7 @@ export const projects = [
   {
     id: '3',
     name: 'Chinese Characters Guide',
+    description: 'Reference guide for learning Chinese characters',
     targetLanguage: 'Chinese',
     type: 'Reference',
     lastModified: '1 week ago',
@@ -29,6 +32,7 @@ export const projects = [
   {
     id: '4',
     name: 'German Grammar Worksheets',
+    description: 'Practice worksheets for German grammar',
     targetLanguage: 'German',
     type: 'Worksheet',
     lastModified: '2 weeks ago',
@@ -37,6 +41,7 @@ export const projects = [
   {
     id: '5',
     name: 'English Teaching Guide',
+    description: 'Guide for teachers on English language instruction',
     targetLanguage: 'English',
     type: 'Teacher Guide',
     lastModified: '3 weeks ago',
