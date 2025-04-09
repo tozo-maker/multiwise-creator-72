@@ -1,124 +1,161 @@
 
-import React from 'react';
-import { KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
-import { KBCategory } from '@/components/knowledge/KnowledgeBaseCategories';
-import { KnowledgeBaseService } from '@/services/KnowledgeBaseService';
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
 
-interface KnowledgeBaseOperationsProps {
+interface UseKnowledgeBaseOperationsProps {
   files: KBFile[];
   setFiles: React.Dispatch<React.SetStateAction<KBFile[]>>;
   updateCategories: (files: KBFile[]) => void;
-  refreshFiles?: () => void;
+  refreshFiles: () => Promise<void>;
 }
 
-export const useKnowledgeBaseOperations = ({ 
-  files, 
-  setFiles, 
+export const useKnowledgeBaseOperations = ({
+  files,
+  setFiles,
   updateCategories,
   refreshFiles
-}: KnowledgeBaseOperationsProps) => {
+}: UseKnowledgeBaseOperationsProps) => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleDeleteFile = async (id: string) => {
-    if (!user) return;
-    
+  const handleDeleteFile = async (fileId: string) => {
     try {
-      await KnowledgeBaseService.deleteFile(id);
+      setIsLoading(true);
+      const file = files.find(f => f.id === fileId);
       
-      // Option 1: Update local state
-      const updatedFiles = files.filter(file => file.id !== id);
+      if (!file) {
+        throw new Error('File not found');
+      }
+      
+      // Delete the file record from the database
+      const { error } = await supabase
+        .from('knowledge_base_files')
+        .delete()
+        .eq('id', fileId);
+      
+      if (error) throw error;
+      
+      // Also attempt to delete the actual file from storage if URL exists
+      if (file.url) {
+        const path = file.url.split('/').pop();
+        if (path) {
+          await supabase.storage.from('knowledge_base').remove([path]);
+        }
+      }
+      
+      // Update the local state
+      const updatedFiles = files.filter(f => f.id !== fileId);
       setFiles(updatedFiles);
       updateCategories(updatedFiles);
       
-      // Option 2: Refresh from database
-      if (refreshFiles) {
-        refreshFiles();
-      }
-      
       toast({
         title: "File deleted",
-        description: "The file has been removed from your Knowledge Base."
+        description: `Successfully deleted "${file.name}"`,
       });
     } catch (error) {
       console.error('Error deleting file:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to delete file',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to delete the file. Please try again.",
+        variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  const handleEditFile = async (id: string, newDescription: string) => {
-    if (!user) return;
-    
+
+  const handleFilesUploaded = async (uploadedFiles: { file: File, description: string }[]) => {
     try {
-      await KnowledgeBaseService.updateFileDescription(id, newDescription);
+      setIsLoading(true);
       
-      // Option 1: Update local state
-      const updatedFiles = files.map(file => 
-        file.id === id 
-          ? { ...file, description: newDescription } 
-          : file
-      );
+      const newFiles: KBFile[] = [];
       
-      setFiles(updatedFiles);
-      
-      // Option 2: Refresh from database
-      if (refreshFiles) {
-        refreshFiles();
+      for (const { file, description } of uploadedFiles) {
+        // Upload the file to Supabase storage
+        const fileName = `${Date.now()}-${file.name}`;
+        const { data: storageData, error: storageError } = await supabase.storage
+          .from('knowledge_base')
+          .upload(fileName, file);
+        
+        if (storageError) throw storageError;
+        
+        // Get the public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('knowledge_base')
+          .getPublicUrl(fileName);
+        
+        const fileUrl = publicUrlData.publicUrl;
+        
+        // Insert the file record into the database
+        const { data: fileData, error: dbError } = await supabase
+          .from('knowledge_base_files')
+          .insert({
+            name: file.name,
+            description,
+            file_type: file.name.split('.').pop() || 'unknown',
+            size: formatFileSize(file.size),
+            url: fileUrl,
+            category: 'Uploaded Files' // Default category
+          })
+          .select();
+        
+        if (dbError) throw dbError;
+        
+        if (fileData && fileData.length > 0) {
+          // Transform the inserted record to match KBFile interface
+          const newFile: KBFile = {
+            id: fileData[0].id,
+            name: fileData[0].name,
+            description: fileData[0].description || '',
+            fileType: fileData[0].file_type,
+            size: fileData[0].size,
+            uploadDate: new Date(fileData[0].created_at).toLocaleDateString(),
+            category: fileData[0].category || 'Other',
+            url: fileData[0].url
+          };
+          
+          newFiles.push(newFile);
+        }
       }
       
-      toast({
-        title: "File updated",
-        description: "The file description has been updated."
-      });
-    } catch (error) {
-      console.error('Error updating file:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update file',
-        variant: 'destructive'
-      });
-    }
-  };
-  
-  const handleFilesUploaded = async (newFiles: { file: File, description: string }[]) => {
-    if (!user) return;
-    
-    try {
-      const uploadedFiles = await KnowledgeBaseService.uploadFiles(user.id, newFiles);
-      
-      // Option 1: Update local state
-      const updatedFiles = [...uploadedFiles, ...files];
+      // Update the local state
+      const updatedFiles = [...files, ...newFiles];
       setFiles(updatedFiles);
       updateCategories(updatedFiles);
       
-      // Option 2: Refresh from database
-      if (refreshFiles) {
-        refreshFiles();
-      }
-      
       toast({
         title: "Files uploaded",
-        description: `${newFiles.length} file(s) added to Knowledge Base.`
+        description: `Successfully uploaded ${uploadedFiles.length} file${uploadedFiles.length !== 1 ? 's' : ''}`,
       });
     } catch (error) {
       console.error('Error uploading files:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to upload files',
-        variant: 'destructive'
+        title: "Upload error",
+        description: "Failed to upload files. Please try again.",
+        variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    } else if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(2)} KB`;
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    } else {
+      return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
     }
   };
 
   return {
     handleDeleteFile,
-    handleEditFile,
-    handleFilesUploaded
+    handleFilesUploaded,
+    isLoading
   };
 };
