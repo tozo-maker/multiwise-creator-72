@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
-import { ModernLayout } from '@/components/layout/ModernLayout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { UnifiedProjectWizard } from '@/components/project-creation/UnifiedProjectWizard';
@@ -47,7 +47,7 @@ export const CreateProject: React.FC = () => {
   }
   
   return (
-    <ModernLayout contentWidth="wide">
+    <DashboardLayout contentWidth="wide">
       <div className={`w-full min-h-screen -mt-4 py-6 ${
         isDark ? 'bg-slate-900' : 'bg-slate-50'
       }`}>
@@ -65,14 +65,14 @@ export const CreateProject: React.FC = () => {
             </ThemeCard>
           </div>
           
-          <div className="max-w-4xl mx-auto">
+          <div className="w-full">
             <UnifiedProjectWizard
               onComplete={handleProjectCreated}
             />
           </div>
         </div>
       </div>
-    </ModernLayout>
+    </DashboardLayout>
   );
 };
 

@@ -33,7 +33,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
         return 'max-w-7xl'; 
       case 'wide':
       default:
-        return 'max-w-full px-4 md:px-6';
+        return 'max-w-full'; // Removed fixed padding to match other pages
     }
   };
 
@@ -73,7 +73,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
               aria-label={ariaLabel}
               tabIndex={-1}
             >
-              <div className={cn("mx-auto transition-all", getMaxWidthClass())}>
+              <div className={cn("mx-auto transition-all px-4 md:px-6", getMaxWidthClass())}>
                 {children}
               </div>
             </main>
