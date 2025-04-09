@@ -62,22 +62,52 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
+          email_notifications: boolean | null
+          font_size: string | null
           id: string
+          name: string | null
+          notification_frequency: string | null
+          push_notifications: boolean | null
+          reduced_motion: boolean | null
+          session_timeout: string | null
+          theme: string | null
+          two_factor_enabled: boolean | null
           updated_at: string
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          email_notifications?: boolean | null
+          font_size?: string | null
           id: string
+          name?: string | null
+          notification_frequency?: string | null
+          push_notifications?: boolean | null
+          reduced_motion?: boolean | null
+          session_timeout?: string | null
+          theme?: string | null
+          two_factor_enabled?: boolean | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          email_notifications?: boolean | null
+          font_size?: string | null
           id?: string
+          name?: string | null
+          notification_frequency?: string | null
+          push_notifications?: boolean | null
+          reduced_motion?: boolean | null
+          session_timeout?: string | null
+          theme?: string | null
+          two_factor_enabled?: boolean | null
           updated_at?: string
           username?: string | null
         }

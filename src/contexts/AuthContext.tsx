@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   session: Session | null;
@@ -21,6 +21,14 @@ interface UserProfile {
   avatar_url: string | null;
   bio: string | null;
   name: string | null;
+  theme: string | null;
+  font_size: string | null;
+  reduced_motion: boolean | null;
+  email_notifications: boolean | null;
+  push_notifications: boolean | null;
+  notification_frequency: string | null;
+  two_factor_enabled: boolean | null;
+  session_timeout: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -178,7 +187,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const { error } = await supabase
         .from('profiles')
-        .update(data)
+        .update({
+          ...data,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', user.id);
         
       if (error) {
@@ -199,6 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Error updating profile',
         description: error.message,
       });
+      throw error;
     }
   };
 

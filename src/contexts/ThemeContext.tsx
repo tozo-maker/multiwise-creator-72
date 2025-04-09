@@ -1,8 +1,9 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
@@ -15,41 +16,66 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
-  const [theme, setTheme] = useState<Theme>('dark'); // Set dark as default
+  const { profile, updateProfile } = useAuth();
+  const [theme, setThemeState] = useState<Theme>('system');
   const [initialized, setInitialized] = useState(false);
-  const isDark = theme === 'dark';
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   useEffect(() => {
-    // Check if OS prefers dark mode
-    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Initialize theme from profile or localStorage as fallback
+    const loadTheme = async () => {
+      let themeToUse: Theme;
+      
+      if (profile?.theme) {
+        // Use theme from profile if available
+        themeToUse = profile.theme as Theme;
+      } else {
+        // Fallback to localStorage or OS preference
+        const savedTheme = localStorage.getItem('theme') as Theme | null;
+        const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme) {
+          themeToUse = savedTheme;
+        } else {
+          themeToUse = prefersDarkMode ? 'dark' : 'light';
+        }
+      }
+      
+      setThemeState(themeToUse);
+      applyTheme(themeToUse);
+      setInitialized(true);
+    };
     
-    // Initialize theme from localStorage on component mount
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
-    
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    loadTheme();
+  }, [profile]);
+
+  const applyTheme = (newTheme: Theme) => {
+    if (newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
     } else {
-      // Use OS preference if no saved theme
-      const defaultTheme = prefersDarkMode ? 'dark' : 'light';
-      setTheme(defaultTheme);
-      document.documentElement.classList.toggle('dark', defaultTheme === 'dark');
-      localStorage.setItem('theme', defaultTheme);
+      document.documentElement.classList.remove('dark');
     }
     
-    setInitialized(true);
-  }, []);
+    localStorage.setItem('theme', newTheme);
+  };
 
-  // Apply theme when it changes
-  useEffect(() => {
-    if (initialized) {
-      document.documentElement.classList.toggle('dark', theme === 'dark');
-      localStorage.setItem('theme', theme);
+  // Set and save theme to both localStorage and profile
+  const setTheme = async (newTheme: Theme) => {
+    setThemeState(newTheme);
+    applyTheme(newTheme);
+    
+    // Save to profile in Supabase if user is authenticated
+    if (profile?.id) {
+      try {
+        await updateProfile({ theme: newTheme });
+      } catch (error) {
+        console.error('Error saving theme to profile:', error);
+      }
     }
-  }, [theme, initialized]);
+  };
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
+    const newTheme = isDark ? 'light' : 'dark';
     setTheme(newTheme);
     
     toast({
