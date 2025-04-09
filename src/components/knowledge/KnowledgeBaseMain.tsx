@@ -40,7 +40,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
         <KnowledgeBaseFileList 
           files={files}
           onDelete={onDeleteFile}
-          onEdit={(id) => onEditFile(id, "")} // We'll update this with proper description handling later
+          onEdit={(id) => onEditFile(id, "")} // Pass an empty string as the default
           onPreview={(id) => {
             const file = files.find(f => f.id === id);
             if (file && file.url) window.open(file.url, '_blank');
