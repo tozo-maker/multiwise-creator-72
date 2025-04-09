@@ -5,26 +5,31 @@ import { User, HelpCircle, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SheetClose, SheetFooter } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const MobileUserSection: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signOut } = useAuth();
 
-  const handleLogout = () => {
-    // In a real app, this would call an API to logout
-    localStorage.setItem('isAuthenticated', 'false');
-    
-    // Use the window.handleLogout if it exists (from App.tsx)
-    if (typeof window !== 'undefined' && window.handleLogout) {
-      window.handleLogout();
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account.",
+      });
+      
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error logging out",
+        description: "There was a problem logging out. Please try again.",
+      });
     }
-    
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account.",
-    });
-    
-    navigate('/');
   };
 
   return (
@@ -46,9 +51,12 @@ export const MobileUserSection: React.FC = () => {
         <Button 
           variant="outline" 
           className="w-full justify-start gap-2"
+          asChild
         >
-          <HelpCircle className="h-4 w-4" />
-          Help & Resources
+          <Link to="/help">
+            <HelpCircle className="h-4 w-4" />
+            Help & Resources
+          </Link>
         </Button>
       </SheetClose>
       

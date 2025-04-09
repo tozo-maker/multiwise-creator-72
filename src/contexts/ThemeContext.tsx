@@ -16,7 +16,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
-  const { profile, updateProfile } = useAuth();
+  // Try-catch to handle possible auth context availability issues
+  let authData = { profile: null, updateProfile: async () => {} };
+  try {
+    authData = useAuth();
+  } catch (error) {
+    console.log('Auth context not available yet, using defaults');
+  }
+  
+  const { profile, updateProfile } = authData;
   const [theme, setThemeState] = useState<Theme>('system');
   const [initialized, setInitialized] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
