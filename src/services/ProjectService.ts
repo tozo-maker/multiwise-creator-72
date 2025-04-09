@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Project, KnowledgeBaseFile } from '@/types/supabase-custom';
 import { ActivityData, ContentGenerationData } from '@/contexts/DashboardContext';
@@ -141,7 +142,8 @@ export const ProjectService = {
         lastModified: new Date(data.updated_at).toLocaleDateString(),
         progress: data.progress,
         status: data.status as 'active' | 'archived' | 'completed',
-        deadline: data.deadline || 'Not set'
+        deadline: data.deadline ? new Date(data.deadline).toLocaleDateString() : 'Not set',
+        owner: data.user_id
       };
     } catch (error) {
       console.error('ProjectService: Error in create method:', error);
