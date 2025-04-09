@@ -10,7 +10,19 @@ import { useAuth } from '@/contexts/AuthContext';
 export const MobileUserSection: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signOut } = useAuth();
+  
+  // Safely access the auth context
+  let signOut = async () => {
+    console.log('Fallback signOut function called');
+    return Promise.resolve();
+  };
+  
+  try {
+    const auth = useAuth();
+    signOut = auth.signOut;
+  } catch (error) {
+    console.error('Error accessing auth context:', error);
+  }
 
   const handleLogout = async () => {
     try {

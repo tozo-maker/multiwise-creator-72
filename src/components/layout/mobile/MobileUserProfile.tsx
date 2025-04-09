@@ -4,7 +4,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const MobileUserProfile: React.FC = () => {
-  const { user, profile } = useAuth();
+  let user = null;
+  let profile = null;
+  
+  try {
+    const auth = useAuth();
+    user = auth.user;
+    profile = auth.profile;
+  } catch (error) {
+    console.error('Error accessing auth context:', error);
+  }
   
   if (!user) {
     return (

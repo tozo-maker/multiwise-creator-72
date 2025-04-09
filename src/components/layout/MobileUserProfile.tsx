@@ -8,13 +8,28 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const MobileUserProfile = () => {
-  const { user, profile, signOut } = useAuth();
+  let user = null;
+  let profile = null;
+  let signOut = async () => { console.log('Default signOut'); };
   const { isDark } = useTheme();
   const navigate = useNavigate();
   
+  try {
+    const auth = useAuth();
+    user = auth.user;
+    profile = auth.profile;
+    signOut = auth.signOut;
+  } catch (error) {
+    console.error('Error accessing auth context:', error);
+  }
+  
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
   
   if (!user) {

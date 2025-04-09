@@ -16,18 +16,29 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
-  // Try-catch to handle possible auth context availability issues
-  let authData = { profile: null, updateProfile: async () => {} };
-  try {
-    authData = useAuth();
-  } catch (error) {
-    console.log('Auth context not available yet, using defaults');
-  }
   
-  const { profile, updateProfile } = authData;
+  // Initialize with default values
   const [theme, setThemeState] = useState<Theme>('system');
   const [initialized, setInitialized] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Use a state to track if auth context is available
+  const [authContextAvailable, setAuthContextAvailable] = useState(false);
+  const [profileData, setProfileData] = useState<any>(null);
+  const [updateProfileFn, setUpdateProfileFn] = useState<any>(null);
+
+  // Try to get auth context
+  useEffect(() => {
+    try {
+      const { profile, updateProfile } = useAuth();
+      setProfileData(profile);
+      setUpdateProfileFn(() => updateProfile);
+      setAuthContextAvailable(true);
+    } catch (error) {
+      console.log('Auth context not available yet, using defaults');
+      setAuthContextAvailable(false);
+    }
+  }, []);
   
   // Check if window exists to avoid server-side rendering issues
   const isDark = typeof window !== 'undefined' ? 
@@ -39,9 +50,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const loadTheme = async () => {
       let themeToUse: Theme;
       
-      if (profile?.theme) {
+      if (authContextAvailable && profileData?.theme) {
         // Use theme from profile if available
-        themeToUse = profile.theme as Theme;
+        themeToUse = profileData.theme as Theme;
       } else {
         // Fallback to localStorage or OS preference
         const savedTheme = localStorage.getItem('theme') as Theme | null;
@@ -65,7 +76,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     
     loadTheme();
-  }, [profile]);
+  }, [profileData, authContextAvailable]);
 
   // Apply theme to document and set dark mode state
   const applyTheme = (newTheme: Theme) => {
@@ -90,9 +101,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     applyTheme(newTheme);
     
     // Save to profile in Supabase if user is authenticated
-    if (profile?.id) {
+    if (authContextAvailable && profileData?.id && updateProfileFn) {
       try {
-        await updateProfile({ theme: newTheme });
+        await updateProfileFn({ theme: newTheme });
       } catch (error) {
         console.error('Error saving theme to profile:', error);
       }

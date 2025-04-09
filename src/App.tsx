@@ -144,17 +144,17 @@ const App = () => {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <ThemeProvider>
               <Toaster />
               <Sonner />
               <BrowserRouter>
                 <AppContent />
               </BrowserRouter>
-            </TooltipProvider>
-          </QueryClientProvider>
-        </ThemeProvider>
+            </ThemeProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
       </AuthProvider>
     </ErrorBoundary>
   );
