@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Wizard } from '@/components/shared/wizard/Wizard';
 import { WizardStep } from '@/contexts/WizardContext';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +35,7 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isCreating, setIsCreating] = useState(false);
   
   // Define wizard steps
   const steps: WizardStep[] = [
@@ -72,9 +73,9 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       return;
     }
     
-    // Skip system, project and language config if using a template (non-custom)
+    // Skip steps 2-4 if using a template (non-custom)
     if (currentStep === 1 && formData.quickStart !== 'custom') {
-      // Skip to knowledge base step
+      // Skip directly to documents (step 5)
       goToStep(5);
       return;
     }
@@ -105,6 +106,10 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
   };
   
   const handleComplete = async (data: ProjectData) => {
+    if (isCreating) return; // Prevent multiple submissions
+    
+    setIsCreating(true);
+    
     toast({
       title: "Creating project...",
       description: "Your project is being set up."
@@ -118,6 +123,7 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
         variant: "destructive"
       });
       navigate("/auth");
+      setIsCreating(false);
       return;
     }
     
@@ -137,17 +143,27 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
         targetLanguage: data.language || 'English',
       });
       
-      console.log('Project created:', project);
+      console.log('Project created successfully:', project);
       
       if (project && project.id) {
-        // If knowledge base files exist, upload them
+        // If knowledge base files exist, set up for processing them (mock for now)
         if (data.hasKnowledgeBase && data.knowledgeBaseFiles && data.knowledgeBaseFiles.length > 0) {
-          // This would be implemented to handle file uploads to knowledge base
           toast({
             title: "Knowledge base",
             description: `${data.knowledgeBaseFiles.length} documents will be processed.`
           });
+          // TODO: Implement actual file upload logic
         }
+        
+        // Clear any saved wizard state
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('wizard-form-project-wizard');
+        }
+        
+        toast({
+          title: "Project created",
+          description: "Your project has been created successfully!"
+        });
         
         onComplete(project.id);
       } else {
@@ -160,6 +176,8 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
         description: "There was an error creating your project. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsCreating(false);
     }
   };
   
@@ -171,8 +189,10 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       onComplete={handleComplete}
       renderStep={renderStep}
       navigateLogic={navigateLogic}
+      showStepIndicator={true}
       title="Create New Project"
       description="Configure your educational content project by following these steps."
+      className="w-full"
     />
   );
 }

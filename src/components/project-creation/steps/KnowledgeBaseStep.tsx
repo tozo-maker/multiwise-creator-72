@@ -4,8 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { AlertCircle, Upload } from 'lucide-react';
-import { FileDropzone } from '@/components/upload/FileDropzone';
+import { AlertCircle, Upload, File, X } from 'lucide-react';
 
 interface KnowledgeBaseStepProps {
   data: {
@@ -19,15 +18,60 @@ interface KnowledgeBaseStepProps {
 export function KnowledgeBaseStep({ data, updateData, isMobile = false }: KnowledgeBaseStepProps) {
   const [enableKnowledgeBase, setEnableKnowledgeBase] = useState(data.hasKnowledgeBase || false);
   const [files, setFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   const toggleKnowledgeBase = (enabled: boolean) => {
     setEnableKnowledgeBase(enabled);
     updateData({ hasKnowledgeBase: enabled });
   };
   
-  const handleFilesSelected = (selectedFiles: File[]) => {
-    setFiles(selectedFiles);
-    updateData({ knowledgeBaseFiles: selectedFiles.map(f => f.name) });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      setFiles([...files, ...newFiles]);
+      updateData({ 
+        knowledgeBaseFiles: [...(data.knowledgeBaseFiles || []), ...newFiles.map(f => f.name)] 
+      });
+    }
+  };
+  
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      setFiles([...files, ...droppedFiles]);
+      updateData({ 
+        knowledgeBaseFiles: [...(data.knowledgeBaseFiles || []), ...droppedFiles.map(f => f.name)] 
+      });
+    }
+  };
+  
+  const removeFile = (index: number) => {
+    const updatedFiles = [...files];
+    updatedFiles.splice(index, 1);
+    setFiles(updatedFiles);
+    
+    const updatedFileNames = [...(data.knowledgeBaseFiles || [])];
+    updatedFileNames.splice(index, 1);
+    updateData({ knowledgeBaseFiles: updatedFileNames });
+  };
+  
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' bytes';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   return (
@@ -59,56 +103,80 @@ export function KnowledgeBaseStep({ data, updateData, isMobile = false }: Knowle
       </div>
       
       {enableKnowledgeBase && (
-        <Card className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 p-4">
+        <Card className="border border-slate-200 dark:border-slate-700 p-4">
           <div className="space-y-4">
-            <FileDropzone 
-              onFilesSelected={handleFilesSelected}
-              maxFiles={5}
-              accept=".pdf,.docx,.txt,.md"
-              className="w-full"
-            />
-            
-            {files.length === 0 && (
-              <div className="text-center py-8">
-                <div className="mx-auto h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center">
+            <div
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                isDragging
+                  ? "border-brand-500 bg-brand-50 dark:bg-brand-900/10"
+                  : "border-slate-300 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-600"
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <input
+                type="file"
+                id="fileUpload"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+                accept=".pdf,.docx,.txt,.md"
+              />
+              
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
                   <Upload className="h-6 w-6 text-slate-500 dark:text-slate-400" />
                 </div>
-                <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-200">No files uploaded</h3>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Drag and drop files or use the button above
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-200 mb-1">
+                  Drag and drop files, or
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => document.getElementById('fileUpload')?.click()}
+                  className="mt-2"
+                >
+                  Browse Files
+                </Button>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                  Supports PDF, DOCX, TXT, MD (Max 5MB per file)
                 </p>
               </div>
-            )}
+            </div>
             
             {files.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-slate-900 dark:text-slate-200">Uploaded Files</h3>
-                <ul className="divide-y divide-slate-200 dark:divide-slate-700 rounded-md border border-slate-200 dark:border-slate-700">
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-slate-900 dark:text-slate-200 mb-2">Uploaded Files</h3>
+                <ul className="space-y-2">
                   {files.map((file, index) => (
-                    <li key={index} className="flex items-center justify-between py-2 px-4 text-sm">
-                      <span className="truncate text-slate-700 dark:text-slate-300">{file.name}</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {(file.size / 1024).toFixed(0)} KB
-                      </span>
+                    <li key={index} className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-md p-3">
+                      <div className="flex items-center">
+                        <File className="h-4 w-4 text-slate-500 dark:text-slate-400 mr-2" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-slate-200 truncate max-w-[200px]">
+                            {file.name}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {formatFileSize(file.size)}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => removeFile(index)}
+                      >
+                        <X className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                      </Button>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-            
-            <div className="text-sm text-slate-500 dark:text-slate-400">
-              <p>You can also add knowledge base documents after creating your project.</p>
-            </div>
           </div>
         </Card>
-      )}
-      
-      {!enableKnowledgeBase && (
-        <div className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 p-6 text-center">
-          <p className="text-slate-600 dark:text-slate-400">
-            Knowledge base is disabled. You can enable it later from the project settings.
-          </p>
-        </div>
       )}
     </div>
   );

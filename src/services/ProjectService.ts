@@ -89,34 +89,64 @@ export const ProjectService = {
   },
   
   async create(input: ProjectCreateInput): Promise<Project> {
-    const { data, error } = await supabase
-      .from('projects')
-      .insert({
+    try {
+      console.log('ProjectService: Creating new project with data:', input);
+      
+      // Make sure we have the authenticated user
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('Error getting authenticated user:', userError);
+        throw userError;
+      }
+      
+      if (!userData || !userData.user) {
+        throw new Error('No authenticated user found');
+      }
+      
+      console.log('ProjectService: Authenticated user ID:', userData.user.id);
+      
+      // Add user_id to the project data
+      const projectData = {
         name: input.name,
-        description: input.description,
+        description: input.description || '',
         type: input.type,
         target_language: input.targetLanguage,
         progress: 0,
-        status: 'active'
-      })
-      .select()
-      .single();
+        status: 'active',
+        user_id: userData.user.id
+      };
       
-    if (error) {
-      console.error('Error creating project:', error);
+      const { data, error } = await supabase
+        .from('projects')
+        .insert(projectData)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating project:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        throw new Error('Project created but no data returned');
+      }
+      
+      console.log('ProjectService: Project created successfully:', data);
+      
+      return {
+        id: data.id,
+        name: data.name,
+        description: data.description || undefined,
+        type: data.type,
+        targetLanguage: data.target_language,
+        lastModified: new Date(data.updated_at).toLocaleDateString(),
+        progress: data.progress,
+        status: data.status as 'active' | 'archived' | 'completed',
+      };
+    } catch (error) {
+      console.error('ProjectService: Error in create method:', error);
       throw error;
     }
-    
-    return {
-      id: data.id,
-      name: data.name,
-      description: data.description || undefined,
-      type: data.type,
-      targetLanguage: data.target_language,
-      lastModified: new Date(data.updated_at).toLocaleDateString(),
-      progress: data.progress,
-      status: data.status as 'active' | 'archived' | 'completed',
-    };
   },
   
   async update(id: string, input: ProjectUpdateInput): Promise<Project> {

@@ -43,7 +43,7 @@ export function Wizard<T extends Record<string, any>>({
       navigateLogic={navigateLogic}
     >
       {(context) => {
-        const { currentStep, formData, updateFormData, hasVisited, goToStep } = context;
+        const { currentStep, formData, updateFormData } = context;
         
         return (
           <div className={`space-y-6 w-full ${className}`}>

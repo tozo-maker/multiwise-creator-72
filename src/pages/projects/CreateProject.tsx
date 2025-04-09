@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,7 @@ export const CreateProject: React.FC = () => {
   const { isDark } = useTheme();
   const { user } = useAuth();
   
-  React.useEffect(() => {
+  useEffect(() => {
     // Check if user is authenticated
     if (!user) {
       toast({
@@ -31,22 +31,26 @@ export const CreateProject: React.FC = () => {
       title: "Project created successfully",
       description: "Your new project has been created."
     });
+    // Navigate to the project page with the new project ID
     navigate(`/projects/${projectId}`);
   };
 
   const breadcrumbItems = [
-    { label: 'Dashboard', path: '/dashboard' },
     { label: 'Projects', path: '/projects' },
     { label: 'Create New Project' }
   ];
+  
+  if (!user) {
+    return null; // Don't render anything if not authenticated
+  }
   
   return (
     <ModernLayout contentWidth="wide">
       <div className={`w-full min-h-screen -mt-4 py-6 ${
         isDark ? 'bg-slate-900' : 'bg-slate-50'
       }`}>
-        <div className="w-full px-4 md:px-0">
-          <div>
+        <div className="container mx-auto px-4 md:px-6 lg:px-8">
+          <div className="mb-6">
             <PageBreadcrumbs items={breadcrumbItems} />
             
             <div className="mb-6">
@@ -61,7 +65,7 @@ export const CreateProject: React.FC = () => {
             </div>
           </div>
           
-          <div>
+          <div className="max-w-4xl mx-auto">
             <UnifiedProjectWizard
               onComplete={handleProjectCreated}
             />
@@ -70,6 +74,6 @@ export const CreateProject: React.FC = () => {
       </div>
     </ModernLayout>
   );
-}
+};
 
 export default CreateProject;

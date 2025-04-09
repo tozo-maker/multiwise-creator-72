@@ -35,15 +35,26 @@ const ProjectsContent = () => {
         setIsLoading(false);
         return;
       }
+      
       try {
+        console.log('Fetching projects for user:', user.id);
         const { data, error } = await supabase
           .from('projects')
           .select('*')
           .order('created_at', { ascending: false });
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching projects:', error);
+          throw error;
+        }
         
         console.log('Fetched projects:', data);
+        
+        if (!data || data.length === 0) {
+          setProjects([]);
+          setIsLoading(false);
+          return;
+        }
         
         const formattedProjects = data.map(item => ({
           id: item.id,
@@ -55,6 +66,7 @@ const ProjectsContent = () => {
           progress: item.progress,
           status: item.status as 'active' | 'archived' | 'completed'
         }));
+        
         setProjects(formattedProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -67,11 +79,16 @@ const ProjectsContent = () => {
         setIsLoading(false);
       }
     };
+    
     fetchProjects();
   }, [user, toast]);
 
   // Ensure all projects have a status field
   const filteredProjects = addStatusIfMissing(projects);
+  
+  const handleCreateProject = () => {
+    navigate('/projects/create');
+  };
   
   return (
     <motion.div
