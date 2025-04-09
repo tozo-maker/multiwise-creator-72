@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
 export interface KBFile {
   id: string;
   name: string;
@@ -17,7 +16,6 @@ export interface KBFile {
   category?: string;
   tags?: string[];
 }
-
 interface KnowledgeBaseFileListProps {
   files: KBFile[];
   onDelete: (id: string) => void;
@@ -26,7 +24,6 @@ interface KnowledgeBaseFileListProps {
   onDownload: (id: string) => void;
   categories?: string[];
 }
-
 export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
   files,
   onDelete,
@@ -39,19 +36,15 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [sortField, setSortField] = useState<keyof KBFile>('uploadDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
   if (files.length === 0) {
-    return (
-      <div className="text-center py-12 bg-white rounded-lg border border-dashed border-slate-300">
+    return <div className="text-center py-12 bg-white rounded-lg border border-dashed border-slate-300">
         <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-slate-100">
           <FileText className="h-8 w-8 text-slate-400" />
         </div>
         <h3 className="text-lg font-medium text-slate-900 mb-1">No files in Knowledge Base</h3>
         <p className="text-slate-500 mb-4">Upload files to enhance your project with specific context</p>
-      </div>
-    );
+      </div>;
   }
-
   const getFileIcon = (fileType: string) => {
     switch (fileType.toLowerCase()) {
       case 'pdf':
@@ -65,7 +58,6 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
         return <Badge variant="outline">{fileType.toUpperCase()}</Badge>;
     }
   };
-
   const toggleSort = (field: keyof KBFile) => {
     if (field === sortField) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -74,7 +66,6 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
       setSortDirection('asc');
     }
   };
-
   const sortedFiles = [...files].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
@@ -82,42 +73,29 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
     const comparison = aValue < bValue ? -1 : 1;
     return sortDirection === 'asc' ? comparison : -comparison;
   });
-
   const filteredFiles = sortedFiles.filter(file => {
-    const matchesSearch = file.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        file.description.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        (file.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ?? false);
+    const matchesSearch = file.name.toLowerCase().includes(searchTerm.toLowerCase()) || file.description.toLowerCase().includes(searchTerm.toLowerCase()) || (file.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ?? false);
     const matchesCategory = categoryFilter ? file.category === categoryFilter : true;
     return matchesSearch && matchesCategory;
   });
-
-  const SortButton = ({ field, label }: { field: keyof KBFile; label: string; }) => (
-    <Button 
-      variant="ghost" 
-      size="sm" 
-      className="h-8 gap-1 font-medium" 
-      onClick={() => toggleSort(field)}
-    >
+  const SortButton = ({
+    field,
+    label
+  }: {
+    field: keyof KBFile;
+    label: string;
+  }) => <Button variant="ghost" size="sm" className="h-8 gap-1 font-medium" onClick={() => toggleSort(field)}>
       {label}
       {sortField === field && <ArrowUpDown className={`h-3 w-3 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />}
-    </Button>
-  );
-
-  return (
-    <div className="space-y-6">
+    </Button>;
+  return <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-3">
         <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Search files..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          
+          
         </div>
         
-        {categories.length > 0 && (
-          <DropdownMenu>
+        {categories.length > 0 && <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-9 gap-1">
                 <Filter className="h-4 w-4" />
@@ -129,14 +107,11 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
                 All Categories
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {categories.map(category => (
-                <DropdownMenuItem key={category} onClick={() => setCategoryFilter(category)}>
+              {categories.map(category => <DropdownMenuItem key={category} onClick={() => setCategoryFilter(category)}>
                   {category}
-                </DropdownMenuItem>
-              ))}
+                </DropdownMenuItem>)}
             </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+          </DropdownMenu>}
       </div>
 
       <div className="rounded-md border">
@@ -149,11 +124,9 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
               <TableHead>
                 <SortButton field="description" label="Description" />
               </TableHead>
-              {categories.length > 0 && (
-                <TableHead>
+              {categories.length > 0 && <TableHead>
                   <SortButton field="category" label="Category" />
-                </TableHead>
-              )}
+                </TableHead>}
               <TableHead>
                 <SortButton field="fileType" label="Type" />
               </TableHead>
@@ -167,9 +140,7 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredFiles.length > 0 ? (
-              filteredFiles.map(file => (
-                <TableRow key={file.id}>
+            {filteredFiles.length > 0 ? filteredFiles.map(file => <TableRow key={file.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center space-x-2">
                       <FileText className="h-4 w-4 text-slate-500" />
@@ -179,15 +150,9 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
                   <TableCell className="max-w-[200px] truncate">
                     {file.description || "No description"}
                   </TableCell>
-                  {categories.length > 0 && (
-                    <TableCell>
-                      {file.category ? (
-                        <Badge variant="outline">{file.category}</Badge>
-                      ) : (
-                        <span className="text-slate-400 text-sm">None</span>
-                      )}
-                    </TableCell>
-                  )}
+                  {categories.length > 0 && <TableCell>
+                      {file.category ? <Badge variant="outline">{file.category}</Badge> : <span className="text-slate-400 text-sm">None</span>}
+                    </TableCell>}
                   <TableCell>{getFileIcon(file.fileType)}</TableCell>
                   <TableCell>{file.size}</TableCell>
                   <TableCell>{file.uploadDate}</TableCell>
@@ -220,15 +185,11 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
                       </DropdownMenu>
                     </div>
                   </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
+                </TableRow>) : <TableRow>
                 <TableCell colSpan={categories.length > 0 ? 7 : 6} className="text-center py-6 text-slate-500">
                   No files match your search criteria
                 </TableCell>
-              </TableRow>
-            )}
+              </TableRow>}
           </TableBody>
         </Table>
       </div>
@@ -237,12 +198,9 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
         <div>
           Showing {filteredFiles.length} of {files.length} files
         </div>
-        {searchTerm && (
-          <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')} className="h-8 text-xs">
+        {searchTerm && <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')} className="h-8 text-xs">
             Clear Search
-          </Button>
-        )}
+          </Button>}
       </div>
-    </div>
-  );
+    </div>;
 };

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Project, KnowledgeBaseFile } from '@/types/supabase-custom';
 import { ActivityData, ContentGenerationData } from '@/contexts/DashboardContext';
@@ -90,13 +89,6 @@ export const ProjectService = {
   },
   
   async create(input: ProjectCreateInput): Promise<Project> {
-    // Get current user ID
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
-    
     const { data, error } = await supabase
       .from('projects')
       .insert({
@@ -105,8 +97,7 @@ export const ProjectService = {
         type: input.type,
         target_language: input.targetLanguage,
         progress: 0,
-        status: 'active',
-        user_id: user.id
+        status: 'active'
       })
       .select()
       .single();
@@ -187,10 +178,6 @@ export const ProjectService = {
       throw error;
     }
     
-    if (!data || data.length === 0) {
-      return [];
-    }
-    
     return data.map(item => ({
       id: item.id,
       name: item.name,
@@ -204,13 +191,6 @@ export const ProjectService = {
   },
   
   async uploadFile(projectId: string, file: File): Promise<{ path: string; url: string }> {
-    // Get current user ID
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
-    
     const fileExt = file.name.split('.').pop();
     const fileName = `${projectId}/${Math.random().toString(36).substring(2)}.${fileExt}`;
     const filePath = `project-files/${fileName}`;
@@ -238,13 +218,6 @@ export const ProjectService = {
     projectId: string, 
     input: KnowledgeBaseFileInput
   ): Promise<KnowledgeBaseFile> {
-    // Get current user ID
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
-    
     const { data, error } = await supabase
       .from('knowledge_base_files')
       .insert({
@@ -254,8 +227,7 @@ export const ProjectService = {
         file_type: input.fileType,
         size: input.size,
         url: input.url,
-        category: input.category,
-        user_id: user.id
+        category: input.category
       })
       .select()
       .single();
@@ -292,17 +264,9 @@ export const ProjectService = {
   async getActivityData(): Promise<ActivityData[]> {
     console.log('ProjectService: Fetching activity data');
     try {
-      // Get current user ID
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-      
       const { data: projects, error } = await supabase
         .from('projects')
-        .select('created_at')
-        .eq('user_id', user.id);
+        .select('created_at');
         
       if (error) {
         console.error('Error fetching projects for activity data:', error);
@@ -349,18 +313,11 @@ export const ProjectService = {
   async getContentGenerationData(): Promise<ContentGenerationData[]> {
     console.log('ProjectService: Fetching content generation data');
     try {
-      // Get current user ID
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-      
       // For now we'll use project creation as a proxy for content generation
+      // In a real app, you would have a content_items table to query
       const { data: projects, error } = await supabase
         .from('projects')
-        .select('created_at')
-        .eq('user_id', user.id);
+        .select('created_at');
         
       if (error) {
         console.error('Error fetching projects for content generation:', error);

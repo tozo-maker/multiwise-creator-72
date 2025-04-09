@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { ProjectService } from '@/services/ProjectService';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
 
 export interface ProjectData {
   name: string;
@@ -25,7 +24,6 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [hasVisited, setHasVisited] = useState<number[]>([0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuth();
   const [formData, setFormData] = useState<ProjectData>({
     name: '',
     description: '',
@@ -87,17 +85,6 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
         toast({
           title: "Missing information",
           description: "Please provide a project name",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Validate user authentication
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to create a project",
           variant: "destructive"
         });
         setIsSubmitting(false);

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
@@ -10,8 +9,6 @@ import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ContentItem } from '@/components/content/ContentItemsList';
-import { DashboardProvider } from '@/contexts/DashboardContext';
-import { useAuth } from '@/contexts/AuthContext';
 
 // Mock data - Explicitly typed to match the ContentItem interface
 const mockContentItems: ContentItem[] = [{
@@ -33,7 +30,6 @@ const mockContentItems: ContentItem[] = [{
   lastModified: '3 days ago',
   status: 'in-review'
 }];
-
 const ContentWorkspace = () => {
   const {
     projectId
@@ -45,7 +41,6 @@ const ContentWorkspace = () => {
     theme
   } = useTheme();
   const isDark = theme === 'dark';
-  const { user } = useAuth();
 
   // Mock project data
   const project = {
@@ -63,44 +58,31 @@ const ContentWorkspace = () => {
   }, {
     label: 'Content'
   }];
-  
-  return (
-    <ModernLayout contentWidth="wide">
-      <DashboardProvider>
-        <div className="space-y-6">
-          <div className="pt-4">
-            <PageBreadcrumbs items={breadcrumbItems} />
-          </div>
-          
-          <ProjectWorkspaceHeader projectName={project.name} projectType={project.type} targetLanguage={project.targetLanguage} />
-          
-          <ProjectWorkspaceTabs projectId={project.id} activeTab="content" />
-          
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className={`text-xl font-semibold mb-2 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-                Content Items
-              </h2>
-              <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-                Manage your educational content for this project
-              </p>
-            </div>
-            
-            <Button 
-              onClick={() => navigate(`/projects/${projectId}/content/new`)}
-              className="bg-primary text-primary-foreground flex items-center gap-2"
-              disabled={!user}
-            >
-              <Plus className="h-4 w-4" />
-              New Content
-            </Button>
-          </div>
-          
-          <ContentItemsCard projectId={project.id} contentItems={mockContentItems} />
+  return <ModernLayout contentWidth="wide">
+      <div className="space-y-6">
+        <div className="pt-4">
+          <PageBreadcrumbs items={breadcrumbItems} />
         </div>
-      </DashboardProvider>
-    </ModernLayout>
-  );
+        
+        <ProjectWorkspaceHeader projectName={project.name} projectType={project.type} targetLanguage={project.targetLanguage} />
+        
+        <ProjectWorkspaceTabs projectId={project.id} activeTab="content" />
+        
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className={`text-xl font-semibold mb-2 ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+              Content Items
+            </h2>
+            <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+              Manage your educational content for this project
+            </p>
+          </div>
+          
+          
+        </div>
+        
+        <ContentItemsCard projectId={project.id} contentItems={mockContentItems} />
+      </div>
+    </ModernLayout>;
 };
-
 export default ContentWorkspace;

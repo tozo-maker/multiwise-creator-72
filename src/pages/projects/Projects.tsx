@@ -1,14 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
 import { useDashboard, DashboardProvider } from '@/contexts/DashboardContext';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from '@/contexts/ThemeContext';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 // Add a status field to the filtered projects if it doesn't exist already
 const addStatusIfMissing = (projects: any[]) => {
@@ -20,17 +17,11 @@ const addStatusIfMissing = (projects: any[]) => {
 
 // Create a wrapper component that uses the DashboardProvider
 const ProjectsContent = () => {
-  const { filteredProjects: originalFilteredProjects, refreshProjects, isDemo } = useDashboard();
+  const { filteredProjects: originalFilteredProjects } = useDashboard();
   const { theme } = useTheme();
-  const navigate = useNavigate();
   
   // Ensure all projects have a status field
   const filteredProjects = addStatusIfMissing(originalFilteredProjects);
-  
-  // Fetch projects when component mounts
-  useEffect(() => {
-    refreshProjects();
-  }, [refreshProjects]);
   
   return (
     <motion.div
@@ -39,21 +30,11 @@ const ProjectsContent = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex flex-col gap-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>Projects</h1>
-            <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-              View and manage all your educational content projects.
-            </p>
-          </div>
-          
-          <Button 
-            onClick={() => navigate('/projects/new')}
-            className="bg-primary text-primary-foreground flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            New Project
-          </Button>
+        <div>
+          <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}>Projects</h1>
+          <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+            View and manage all your educational content projects.
+          </p>
         </div>
         
         <Tabs defaultValue="all" className="space-y-4">
