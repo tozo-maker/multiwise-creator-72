@@ -8,9 +8,9 @@ import { useKnowledgeBaseFileOperations } from '@/hooks/useKnowledgeBaseOperatio
 import { KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
 import { KnowledgeBaseDescription } from '@/components/knowledge/KnowledgeBaseDescription';
 import { KnowledgeBaseTabContent } from '@/components/knowledge/KnowledgeBaseTabContent';
-import { KnowledgeBaseStats } from '@/components/knowledge/KnowledgeBaseStats';
 import { ThemeCard } from '@/components/shared/ThemeCard';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useKnowledgeBaseStats } from '@/hooks/useKnowledgeBaseStats';
 
 const KnowledgeBasePage = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -54,7 +54,7 @@ const KnowledgeBasePage = () => {
       })
     : files;
 
-  const stats = KnowledgeBaseStats({ files });
+  const stats = useKnowledgeBaseStats(files);
 
   return (
     <DashboardLayout 
