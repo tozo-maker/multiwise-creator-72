@@ -2,6 +2,7 @@
 import React from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { KnowledgeBaseMain } from '@/components/knowledge/KnowledgeBaseMain';
+import { DashboardProvider } from '@/contexts/DashboardContext';
 
 const KnowledgeBasePage = () => {
   return (
@@ -12,7 +13,9 @@ const KnowledgeBasePage = () => {
       mainId="knowledge-base-main"
       aria-label="Knowledge Base page"
     >
-      <KnowledgeBaseMain />
+      <DashboardProvider>
+        <KnowledgeBaseMain />
+      </DashboardProvider>
     </DashboardLayout>
   );
 };

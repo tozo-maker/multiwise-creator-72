@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { projectStats as mockProjectStats, activityData as mockActivityData, contentGenerationData as mockContentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
@@ -75,13 +76,17 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const { user } = useAuth();
   
   // Check if this is a demo user or a real user
+  // A demo user is one with email 'demo@example.com' or no user at all
   const isDemo = !user || user.email === 'demo@example.com';
   
   console.log('Current user:', user?.email);
   console.log('Is demo user:', isDemo);
 
   const fetchProjects = async () => {
-    if (!user) return;
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
     
     setIsLoading(true);
     try {
@@ -91,6 +96,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects:', error);
+      // Still set projects to empty array on error
+      setProjects([]);
     } finally {
       setIsLoading(false);
     }
@@ -142,6 +149,10 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       } else {
         console.log('Demo user detected, using mock data');
       }
+    } else {
+      // Reset loading state if no user
+      setIsLoading(false);
+      console.log('No user detected, using mock data');
     }
   }, [user, isDemo]);
   

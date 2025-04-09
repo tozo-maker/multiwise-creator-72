@@ -5,12 +5,11 @@ import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { InteractiveHelp } from '@/components/dashboard/InteractiveHelp';
 import { DashboardGrid } from '@/components/dashboard/DashboardGrid';
 import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
-import { DashboardLayout as DashboardContentLayout } from '@/components/dashboard/DashboardLayout';
-import { useDashboard } from '@/contexts/DashboardContext';
-import { motion } from 'framer-motion';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { motion } from 'framer-motion';
+import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
 
 const Dashboard = () => {
   return (
@@ -20,7 +19,9 @@ const Dashboard = () => {
       pageDescription="Welcome to your MultiGuide Dashboard"
       mainId="dashboard-main"
     >
-      <DashboardContent />
+      <DashboardProvider>
+        <DashboardContent />
+      </DashboardProvider>
     </DashboardLayout>
   );
 };
