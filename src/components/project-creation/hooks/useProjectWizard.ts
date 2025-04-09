@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { ProjectService } from '@/services/ProjectService';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,6 +28,7 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const [formData, setFormData] = useState<ProjectData>({
     name: '',
@@ -57,6 +58,16 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
   };
   
   const nextStep = () => {
+    // Basic form validation
+    if (currentStep === 0 && !formData.name.trim()) {
+      toast({
+        title: "Project name required",
+        description: "Please provide a name for your project.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (currentStep < steps.length - 1) {
       const nextStepId = currentStep + 1;
       setCurrentStep(nextStepId);
@@ -108,6 +119,13 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
         return;
       }
       
+      console.log('Creating project with data:', {
+        name: formData.name,
+        description: formData.description,
+        type: formData.type,
+        targetLanguage: formData.language,
+      });
+      
       // Create project using ProjectService
       const project = await ProjectService.create({
         name: formData.name,
@@ -115,6 +133,8 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
         type: formData.type,
         targetLanguage: formData.language,
       });
+      
+      console.log('Project created:', project);
       
       toast({
         title: "Project created",

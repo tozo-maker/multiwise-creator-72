@@ -6,11 +6,25 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { UnifiedProjectWizard } from '@/components/project-creation/UnifiedProjectWizard';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const CreateProject: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isDark } = useTheme();
+  const { user } = useAuth();
+  
+  React.useEffect(() => {
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create a project",
+        variant: "destructive"
+      });
+      navigate("/auth");
+    }
+  }, [user, navigate, toast]);
   
   const handleProjectCreated = (projectId: string) => {
     toast({

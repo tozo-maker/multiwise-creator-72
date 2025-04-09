@@ -30,6 +30,7 @@ const ProjectsContent = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
     const fetchProjects = async () => {
       if (!user) {
@@ -44,6 +45,9 @@ const ProjectsContent = () => {
           ascending: false
         });
         if (error) throw error;
+        
+        console.log('Fetched projects:', data);
+        
         const formattedProjects = data.map(item => ({
           id: item.id,
           name: item.name,
@@ -66,6 +70,7 @@ const ProjectsContent = () => {
 
   // Ensure all projects have a status field
   const filteredProjects = addStatusIfMissing(projects);
+  
   return <motion.div initial={{
     opacity: 0
   }} animate={{

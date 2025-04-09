@@ -10,6 +10,9 @@ import { ProjectConfigStep } from './steps/ProjectConfigStep';
 import { LanguageConfigStep } from './steps/LanguageConfigStep';
 import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { FinalReviewStep } from './steps/FinalReviewStep';
+import { ProjectService } from '@/services/ProjectService';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export interface ProjectData {
   name: string;
@@ -30,6 +33,8 @@ interface UnifiedProjectWizardProps {
 
 export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Define wizard steps
   const steps: WizardStep[] = [
@@ -45,12 +50,12 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
   const initialData: ProjectData = {
     name: '',
     description: '',
-    type: '',
+    type: 'Textbook',
     language: 'English',
-    targetAudience: '',
+    targetAudience: 'Students',
     complexity: 'Intermediate',
     quickStart: 'custom',
-    templateId: 'custom', // Default value
+    templateId: 'custom',
   };
   
   // Custom navigation logic
@@ -107,17 +112,54 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     }
   };
   
-  const handleComplete = (data: ProjectData) => {
+  const handleComplete = async (data: ProjectData) => {
     toast({
       title: "Creating project...",
       description: "Your project is being set up."
     });
     
-    // Generate a random project ID for demo purposes
-    setTimeout(() => {
-      const projectId = 'proj_' + Math.random().toString(36).substr(2, 9);
-      onComplete(projectId);
-    }, 1500);
+    // Check if user is authenticated
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create a project",
+        variant: "destructive"
+      });
+      navigate("/auth");
+      return;
+    }
+    
+    try {
+      console.log('Creating project with data:', {
+        name: data.name,
+        description: data.description,
+        type: data.type,
+        targetLanguage: data.language,
+      });
+      
+      // Create project using ProjectService
+      const project = await ProjectService.create({
+        name: data.name,
+        description: data.description,
+        type: data.type || 'Textbook',
+        targetLanguage: data.language || 'English',
+      });
+      
+      console.log('Project created:', project);
+      
+      if (project && project.id) {
+        onComplete(project.id);
+      } else {
+        throw new Error("Failed to get project ID");
+      }
+    } catch (error) {
+      console.error("Error creating project:", error);
+      toast({
+        title: "Error",
+        description: "There was an error creating your project. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   return (
