@@ -1,17 +1,18 @@
 
-import React, { Suspense, lazy } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { FileText, LineChart, Sparkles, CalendarClock, FileBox } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { supabase } from '@/integrations/supabase/client';
 
-// Import our new components
+// Import our components
 import { ProjectActivityFeed } from '@/components/project/ProjectActivityFeed';
 import { ProjectOverviewInfo } from '@/components/project/ProjectOverviewInfo';
 import { ProjectQuickActions } from '@/components/project/ProjectQuickActions';
@@ -28,19 +29,73 @@ export const ProjectWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Mock project data - would normally be fetched based on ID
-  const project = {
-    id: projectId || '1',
-    name: 'Spanish Language Textbook',
-    type: 'Textbook',
-    targetLanguage: 'Spanish',
-    lastModified: '2 hours ago',
-    progress: 65,
-    description: 'A comprehensive Spanish language textbook for beginners, focusing on vocabulary, grammar, and conversational skills.',
-    deadline: 'October 15, 2023',
-    owner: 'Sarah Johnson'
-  };
+  const [project, setProject] = useState({
+    id: projectId || '',
+    name: 'Loading...',
+    type: 'Loading...',
+    targetLanguage: 'Loading...',
+    description: '',
+    lastModified: '',
+    progress: 0,
+    owner: ''
+  });
+  
+  useEffect(() => {
+    async function fetchProjectData() {
+      if (!projectId) {
+        navigate('/projects');
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+          
+        if (error) {
+          console.error('Error fetching project:', error);
+          toast({
+            title: 'Error loading project',
+            description: 'Could not load project details',
+            variant: 'destructive'
+          });
+          navigate('/projects');
+          return;
+        }
+        
+        if (data) {
+          setProject({
+            id: data.id,
+            name: data.name,
+            type: data.type,
+            targetLanguage: data.target_language,
+            description: data.description || '',
+            lastModified: new Date(data.updated_at).toLocaleDateString(),
+            progress: data.progress || 0,
+            owner: ''  // Could fetch user info in the future if needed
+          });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load project details',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchProjectData();
+  }, [projectId, toast, navigate]);
   
   const breadcrumbItems = [
     { label: 'Dashboard', path: '/dashboard' },
@@ -48,11 +103,9 @@ export const ProjectWorkspace = () => {
     { label: project.name }
   ];
   
-  // Activity feed items
+  // Activity feed items - this could be fetched from Supabase in a real implementation
   const activityItems = [
-    { action: 'Content updated', time: '2 hours ago', icon: FileText },
-    { action: 'Analysis completed', time: '1 day ago', icon: LineChart },
-    { action: 'File added to knowledge base', time: '2 days ago', icon: FileBox }
+    { action: 'Project created', time: project.lastModified, icon: FileText }
   ];
 
   // Quick actions for the project
@@ -84,20 +137,22 @@ export const ProjectWorkspace = () => {
     }
   ];
   
-  const handleExportProject = () => {
-    toast({
-      title: "Export initiated",
-      description: "Your project is being prepared for export.",
-    });
-    
-    // Simulate export process
-    setTimeout(() => {
-      toast({
-        title: "Export complete",
-        description: "Project exported successfully.",
-      });
-    }, 1500);
-  };
+  if (isLoading) {
+    return (
+      <ModernLayout contentWidth="wide">
+        <div className="space-y-6 pt-4">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </ModernLayout>
+    );
+  }
   
   return (
     <ModernLayout contentWidth="wide">

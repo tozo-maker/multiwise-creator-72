@@ -73,8 +73,8 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       return;
     }
     
-    // Skip steps 2-4 if using a template (non-custom)
-    if (currentStep === 1 && formData.quickStart !== 'custom') {
+    // Only skip steps 2-4 if using a template (non-custom) and not when going to summary
+    if (currentStep === 1 && formData.quickStart !== 'custom' && formData.quickStart !== '') {
       // Skip directly to documents (step 5)
       goToStep(5);
       return;
