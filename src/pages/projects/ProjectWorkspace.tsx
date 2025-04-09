@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { FileText, LineChart, Sparkles, CalendarClock, FileBox } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Project } from '@/types/supabase-custom';
 
 // Import our components
 import { ProjectActivityFeed } from '@/components/project/ProjectActivityFeed';
@@ -33,7 +34,7 @@ export const ProjectWorkspace = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   
-  const [project, setProject] = useState({
+  const [project, setProject] = useState<Project>({
     id: projectId || '',
     name: 'Loading...',
     type: 'Loading...',
@@ -42,7 +43,7 @@ export const ProjectWorkspace = () => {
     lastModified: '',
     progress: 0,
     owner: '',
-    deadline: 'Not set' // Include deadline property
+    deadline: 'Not set'
   });
   
   useEffect(() => {
@@ -81,7 +82,8 @@ export const ProjectWorkspace = () => {
             lastModified: new Date(data.updated_at).toLocaleDateString(),
             progress: data.progress || 0,
             owner: data.user_id || '',
-            deadline: data.deadline || 'Not set' // Set deadline from data or default
+            deadline: data.deadline || 'Not set',
+            status: data.status
           });
         }
       } catch (error) {
@@ -105,7 +107,7 @@ export const ProjectWorkspace = () => {
     { label: project.name }
   ];
   
-  // Activity feed items - fetch these from Supabase in a real implementation
+  // Activity feed items - We'll fetch from Supabase in the future
   const activityItems = [
     { action: 'Project created', time: project.lastModified, icon: FileText }
   ];

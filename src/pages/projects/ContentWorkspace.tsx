@@ -23,7 +23,7 @@ const ContentWorkspace = () => {
   
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [project, setProject] = useState({
-    id: projectId || '1',
+    id: projectId || '',
     name: 'Loading...',
     type: 'Loading...',
     targetLanguage: 'Loading...'
@@ -71,19 +71,27 @@ const ContentWorkspace = () => {
           .eq('project_id', projectId)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching content items:', error);
+          throw error;
+        }
 
-        const formattedItems = data.map(item => ({
-          id: item.id,
-          title: item.title,
-          type: item.type,
-          lastModified: new Date(item.updated_at).toLocaleString(),
-          status: item.status
-        }));
-
-        setContentItems(formattedItems);
-      } catch (error) {
+        if (data && data.length > 0) {
+          const formattedItems = data.map(item => ({
+            id: item.id,
+            title: item.title,
+            type: item.type,
+            lastModified: new Date(item.updated_at).toLocaleString(),
+            status: item.status
+          }));
+          setContentItems(formattedItems);
+        } else {
+          // Empty array is a valid response, not an error
+          setContentItems([]);
+        }
+      } catch (error: any) {
         console.error('Error fetching content items:', error);
+        // Only show toast for actual errors, not for empty results
         toast({
           title: 'Error',
           description: 'Failed to load content items',
@@ -96,7 +104,7 @@ const ContentWorkspace = () => {
 
     fetchProject();
     fetchContentItems();
-  }, [projectId, user]);
+  }, [projectId, user, toast]);
 
   const breadcrumbItems = [{
     label: 'Projects',

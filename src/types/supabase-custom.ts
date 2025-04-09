@@ -9,6 +9,7 @@ export interface Project {
   progress: number;
   status?: 'active' | 'archived' | 'completed';
   deadline?: string;
+  owner?: string;
 }
 
 export interface KnowledgeBaseFile {
