@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { KnowledgeBaseDescription } from './KnowledgeBaseDescription';
 
 interface KnowledgeBaseMainProps {
   files: KBFile[];
@@ -35,6 +36,11 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
   const isDark = theme === 'dark';
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // State for edit dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [currentEditFile, setCurrentEditFile] = useState<KBFile | null>(null);
+  const [editedDescription, setEditedDescription] = useState('');
   
   // Filter files based on active category and search term
   const filteredFiles = files.filter(file => {
@@ -98,6 +104,23 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
         ? `Filtered to show ${categories.find(c => c.id === categoryId)?.name} category` 
         : "Showing all categories"
     });
+  };
+
+  // New handlers to interface with the KnowledgeBaseDescription component
+  const handleEditButtonClick = (id: string) => {
+    const file = files.find(f => f.id === id);
+    if (file) {
+      setCurrentEditFile(file);
+      setEditedDescription(file.description || '');
+      setEditDialogOpen(true);
+    }
+  };
+
+  const handleSaveDescription = () => {
+    if (currentEditFile) {
+      onEditFile(currentEditFile.id, editedDescription);
+      setEditDialogOpen(false);
+    }
   };
 
   return (
@@ -181,7 +204,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
                   <KnowledgeBaseFileList 
                     files={filteredFiles}
                     onDelete={onDeleteFile}
-                    onEdit={onEditFile}
+                    onEdit={handleEditButtonClick}
                     onPreview={handlePreviewFile}
                     onDownload={handleDownloadFile}
                     categories={categories.map(c => c.name)}
@@ -248,7 +271,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
                 <KnowledgeBaseFileList 
                   files={files.filter(f => ['pdf', 'docx', 'doc', 'txt'].includes(f.fileType.toLowerCase()))}
                   onDelete={onDeleteFile}
-                  onEdit={onEditFile}
+                  onEdit={handleEditButtonClick}
                   onPreview={handlePreviewFile}
                   onDownload={handleDownloadFile}
                   categories={categories.map(c => c.name)}
@@ -274,7 +297,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
                   <KnowledgeBaseFileList 
                     files={files.filter(f => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(f.fileType.toLowerCase()))}
                     onDelete={onDeleteFile}
-                    onEdit={onEditFile}
+                    onEdit={handleEditButtonClick}
                     onPreview={handlePreviewFile}
                     onDownload={handleDownloadFile}
                     categories={categories.map(c => c.name)}
@@ -303,7 +326,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
                   <KnowledgeBaseFileList 
                     files={files.filter(f => ['mp4', 'webm', 'avi', 'mov'].includes(f.fileType.toLowerCase()))}
                     onDelete={onDeleteFile}
-                    onEdit={onEditFile}
+                    onEdit={handleEditButtonClick}
                     onPreview={handlePreviewFile}
                     onDownload={handleDownloadFile}
                     categories={categories.map(c => c.name)}
@@ -316,6 +339,16 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add the KnowledgeBaseDescription modal */}
+      <KnowledgeBaseDescription
+        isOpen={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        currentFile={currentEditFile}
+        description={editedDescription}
+        onDescriptionChange={setEditedDescription}
+        onSave={handleSaveDescription}
+      />
     </div>
   );
 };
