@@ -1,14 +1,12 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { KnowledgeBaseFileList, KBFile } from './KnowledgeBaseFileList';
-import { KnowledgeBaseUpload } from './KnowledgeBaseUpload';
-import { KnowledgeBaseCategories, KBCategory } from './KnowledgeBaseCategories';
-import { KnowledgeBaseAnalytics } from './KnowledgeBaseAnalytics';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { KBFile } from './KnowledgeBaseFileList';
+import { KBCategory } from './KnowledgeBaseCategories';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Skeleton } from '@/components/ui/skeleton';
 import { KnowledgeBaseDescription } from './KnowledgeBaseDescription';
+import { KnowledgeBaseTabContent } from './KnowledgeBaseTabContent';
 
 interface KnowledgeBaseMainProps {
   files: KBFile[];
@@ -102,7 +100,7 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
     });
   };
 
-  // New handlers to interface with the KnowledgeBaseDescription component
+  // Handlers to interface with the KnowledgeBaseDescription component
   const handleEditButtonClick = (id: string) => {
     const file = files.find(f => f.id === id);
     if (file) {
@@ -154,166 +152,22 @@ export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
           }`}>Analytics</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="all" className="space-y-6 pt-2">
-          <div className="grid gap-6 md:grid-cols-3">
-            <Card className={`col-span-2 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <CardHeader className="pb-3 px-6">
-                <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>
-                  {activeCategory 
-                    ? `Category: ${categories.find(c => c.id === activeCategory)?.name}` 
-                    : 'All Resources'}
-                </CardTitle>
-                <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                  {isLoading 
-                    ? 'Loading your knowledge resources...'
-                    : `${filteredFiles.length} resource${filteredFiles.length !== 1 ? 's' : ''} available`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {isLoading ? (
-                  <div className="space-y-4 p-6">
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
-                  </div>
-                ) : (
-                  <KnowledgeBaseFileList 
-                    files={filteredFiles}
-                    onDelete={onDeleteFile}
-                    onEdit={handleEditButtonClick}
-                    onPreview={handlePreviewFile}
-                    onDownload={handleDownloadFile}
-                    categories={categories.map(c => c.name)}
-                  />
-                )}
-              </CardContent>
-            </Card>
-            
-            <div className="space-y-6">
-              <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
-                <CardHeader className="pb-3">
-                  <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Categories</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-8 w-full" />
-                      <Skeleton className="h-8 w-full" />
-                      <Skeleton className="h-8 w-full" />
-                    </div>
-                  ) : (
-                    <KnowledgeBaseCategories 
-                      categories={categories}
-                      activeCategory={activeCategory}
-                      onSelectCategory={handleSelectCategory}
-                      onAddCategory={handleAddCategory}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
-                <CardHeader className="pb-3">
-                  <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Upload</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <KnowledgeBaseUpload onFilesUploaded={onFilesUploaded} />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="analytics" className="space-y-6 pt-2">
-          <KnowledgeBaseAnalytics 
-            totalFiles={files.length}
-            totalSize={formattedTotalSize}
-            fileTypes={fileTypes}
-          />
-        </TabsContent>
-        
-        <TabsContent value="documents" className="space-y-6 pt-2">
-          <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
-            <CardHeader>
-              <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Documents</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-20 w-full" />
-                  <Skeleton className="h-20 w-full" />
-                </div>
-              ) : (
-                <KnowledgeBaseFileList 
-                  files={files.filter(f => ['pdf', 'docx', 'doc', 'txt'].includes(f.fileType.toLowerCase()))}
-                  onDelete={onDeleteFile}
-                  onEdit={handleEditButtonClick}
-                  onPreview={handlePreviewFile}
-                  onDownload={handleDownloadFile}
-                  categories={categories.map(c => c.name)}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="images" className="space-y-6 pt-2">
-          <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
-            <CardHeader>
-              <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Images</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-20 w-full" />
-                  <Skeleton className="h-20 w-full" />
-                </div>
-              ) : (
-                files.filter(f => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(f.fileType.toLowerCase())).length > 0 ? (
-                  <KnowledgeBaseFileList 
-                    files={files.filter(f => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(f.fileType.toLowerCase()))}
-                    onDelete={onDeleteFile}
-                    onEdit={handleEditButtonClick}
-                    onPreview={handlePreviewFile}
-                    onDownload={handleDownloadFile}
-                    categories={categories.map(c => c.name)}
-                  />
-                ) : (
-                  <p className={`text-center py-12 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>No image resources found.</p>
-                )
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="videos" className="space-y-6 pt-2">
-          <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}>
-            <CardHeader>
-              <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Videos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-20 w-full" />
-                  <Skeleton className="h-20 w-full" />
-                </div>
-              ) : (
-                files.filter(f => ['mp4', 'webm', 'avi', 'mov'].includes(f.fileType.toLowerCase())).length > 0 ? (
-                  <KnowledgeBaseFileList 
-                    files={files.filter(f => ['mp4', 'webm', 'avi', 'mov'].includes(f.fileType.toLowerCase()))}
-                    onDelete={onDeleteFile}
-                    onEdit={handleEditButtonClick}
-                    onPreview={handlePreviewFile}
-                    onDownload={handleDownloadFile}
-                    categories={categories.map(c => c.name)}
-                  />
-                ) : (
-                  <p className={`text-center py-12 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>No video resources found.</p>
-                )
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+        <KnowledgeBaseTabContent
+          files={files}
+          filteredFiles={filteredFiles}
+          categories={categories}
+          isLoading={isLoading}
+          activeCategory={activeCategory}
+          totalSize={formattedTotalSize}
+          fileTypes={fileTypes}
+          onDeleteFile={onDeleteFile}
+          onEditFile={handleEditButtonClick}
+          onPreviewFile={handlePreviewFile}
+          onDownloadFile={handleDownloadFile}
+          onSelectCategory={handleSelectCategory}
+          onAddCategory={handleAddCategory}
+          onFilesUploaded={onFilesUploaded}
+        />
       </Tabs>
 
       {/* Add the KnowledgeBaseDescription modal */}
