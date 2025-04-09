@@ -41,18 +41,6 @@ export const AnalyticsMainContent = () => {
         <AnalyticsEmptyState />
       ) : (
         <>
-          <ThemeCard className="mb-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl">Analytics Overview</CardTitle>
-              <CardDescription>
-                View key metrics and trends based on real data
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AnalyticsOverview />
-            </CardContent>
-          </ThemeCard>
-          
           <div className="grid grid-cols-1 lg:grid-cols-7 gap-6 mb-6">
             <div className="lg:col-span-4">
               <ProjectAnalyticsExport />
