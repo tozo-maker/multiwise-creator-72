@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -14,12 +15,7 @@ interface KnowledgeBaseStepProps {
 
 export function KnowledgeBaseStep({ data, updateData, isMobile = false }: KnowledgeBaseStepProps) {
   const [enableKnowledgeBase, setEnableKnowledgeBase] = useState(data.hasKnowledgeBase || false);
-  const [files, setFiles] = useState<File[]>(
-    Array.isArray(data.knowledgeBaseFiles) 
-      ? data.knowledgeBaseFiles
-          .filter(file => file instanceof File) as File[]
-      : []
-  );
+  const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

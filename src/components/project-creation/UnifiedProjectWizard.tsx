@@ -88,73 +88,49 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     }
   };
   
-  const processKnowledgeBaseFiles = async (projectId: string, files: (File | string)[]) => {
-    if (!user || !files.length) return;
+  const processKnowledgeBaseFiles = async (projectId: string, fileNames: string[]) => {
+    if (!user || !fileNames.length) return;
     
     console.log('Processing knowledge base files for project:', projectId);
-    console.log('Files to process:', files);
+    console.log('Files to process:', fileNames);
     
     try {
-      const uploadPromises = files
-        .filter(file => file instanceof File)
-        .map(async (file) => {
-          const fileObj = file as File;
-          const fileExt = fileObj.name.split('.').pop();
-          const fileName = `${projectId}/${Math.random().toString(36).substring(2)}.${fileExt}`;
-          const filePath = `project-files/${fileName}`;
-          
-          console.log('Uploading file:', fileObj.name, 'to path:', filePath);
-          
-          const { error: uploadError } = await supabase.storage
-            .from('project_files')
-            .upload(filePath, fileObj);
-            
-          if (uploadError) {
-            console.error('Error uploading file:', uploadError);
-            throw uploadError;
-          }
-          
-          const { data } = supabase.storage
-            .from('project_files')
-            .getPublicUrl(filePath);
-            
-          console.log('File uploaded, public URL:', data.publicUrl);
-          
-          const category = fileObj.type.includes('image') 
-            ? 'Images' 
-            : fileObj.type.includes('pdf') 
-              ? 'Documents' 
-              : 'Other';
+      const results = fileNames.map(async (fileName) => {
+        const category = fileName.toLowerCase().endsWith('.pdf') 
+          ? 'Documents'
+          : fileName.toLowerCase().endsWith('.jpg') || fileName.toLowerCase().endsWith('.png')
+            ? 'Images'
+            : 'Other';
               
-          const { data: fileData, error: dbError } = await supabase
-            .from('knowledge_base_files')
-            .insert({
-              project_id: projectId,
-              user_id: user.id,
-              name: fileObj.name,
-              description: `File uploaded during project creation for ${projectId}`,
-              file_type: fileExt || '',
-              category: category,
-              size: `${(fileObj.size / 1024).toFixed(1)} KB`,
-              url: data.publicUrl
-            })
-            .select()
-            .single();
+        const { data: fileData, error: dbError } = await supabase
+          .from('knowledge_base_files')
+          .insert({
+            project_id: projectId,
+            user_id: user.id,
+            name: fileName,
+            description: `File uploaded during project creation for ${projectId}`,
+            file_type: fileName.split('.').pop() || '',
+            category: category,
+            size: 'Unknown',
+            url: ''
+          })
+          .select()
+          .single();
             
-          if (dbError) {
-            console.error('Error adding file to database:', dbError);
-            throw dbError;
-          }
-          
-          console.log('File added to knowledge base:', fileData);
-          
-          return fileData;
-        });
+        if (dbError) {
+          console.error('Error adding file to database:', dbError);
+          throw dbError;
+        }
+        
+        console.log('File added to knowledge base:', fileData);
+        
+        return fileData;
+      });
       
-      const results = await Promise.all(uploadPromises);
-      console.log('All files processed successfully:', results);
+      const fileRecords = await Promise.all(results);
+      console.log('All files processed successfully:', fileRecords);
       
-      return results;
+      return fileRecords;
     } catch (error) {
       console.error('Error processing knowledge base files:', error);
       toast({
@@ -207,17 +183,13 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       
       if (project && project.id) {
         if (data.hasKnowledgeBase && data.knowledgeBaseFiles && data.knowledgeBaseFiles.length > 0) {
-          const filesToUpload = data.knowledgeBaseFiles.filter(file => file instanceof File) as File[];
+          console.log(`Processing ${data.knowledgeBaseFiles.length} knowledge base files`);
+          toast({
+            title: "Processing files",
+            description: `Recording ${data.knowledgeBaseFiles.length} files to knowledge base...`
+          });
           
-          if (filesToUpload.length > 0) {
-            console.log(`Processing ${filesToUpload.length} knowledge base files`);
-            toast({
-              title: "Processing files",
-              description: `Uploading ${filesToUpload.length} files to knowledge base...`
-            });
-            
-            await processKnowledgeBaseFiles(project.id, filesToUpload);
-          }
+          await processKnowledgeBaseFiles(project.id, data.knowledgeBaseFiles);
         }
         
         if (typeof localStorage !== 'undefined') {

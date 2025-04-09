@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ProjectService } from '@/services/ProjectService';
 import { useToast } from '@/hooks/use-toast';
@@ -61,7 +60,6 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
   };
   
   const nextStep = () => {
-    // Basic form validation
     if (currentStep === 0 && !formData.name.trim()) {
       toast({
         title: "Project name required",
@@ -99,7 +97,6 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
     try {
       setIsSubmitting(true);
       
-      // Check if user is authenticated
       if (!user) {
         toast({
           title: "Authentication required",
@@ -111,7 +108,6 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
         return;
       }
       
-      // Validate required fields
       if (!formData.name.trim()) {
         toast({
           title: "Missing information",
@@ -129,7 +125,6 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
         targetLanguage: formData.language,
       });
       
-      // Create project using ProjectService
       const project = await ProjectService.create({
         name: formData.name,
         description: formData.description,
@@ -144,7 +139,6 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
         description: `Your project "${formData.name}" has been created successfully.`
       });
       
-      // Callback with the new project ID
       if (project && project.id) {
         onComplete(project.id);
       } else {
