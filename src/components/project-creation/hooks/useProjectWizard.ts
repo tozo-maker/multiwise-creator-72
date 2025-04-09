@@ -53,11 +53,11 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
   
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
-      const newStep = currentStep + 1;
-      setCurrentStep(newStep);
+      const nextStepId = currentStep + 1;
+      setCurrentStep(nextStepId);
       
-      if (!hasVisited.includes(newStep)) {
-        setHasVisited([...hasVisited, newStep]);
+      if (!hasVisited.includes(nextStepId)) {
+        setHasVisited(prev => [...prev, nextStepId]);
       }
     }
   };
@@ -68,15 +68,28 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
     }
   };
   
-  const goToStep = (step: number) => {
-    if (hasVisited.includes(step)) {
-      setCurrentStep(step);
+  const goToStep = (stepId: number) => {
+    if (hasVisited.includes(stepId)) {
+      setCurrentStep(stepId);
     }
   };
   
   const handleCreate = async () => {
+    if (isSubmitting) return;
+    
     try {
       setIsSubmitting(true);
+      
+      // Validate required fields
+      if (!formData.name.trim()) {
+        toast({
+          title: "Missing information",
+          description: "Please provide a project name",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
       // Create project using ProjectService
       const project = await ProjectService.create({
@@ -88,16 +101,21 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
       
       toast({
         title: "Project created",
-        description: "Your project has been created successfully.",
+        description: `Your project "${formData.name}" has been created successfully.`
       });
       
-      // Pass the project ID to the callback
-      onComplete(project.id);
-    } catch (error: any) {
+      // Callback with the new project ID
+      if (project && project.id) {
+        onComplete(project.id);
+      } else {
+        throw new Error("Failed to get project ID");
+      }
+    } catch (error) {
+      console.error("Error creating project:", error);
       toast({
-        variant: "destructive",
-        title: "Error creating project",
-        description: error.message || "Something went wrong. Please try again.",
+        title: "Error",
+        description: "There was an error creating your project. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
@@ -113,7 +131,7 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
     prevStep,
     goToStep,
     hasVisited,
-    isSubmitting,
-    handleCreate
+    handleCreate,
+    isSubmitting
   };
 };

@@ -21,7 +21,8 @@ export function ProjectWizard({ onComplete }: ProjectWizardProps) {
     prevStep,
     goToStep,
     hasVisited,
-    handleCreate
+    handleCreate,
+    isSubmitting
   } = useProjectWizard(onComplete);
   
   const { isDark } = useTheme();
@@ -54,6 +55,7 @@ export function ProjectWizard({ onComplete }: ProjectWizardProps) {
           onNext={nextStep}
           onPrev={prevStep}
           onComplete={handleCreate}
+          isSubmitting={isSubmitting}
         />
       </Card>
     </div>

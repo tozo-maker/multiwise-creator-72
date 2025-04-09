@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Loader2 } from 'lucide-react';
 
 interface WizardNavigationProps {
   currentStep: number;
@@ -9,6 +10,7 @@ interface WizardNavigationProps {
   onNext: () => void;
   onPrev: () => void;
   onComplete: () => void;
+  isSubmitting?: boolean;
 }
 
 export function WizardNavigation({ 
@@ -16,7 +18,8 @@ export function WizardNavigation({
   stepsCount, 
   onNext, 
   onPrev, 
-  onComplete 
+  onComplete,
+  isSubmitting = false
 }: WizardNavigationProps) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === stepsCount - 1;
@@ -29,7 +32,7 @@ export function WizardNavigation({
       <Button 
         variant="outline" 
         onClick={onPrev}
-        disabled={isFirstStep}
+        disabled={isFirstStep || isSubmitting}
         className={isDark 
           ? "border-slate-600 text-slate-300 hover:bg-slate-700" 
           : "border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -51,12 +54,20 @@ export function WizardNavigation({
       ) : (
         <Button 
           onClick={onComplete}
+          disabled={isSubmitting}
           className={isDark
             ? "bg-indigo-600 hover:bg-indigo-500 text-white"
             : "bg-indigo-600 hover:bg-indigo-500 text-white"
           }
         >
-          Create Project
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Create Project"
+          )}
         </Button>
       )}
     </div>
