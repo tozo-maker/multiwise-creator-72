@@ -34,8 +34,6 @@ export const AnalyticsMainContent = () => {
         </CardHeader>
       </ThemeCard>
       
-      <AnalyticsHeader />
-      
       {showEmptyState ? (
         <AnalyticsEmptyState />
       ) : (
