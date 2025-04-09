@@ -82,6 +82,9 @@ export const ModernSidebar = () => {
     }
   ];
 
+  // Get display name from profile
+  const displayName = profile?.name || profile?.username || user?.email?.split('@')[0] || 'User';
+  
   return (
     <Sidebar 
       variant="sidebar" 
@@ -126,7 +129,7 @@ export const ModernSidebar = () => {
         {state === "expanded" && profile && (
           <div className="mb-4 px-3 py-2">
             <div className="text-sm font-medium text-slate-900 dark:text-white">
-              {profile.name || profile.username || user?.email}
+              {displayName}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400">
               {user?.email}

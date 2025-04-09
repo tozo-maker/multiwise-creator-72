@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 export const SidebarAccountMenu = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signOut } = useAuth();
+  const { signOut, user, profile } = useAuth();
 
   const handleLogout = async () => {
     try {

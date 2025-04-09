@@ -22,7 +22,7 @@ export const MobileUserProfile: React.FC = () => {
     );
   }
   
-  // Get display name from profile, username, or first part of email
+  // Get display name prioritizing the user's full name from profile
   const displayName = profile?.name || profile?.username || user.email?.split('@')[0] || 'User';
   
   // Get initials for avatar
