@@ -3,11 +3,20 @@ import React, { useState } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useDashboard } from '@/contexts/DashboardContext';
 
-export const SearchBar = () => {
-  const { searchTerm, setSearchTerm } = useDashboard();
+interface SearchBarProps {
+  searchTerm?: string;
+  setSearchTerm?: (term: string) => void;
+}
+
+export const SearchBar = ({ searchTerm: externalSearchTerm, setSearchTerm: externalSetSearchTerm }: SearchBarProps) => {
+  // Use internal state for standalone mode when not within DashboardProvider
+  const [internalSearchTerm, setInternalSearchTerm] = useState('');
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+
+  // Use provided or internal state
+  const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm;
+  const setSearchTerm = externalSetSearchTerm || setInternalSearchTerm;
 
   return (
     <div className="relative w-full max-w-3xl">

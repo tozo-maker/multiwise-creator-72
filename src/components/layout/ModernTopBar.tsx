@@ -11,11 +11,13 @@ import { HelpCircle } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeButton } from '@/components/shared/ThemeButton';
 import { ThemeTooltip } from '@/components/shared/ThemeTooltip';
+import { useDashboard } from '@/contexts/DashboardContext';
 
 export const ModernTopBar = React.memo(function ModernTopBar() {
   const { toast } = useToast();
   const { isDark } = useTheme();
   const navigate = useNavigate();
+  const dashboard = useDashboard();
 
   const handleHelpClick = React.useCallback(() => {
     navigate('/help');
@@ -40,7 +42,10 @@ export const ModernTopBar = React.memo(function ModernTopBar() {
       </div>
       
       <div className="flex-1 pl-4 pr-4 max-w-2xl mx-auto">
-        <SearchBar />
+        <SearchBar 
+          searchTerm={dashboard.searchTerm} 
+          setSearchTerm={dashboard.setSearchTerm} 
+        />
       </div>
       
       <div className="flex items-center space-x-2 sm:space-x-4">
