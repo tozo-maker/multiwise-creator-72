@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
@@ -12,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
+
 const ContentWorkspace = () => {
   const {
     projectId
@@ -34,6 +36,7 @@ const ContentWorkspace = () => {
     targetLanguage: 'Loading...'
   });
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const fetchProject = async () => {
       if (!projectId || !user) return;
@@ -101,6 +104,13 @@ const ContentWorkspace = () => {
     fetchProject();
     fetchContentItems();
   }, [projectId, user, toast]);
+
+  const handleCreateContent = () => {
+    if (projectId) {
+      navigate(`/projects/${projectId}/content/create`);
+    }
+  };
+
   return <ModernLayout contentWidth="wide">
       <div className="space-y-6">
         <ProjectBreadcrumbs projectName={project.name} />
@@ -119,11 +129,15 @@ const ContentWorkspace = () => {
             </p>
           </div>
           
-          
+          <Button onClick={handleCreateContent} className="flex items-center gap-1">
+            <Plus className="w-4 h-4" />
+            Create New Content
+          </Button>
         </div>
         
         <ContentItemsCard projectId={project.id} contentItems={contentItems} isLoading={isLoading} />
       </div>
     </ModernLayout>;
 };
+
 export default ContentWorkspace;

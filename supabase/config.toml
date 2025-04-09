@@ -4,14 +4,23 @@ project_id = "piavblsenfvaqomnbimo"
 [api]
 enabled = true
 port = 54321
-schemas = ["public", "storage", "auth", "extensions"]
-extra_search_path = ["public", "storage", "auth", "extensions"]
+schemas = ["public", "storage", "graphql_public"]
 
 [db]
 port = 54322
 shadow_port = 54320
 major_version = 15
 
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://localhost"
+
+[inbucket]
+enabled = true
+
 [functions.ai-content-generation]
 verify_jwt = true
-
