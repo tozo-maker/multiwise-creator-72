@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,89 +7,80 @@ import { KnowledgeBaseUpload } from './KnowledgeBaseUpload';
 import { KnowledgeBaseCategories, KBCategory } from './KnowledgeBaseCategories';
 import { KnowledgeBaseAnalytics } from './KnowledgeBaseAnalytics';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export const KnowledgeBaseMain = () => {
+interface KnowledgeBaseMainProps {
+  files: KBFile[];
+  categories: KBCategory[];
+  isLoading: boolean;
+  onDeleteFile: (id: string) => void;
+  onEditFile: (id: string, description: string) => void;
+  onFilesUploaded: (files: { file: File, description: string }[]) => void;
+}
+
+export const KnowledgeBaseMain: React.FC<KnowledgeBaseMainProps> = ({
+  files,
+  categories,
+  isLoading,
+  onDeleteFile,
+  onEditFile,
+  onFilesUploaded
+}) => {
   const { toast } = useToast();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   
-  const [files, setFiles] = useState<KBFile[]>([
-    {
-      id: '1',
-      name: 'Curriculum Standards.pdf',
-      description: 'National curriculum standards document',
-      fileType: 'pdf',
-      size: '2.5 MB',
-      uploadDate: '2023-06-15'
-    },
-    {
-      id: '2',
-      name: 'Style Guide.docx',
-      description: 'Official writing style guidelines for educational content',
-      fileType: 'docx',
-      size: '1.8 MB',
-      uploadDate: '2023-06-18'
-    },
-    {
-      id: '3',
-      name: 'Example Chapter.docx',
-      description: 'Example chapter with proper formatting and structure',
-      fileType: 'docx',
-      size: '3.2 MB',
-      uploadDate: '2023-06-20'
-    }
-  ]);
+  // Filter files based on active category and search term
+  const filteredFiles = files.filter(file => {
+    const matchesCategory = activeCategory ? file.category === activeCategory : true;
+    const matchesSearch = file.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                        (file.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+    return matchesCategory && matchesSearch;
+  });
   
-  const categories: KBCategory[] = [
-    { id: 'cat1', name: 'Curriculum', count: 2, color: '#3b82f6' },
-    { id: 'cat2', name: 'Guidelines', count: 1, color: '#10b981' },
-    { id: 'cat3', name: 'References', count: 0, color: '#f59e0b' }
-  ];
+  // Calculate file types for analytics
+  const fileTypes: Record<string, number> = {};
+  files.forEach(file => {
+    const type = file.fileType.toLowerCase();
+    fileTypes[type] = (fileTypes[type] || 0) + 1;
+  });
   
-  const fileTypes = {
-    pdf: 2,
-    docx: 2,
-    txt: 1
-  };
-
-  const handleDeleteFile = (id: string) => {
-    setFiles(files.filter(file => file.id !== id));
-    toast({
-      title: "File deleted",
-      description: "The file has been removed from your Knowledge Base."
-    });
-  };
+  // Calculate total size
+  const totalSize = files.reduce((total, file) => {
+    const sizeStr = file.size;
+    const sizeNum = parseFloat(sizeStr);
+    const unit = sizeStr.includes('MB') ? 1024 : 1;
+    return total + (sizeNum * unit);
+  }, 0);
   
-  const handleEditFile = (id: string) => {
-    toast({
-      title: "Edit file",
-      description: "File edit functionality would open here."
-    });
-  };
+  const formattedTotalSize = totalSize > 1024 
+    ? `${(totalSize / 1024).toFixed(2)} MB` 
+    : `${totalSize.toFixed(2)} KB`;
   
   const handlePreviewFile = (id: string) => {
-    toast({
-      title: "File preview",
-      description: "File preview functionality would open here."
-    });
+    const file = files.find(f => f.id === id);
+    if (file) {
+      toast({
+        title: "File preview",
+        description: `Previewing ${file.name}`
+      });
+    }
   };
   
   const handleDownloadFile = (id: string) => {
-    toast({
-      title: "File download",
-      description: "File download would start here."
-    });
-  };
-  
-  const handleFilesUploaded = (newFiles: { file: File, description: string }[]) => {
-    toast({
-      title: "Files uploaded",
-      description: `${newFiles.length} file(s) added to Knowledge Base.`
-    });
+    const file = files.find(f => f.id === id);
+    if (file) {
+      toast({
+        title: "File download",
+        description: `Downloading ${file.name}`
+      });
+    }
   };
   
   const handleAddCategory = () => {
@@ -118,7 +110,9 @@ export const KnowledgeBaseMain = () => {
           </p>
         </div>
         <div>
-          <Button variant="default" className="px-4">
+          <Button variant="default" className="px-4" onClick={() => {
+            document.getElementById('file-upload-input')?.click();
+          }}>
             <Plus className="mr-2 h-4 w-4" />
             Add Resource
           </Button>
@@ -150,22 +144,49 @@ export const KnowledgeBaseMain = () => {
         </TabsList>
         
         <TabsContent value="all" className="space-y-6 pt-2">
+          <div className="flex flex-col sm:flex-row mb-4 gap-3">
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search files..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+          
           <div className="grid gap-6 md:grid-cols-3">
             <Card className={`col-span-2 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
               <CardHeader className="pb-3 px-6">
-                <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Recently Added</CardTitle>
+                <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>
+                  {activeCategory 
+                    ? `Category: ${categories.find(c => c.id === activeCategory)?.name}` 
+                    : 'All Resources'}
+                </CardTitle>
                 <CardDescription className={isDark ? 'text-slate-400' : 'text-slate-500'}>
-                  Your most recently added knowledge resources
+                  {isLoading 
+                    ? 'Loading your knowledge resources...'
+                    : `${filteredFiles.length} resource${filteredFiles.length !== 1 ? 's' : ''} available`}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                <KnowledgeBaseFileList 
-                  files={files}
-                  onDelete={handleDeleteFile}
-                  onEdit={handleEditFile}
-                  onPreview={handlePreviewFile}
-                  onDownload={handleDownloadFile}
-                />
+                {isLoading ? (
+                  <div className="space-y-4 p-6">
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                ) : (
+                  <KnowledgeBaseFileList 
+                    files={filteredFiles}
+                    onDelete={onDeleteFile}
+                    onEdit={onEditFile}
+                    onPreview={handlePreviewFile}
+                    onDownload={handleDownloadFile}
+                    categories={categories.map(c => c.name)}
+                  />
+                )}
               </CardContent>
             </Card>
             
@@ -175,12 +196,20 @@ export const KnowledgeBaseMain = () => {
                   <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Categories</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <KnowledgeBaseCategories 
-                    categories={categories}
-                    activeCategory={activeCategory}
-                    onSelectCategory={handleSelectCategory}
-                    onAddCategory={handleAddCategory}
-                  />
+                  {isLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
+                    </div>
+                  ) : (
+                    <KnowledgeBaseCategories 
+                      categories={categories}
+                      activeCategory={activeCategory}
+                      onSelectCategory={handleSelectCategory}
+                      onAddCategory={handleAddCategory}
+                    />
+                  )}
                 </CardContent>
               </Card>
               
@@ -189,7 +218,7 @@ export const KnowledgeBaseMain = () => {
                   <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Upload</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <KnowledgeBaseUpload onFilesUploaded={handleFilesUploaded} />
+                  <KnowledgeBaseUpload onFilesUploaded={onFilesUploaded} />
                 </CardContent>
               </Card>
             </div>
@@ -199,7 +228,7 @@ export const KnowledgeBaseMain = () => {
         <TabsContent value="analytics" className="space-y-6 pt-2">
           <KnowledgeBaseAnalytics 
             totalFiles={files.length}
-            totalSize="7.5 MB"
+            totalSize={formattedTotalSize}
             fileTypes={fileTypes}
           />
         </TabsContent>
@@ -210,13 +239,21 @@ export const KnowledgeBaseMain = () => {
               <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Documents</CardTitle>
             </CardHeader>
             <CardContent>
-              <KnowledgeBaseFileList 
-                files={files.filter(f => ['pdf', 'docx', 'doc', 'txt'].includes(f.fileType))}
-                onDelete={handleDeleteFile}
-                onEdit={handleEditFile}
-                onPreview={handlePreviewFile}
-                onDownload={handleDownloadFile}
-              />
+              {isLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ) : (
+                <KnowledgeBaseFileList 
+                  files={files.filter(f => ['pdf', 'docx', 'doc', 'txt'].includes(f.fileType.toLowerCase()))}
+                  onDelete={onDeleteFile}
+                  onEdit={onEditFile}
+                  onPreview={handlePreviewFile}
+                  onDownload={handleDownloadFile}
+                  categories={categories.map(c => c.name)}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -226,8 +263,26 @@ export const KnowledgeBaseMain = () => {
             <CardHeader>
               <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Images</CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <p className={`text-center py-12 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Image resources will be displayed here.</p>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ) : (
+                files.filter(f => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(f.fileType.toLowerCase())).length > 0 ? (
+                  <KnowledgeBaseFileList 
+                    files={files.filter(f => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(f.fileType.toLowerCase()))}
+                    onDelete={onDeleteFile}
+                    onEdit={onEditFile}
+                    onPreview={handlePreviewFile}
+                    onDownload={handleDownloadFile}
+                    categories={categories.map(c => c.name)}
+                  />
+                ) : (
+                  <p className={`text-center py-12 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>No image resources found.</p>
+                )
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -237,8 +292,26 @@ export const KnowledgeBaseMain = () => {
             <CardHeader>
               <CardTitle className={isDark ? 'text-slate-100' : 'text-slate-900'}>Videos</CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <p className={`text-center py-12 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>Video resources will be displayed here.</p>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ) : (
+                files.filter(f => ['mp4', 'webm', 'avi', 'mov'].includes(f.fileType.toLowerCase())).length > 0 ? (
+                  <KnowledgeBaseFileList 
+                    files={files.filter(f => ['mp4', 'webm', 'avi', 'mov'].includes(f.fileType.toLowerCase()))}
+                    onDelete={onDeleteFile}
+                    onEdit={onEditFile}
+                    onPreview={handlePreviewFile}
+                    onDownload={handleDownloadFile}
+                    categories={categories.map(c => c.name)}
+                  />
+                ) : (
+                  <p className={`text-center py-12 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>No video resources found.</p>
+                )
+              )}
             </CardContent>
           </Card>
         </TabsContent>

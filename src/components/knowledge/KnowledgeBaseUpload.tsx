@@ -1,23 +1,17 @@
 
-import React, { useRef, useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Upload, File, X, Plus } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Upload, X, FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useTheme } from '@/contexts/ThemeContext';
 
-interface UploadedFile {
-  name: string;
-  size: number;
-  type: string;
+interface FileDetails {
+  file: File;
+  description: string;
 }
 
 interface KnowledgeBaseUploadProps {
@@ -25,207 +19,163 @@ interface KnowledgeBaseUploadProps {
 }
 
 export const KnowledgeBaseUpload: React.FC<KnowledgeBaseUploadProps> = ({ onFilesUploaded }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<FileDetails[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [open, setOpen] = useState(false);
-  const [dragActive, setDragActive] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
-  const [fileDescriptions, setFileDescriptions] = useState<Record<string, string>>({});
-  
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const filesArray = Array.from(e.dataTransfer.files);
-      setFiles(prev => [...prev, ...filesArray]);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const newFiles = Array.from(event.target.files).map(file => ({
+        file,
+        description: ''
+      }));
       
-      // Initialize descriptions for new files
-      const newDescriptions = { ...fileDescriptions };
-      filesArray.forEach(file => {
-        if (!newDescriptions[file.name]) {
-          newDescriptions[file.name] = '';
-        }
-      });
-      setFileDescriptions(newDescriptions);
+      setSelectedFiles(prev => [...prev, ...newFiles]);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const filesArray = Array.from(e.target.files);
-      setFiles(prev => [...prev, ...filesArray]);
-      
-      // Initialize descriptions for new files
-      const newDescriptions = { ...fileDescriptions };
-      filesArray.forEach(file => {
-        if (!newDescriptions[file.name]) {
-          newDescriptions[file.name] = '';
-        }
-      });
-      setFileDescriptions(newDescriptions);
-    }
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(true);
   };
 
-  const removeFile = (fileName: string) => {
-    setFiles(prev => prev.filter(file => file.name !== fileName));
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
     
-    // Remove description for this file
-    const newDescriptions = { ...fileDescriptions };
-    delete newDescriptions[fileName];
-    setFileDescriptions(newDescriptions);
+    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      const newFiles = Array.from(event.dataTransfer.files).map(file => ({
+        file,
+        description: ''
+      }));
+      
+      setSelectedFiles(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(files => files.filter((_, i) => i !== index));
+  };
+
+  const handleDescriptionChange = (index: number, description: string) => {
+    setSelectedFiles(files => 
+      files.map((file, i) => i === index ? { ...file, description } : file)
+    );
   };
 
   const handleUpload = () => {
-    const filesWithDescriptions = files.map(file => ({
-      file,
-      description: fileDescriptions[file.name] || ''
-    }));
-    
-    onFilesUploaded(filesWithDescriptions);
-    
-    // Reset state
-    setFiles([]);
-    setFileDescriptions({});
-    setOpen(false);
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) {
-      return bytes + ' B';
-    } else if (bytes < 1024 * 1024) {
-      return (bytes / 1024).toFixed(1) + ' KB';
-    } else {
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    }
-  };
-
-  const updateDescription = (fileName: string, description: string) => {
-    setFileDescriptions({
-      ...fileDescriptions,
-      [fileName]: description
-    });
+    onFilesUploaded(selectedFiles);
+    setSelectedFiles([]);
+    setIsDialogOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2 bg-brand-500 hover:bg-brand-600">
-          <Plus className="h-4 w-4" />
-          Upload Files
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Upload to Knowledge Base</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4 py-4">
-          <div 
-            className={`border-2 border-dashed rounded-lg p-6 text-center ${
-              dragActive ? 'border-brand-500 bg-brand-50' : 'border-slate-300'
-            }`}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            <div className="space-y-4">
-              <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                <Upload className="h-6 w-6 text-slate-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">
-                  Drag and drop files, or <button 
-                    className="text-brand-600 hover:text-brand-700 hover:underline" 
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    browse
-                  </button>
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Supports PDF, DOCX, DOC, TXT, RTF (Max 10MB per file)
-                </p>
-              </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={handleFileChange}
-                accept=".pdf,.docx,.doc,.txt,.rtf"
-                multiple
-              />
-            </div>
+    <>
+      <div 
+        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+          isDragging 
+            ? 'border-primary bg-primary/10' 
+            : 'border-muted-foreground/20 hover:border-primary/50'
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        id="file-upload-dropzone"
+      >
+        <input 
+          type="file" 
+          multiple 
+          onChange={handleFileChange} 
+          className="hidden" 
+          ref={fileInputRef}
+          id="file-upload-input"
+        />
+        <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+        <p className="text-sm font-medium">Drag files here or click to browse</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Support for PDF, DOCX, images, and other file types
+        </p>
+      </div>
+
+      <Dialog open={selectedFiles.length > 0} onOpenChange={(open) => {
+        if (!open) setSelectedFiles([]);
+        setIsDialogOpen(open);
+      }}>
+        <DialogContent className={isDark ? "bg-slate-800 border-slate-700" : "bg-white"}>
+          <DialogHeader>
+            <DialogTitle className={isDark ? "text-slate-100" : "text-slate-900"}>Upload Files</DialogTitle>
+            <DialogDescription className={isDark ? "text-slate-400" : "text-slate-500"}>
+              Add descriptions for your files before uploading
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4 max-h-[400px] overflow-y-auto">
+            {selectedFiles.map((fileDetail, index) => (
+              <Card key={index} className={`p-4 ${isDark ? "bg-slate-700 border-slate-600" : "bg-white"}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <span className={`font-medium truncate max-w-[200px] ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                      {fileDetail.file.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <Badge variant="outline" className="mr-2">
+                      {(fileDetail.file.size / 1024).toFixed(1)} KB
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveFile(index);
+                      }}
+                      className="h-6 w-6"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor={`description-${index}`} className={`text-xs mb-1 block ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                    Description (optional)
+                  </Label>
+                  <Textarea 
+                    id={`description-${index}`}
+                    placeholder="Enter a description for this file..."
+                    value={fileDetail.description}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => handleDescriptionChange(index, e.target.value)}
+                    className={`text-sm ${isDark ? "bg-slate-800 border-slate-600" : "bg-white"}`}
+                  />
+                </div>
+              </Card>
+            ))}
           </div>
           
-          {files.length > 0 && (
-            <div className="space-y-3">
-              <Label>Selected Files</Label>
-              <div className="max-h-60 overflow-y-auto space-y-3">
-                {files.map((file, index) => (
-                  <div key={index} className="bg-slate-50 rounded-md p-3 border border-slate-200">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-3">
-                        <File className="h-5 w-5 text-slate-500 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-sm">{file.name}</p>
-                          <p className="text-xs text-slate-500">{formatFileSize(file.size)}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => removeFile(file.name)}
-                        className="text-slate-400 hover:text-red-500"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                    
-                    <div className="mt-2">
-                      <Label htmlFor={`desc-${index}`} className="text-xs">
-                        File Description (Optional)
-                      </Label>
-                      <Textarea 
-                        id={`desc-${index}`}
-                        placeholder="Describe what this file contains..."
-                        className="mt-1 text-sm min-h-[60px]"
-                        value={fileDescriptions[file.name] || ''}
-                        onChange={(e) => updateDescription(file.name, e.target.value)}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        <DialogFooter>
-          <Button 
-            variant="outline"
-            onClick={() => setOpen(false)}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleUpload}
-            disabled={files.length === 0}
-            className="bg-brand-500 hover:bg-brand-600"
-          >
-            Upload {files.length > 0 ? `(${files.length})` : ''}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setSelectedFiles([])}
+              className={isDark ? "text-slate-300 border-slate-600" : ""}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleUpload}>
+              Upload {selectedFiles.length} {selectedFiles.length === 1 ? 'File' : 'Files'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
