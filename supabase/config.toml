@@ -14,3 +14,4 @@ major_version = 15
 
 [functions.ai-content-generation]
 verify_jwt = true
+

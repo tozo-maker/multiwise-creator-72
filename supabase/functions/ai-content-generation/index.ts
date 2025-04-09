@@ -13,13 +13,13 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     
     // Check for required API key
-    if (!OPENAI_API_KEY) {
+    if (!ANTHROPIC_API_KEY) {
       return new Response(
         JSON.stringify({
-          error: "Server misconfiguration: OpenAI API key is missing",
+          error: "Server misconfiguration: Anthropic API key is missing",
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -50,33 +50,34 @@ Your task is to create high-quality educational content in ${language || "Englis
 that is appropriate for ${audience || "general"} audience with ${complexity || "intermediate"} complexity level.
 Format the content appropriately for ${contentType}.`;
 
-    // Call OpenAI API
-    const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Call Anthropic API
+    const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: systemMessage },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.7,
+        model: "claude-3-haiku-20240307",
         max_tokens: 1500,
+        temperature: 0.7,
+        system: systemMessage,
+        messages: [
+          { role: "user", content: prompt }
+        ]
       }),
     });
 
-    if (!openAIResponse.ok) {
-      const error = await openAIResponse.json();
+    if (!anthropicResponse.ok) {
+      const error = await anthropicResponse.json();
       throw new Error(JSON.stringify(error));
     }
 
-    const data = await openAIResponse.json();
+    const data = await anthropicResponse.json();
     
-    // Extract content from OpenAI response
-    const generatedContent = data.choices[0].message.content;
+    // Extract content from Anthropic response
+    const generatedContent = data.content[0].text;
 
     return new Response(
       JSON.stringify({ content: generatedContent }),
