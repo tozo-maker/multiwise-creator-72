@@ -1,20 +1,16 @@
 
 import React from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { AnalyticsMainContent } from './components/AnalyticsMainContent';
 
 export const Analytics = () => {
   return (
-    <DashboardLayout 
-      contentWidth="wide" 
-      pageTitle="Analytics" 
-      pageDescription="Your project stats and performance metrics."
-    >
+    <ModernLayout contentWidth="wide">
       <DashboardProvider>
         <AnalyticsMainContent />
       </DashboardProvider>
-    </DashboardLayout>
+    </ModernLayout>
   );
 };
 

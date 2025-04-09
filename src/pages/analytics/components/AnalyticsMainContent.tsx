@@ -1,8 +1,6 @@
 
 import React, { Suspense, lazy } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
-import { ProjectAnalyticsExport } from '@/components/analytics/ProjectAnalyticsExport';
 import { AnalyticsOverview } from '@/components/analytics/AnalyticsOverview';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { AnalyticsHeader } from './AnalyticsHeader';
@@ -12,6 +10,7 @@ import { ProjectPerformanceChart } from './ProjectPerformanceChart';
 import { ContentTypeDistributionChart } from './ContentTypeDistributionChart';
 import { ThemeCard } from '@/components/shared/ThemeCard';
 import { CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { ProjectAnalyticsExport } from '@/components/analytics/ProjectAnalyticsExport';
 
 // Lazy-loaded component for performance optimization
 const AnalyticsCharts = lazy(() => import('@/components/analytics/AnalyticsCharts').then(
@@ -24,16 +23,16 @@ export const AnalyticsMainContent = () => {
   // Determine if we should show empty states
   const showEmptyState = projects.length === 0;
   
-  const breadcrumbItems = [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Analytics' }
-  ];
-
   return (
     <div className="space-y-6 analytics-container">
-      <div className="pt-4">
-        <PageBreadcrumbs items={breadcrumbItems} />
-      </div>
+      <ThemeCard className="mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-2xl font-bold">Analytics</CardTitle>
+          <CardDescription>
+            Your project stats and performance metrics.
+          </CardDescription>
+        </CardHeader>
+      </ThemeCard>
       
       <AnalyticsHeader />
       
