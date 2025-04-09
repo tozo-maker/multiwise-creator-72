@@ -13,20 +13,7 @@ import { ProjectService } from '@/services/ProjectService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-
-export interface ProjectData {
-  name: string;
-  description: string;
-  type: string;
-  language: string;
-  targetAudience: string;
-  complexity: string;
-  templateId: string; 
-  quickStart?: string;
-  hasKnowledgeBase?: boolean;
-  knowledgeBaseFiles?: string[] | File[];
-  deadline?: string;
-}
+import { ProjectData } from './hooks/useProjectWizard';
 
 interface UnifiedProjectWizardProps {
   onComplete: (projectId: string) => void;
