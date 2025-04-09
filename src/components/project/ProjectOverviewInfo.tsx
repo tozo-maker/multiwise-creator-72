@@ -8,7 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface ProjectOverviewInfoProps {
   project: {
     progress: number;
-    description: string;
+    description?: string; // Changed from required to optional
     deadline: string;
     lastModified: string;
     owner: string;
@@ -54,7 +54,7 @@ export const ProjectOverviewInfo: React.FC<ProjectOverviewInfoProps> = ({ projec
             }`}>Description</div>
             <div className={
               isDark ? 'text-slate-200' : 'text-slate-700'
-            }>{project.description}</div>
+            }>{project.description || 'No description provided'}</div>
             
             <div className={`font-medium ${
               isDark ? 'text-slate-400' : 'text-slate-500'
