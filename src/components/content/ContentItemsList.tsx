@@ -47,7 +47,7 @@ const EmptyContentItems: React.FC<{ projectId: string }> = React.memo(({ project
           Start creating educational content for your project
         </p>
         <Button 
-          onClick={() => navigate(`/projects/${projectId}/content/new`)}
+          onClick={() => navigate(`/projects/${projectId}/content/create`)}
           className="gap-2 bg-brand-600 hover:bg-brand-700 text-white"
           aria-label="Create new content"
         >

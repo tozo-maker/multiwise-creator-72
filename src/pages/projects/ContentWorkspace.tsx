@@ -13,20 +13,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
+import { ProjectService } from '@/services/ProjectService';
+import { ContentService } from '@/services/ContentService';
 
 const ContentWorkspace = () => {
-  const {
-    projectId
-  } = useParams<{
-    projectId: string;
-  }>();
+  const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const {
-    theme
-  } = useTheme();
-  const {
-    user
-  } = useAuth();
+  const { theme } = useTheme();
+  const { user } = useAuth();
   const isDark = theme === 'dark';
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [project, setProject] = useState({
@@ -41,17 +35,13 @@ const ContentWorkspace = () => {
     const fetchProject = async () => {
       if (!projectId || !user) return;
       try {
-        const {
-          data,
-          error
-        } = await supabase.from('projects').select('*').eq('id', projectId).single();
-        if (error) throw error;
-        if (data) {
+        const projectData = await ProjectService.getById(projectId);
+        if (projectData) {
           setProject({
-            id: data.id,
-            name: data.name,
-            type: data.type,
-            targetLanguage: data.target_language
+            id: projectData.id,
+            name: projectData.name,
+            type: projectData.type,
+            targetLanguage: projectData.targetLanguage
           });
         }
       } catch (error) {
@@ -63,35 +53,24 @@ const ContentWorkspace = () => {
         });
       }
     };
+    
     const fetchContentItems = async () => {
       if (!projectId || !user) return;
       try {
-        const {
-          data,
-          error
-        } = await supabase.from('content_items').select('*').eq('project_id', projectId).order('created_at', {
-          ascending: false
-        });
-        if (error) {
-          console.error('Error fetching content items:', error);
-          throw error;
-        }
-        if (data && data.length > 0) {
-          const formattedItems = data.map(item => ({
-            id: item.id,
-            title: item.title,
-            type: item.type,
-            lastModified: new Date(item.updated_at).toLocaleString(),
-            status: item.status
-          }));
-          setContentItems(formattedItems);
-        } else {
-          // Empty array is a valid response, not an error
-          setContentItems([]);
-        }
+        setIsLoading(true);
+        const items = await ContentService.getByProject(projectId);
+        
+        const formattedItems = items.map(item => ({
+          id: item.id,
+          title: item.title,
+          type: item.type,
+          lastModified: item.updated_at || '',
+          status: item.status
+        }));
+        
+        setContentItems(formattedItems);
       } catch (error: any) {
         console.error('Error fetching content items:', error);
-        // Only show toast for actual errors, not for empty results
         toast({
           title: 'Error',
           description: 'Failed to load content items',
@@ -101,6 +80,7 @@ const ContentWorkspace = () => {
         setIsLoading(false);
       }
     };
+    
     fetchProject();
     fetchContentItems();
   }, [projectId, user, toast]);
