@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -11,13 +10,11 @@ import {
   FileText
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ProjectData } from '../hooks/useProjectWizard';
 
 interface QuickStartStepProps {
-  data: {
-    quickStart?: string;
-    templateId: string;
-  };
-  updateData: (data: Partial<QuickStartStepProps['data']>) => void;
+  data: Pick<ProjectData, 'quickStart' | 'templateId'>;
+  updateData: (data: Partial<ProjectData>) => void;
 }
 
 export function QuickStartStep({ data, updateData }: QuickStartStepProps) {

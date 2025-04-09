@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ProjectService } from '@/services/ProjectService';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +13,7 @@ export interface ProjectData {
   targetAudience: string;
   complexity: string;
   templateId: string;
+  quickStart: string;
   hasKnowledgeBase?: boolean;
   knowledgeBaseFiles?: string[] | File[];
   deadline?: string;
@@ -38,6 +40,7 @@ export const useProjectWizard = (onComplete: (projectId: string) => void) => {
     targetAudience: 'Students',
     complexity: 'Intermediate',
     templateId: 'custom',
+    quickStart: 'custom',
   });
   
   const steps: WizardStep[] = [
