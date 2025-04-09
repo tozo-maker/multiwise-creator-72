@@ -4,13 +4,18 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ProjectData } from '../hooks/useProjectWizard';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProjectBasicsStepProps {
   data: ProjectData;
   updateData: (data: Partial<ProjectData>) => void;
+  isMobile?: boolean;
 }
 
-export function ProjectBasicsStep({ data, updateData }: ProjectBasicsStepProps) {
+export function ProjectBasicsStep({ data, updateData, isMobile }: ProjectBasicsStepProps) {
+  // Use the hook if isMobile prop is not provided
+  const isMobileDevice = isMobile ?? useIsMobile();
+  
   return (
     <div className="space-y-6">
       <div className="space-y-4">
