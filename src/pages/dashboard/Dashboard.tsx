@@ -38,6 +38,9 @@ const DashboardContent = () => {
     return <DashboardLoading />;
   }
 
+  // Get default username for non-authenticated users
+  const userName = user ? (user.email?.split('@')[0] || "User") : "Guest";
+
   return (
     <div className="space-y-8">
       <motion.div
@@ -47,7 +50,7 @@ const DashboardContent = () => {
       >
         <div className="flex items-center justify-between mb-8">
           <DashboardWelcome 
-            userName={user?.email?.split('@')[0] || "User"}
+            userName={userName}
             hasProjects={hasProjects}
           />
           
