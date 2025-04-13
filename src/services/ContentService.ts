@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
@@ -13,9 +12,42 @@ export interface ContentItem {
   user_id?: string;
   created_at?: string;
   updated_at?: string;
-  metadata?: Record<string, any>;
+  metadata?: ContentMetadata;
   version?: number;
   approval_workflow?: any[];
+}
+
+export interface ContentMetadata {
+  description?: string;
+  keywords?: string[];
+  author?: string;
+  contributors?: string[];
+  language?: string;
+  
+  categories?: string[];
+  tags?: string[];
+  taxonomyTerms?: Record<string, string[]>;
+  
+  learningObjectives?: string[];
+  educationalLevel?: string;
+  difficultyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  estimatedDuration?: number;
+  
+  publishDate?: string;
+  expirationDate?: string;
+  revisionDate?: string;
+  revisionNotes?: string[];
+  
+  usageRights?: string;
+  license?: string;
+  copyright?: string;
+  
+  contentFormat?: string;
+  wordCount?: number;
+  fileSize?: number;
+  lastRendered?: string;
+  
+  custom?: Record<string, any>;
 }
 
 export interface ContentCreateParams {
@@ -24,7 +56,7 @@ export interface ContentCreateParams {
   content: string;
   project_id: string;
   status: 'draft' | 'published' | 'archived' | 'in-review';
-  metadata?: Record<string, any>;
+  metadata?: ContentMetadata;
 }
 
 export interface ContentUpdateParams {
@@ -32,15 +64,12 @@ export interface ContentUpdateParams {
   type?: string;
   content?: string;
   status?: 'draft' | 'published' | 'archived' | 'in-review';
-  metadata?: Record<string, any>;
+  metadata?: ContentMetadata;
   version?: number;
   approval_workflow?: any[];
 }
 
 export const ContentService = {
-  /**
-   * Get all content items for a project
-   */
   async getByProject(projectId: string): Promise<ContentItem[]> {
     try {
       const { data, error } = await supabase
@@ -65,9 +94,6 @@ export const ContentService = {
     }
   },
   
-  /**
-   * Get a specific content item by ID
-   */
   async getById(contentId: string): Promise<ContentItem | null> {
     try {
       const { data, error } = await supabase
@@ -92,9 +118,6 @@ export const ContentService = {
     }
   },
   
-  /**
-   * Create a new content item
-   */
   async create(params: ContentCreateParams): Promise<ContentItem | null> {
     try {
       const user = supabase.auth.getUser();
@@ -131,16 +154,11 @@ export const ContentService = {
     }
   },
   
-  /**
-   * Update an existing content item
-   */
   async update(contentId: string, params: ContentUpdateParams): Promise<ContentItem | null> {
     try {
-      // If updating content or important fields, increment version
       let versionIncrease = params.content || params.title ? 1 : 0;
       
       if (params.version) {
-        // If version is explicitly provided, use it
         versionIncrease = 0;
       }
       
@@ -149,9 +167,7 @@ export const ContentService = {
         updated_at: new Date().toISOString()
       };
       
-      // Handle version increment
       if (versionIncrease > 0) {
-        // First get the current version
         const { data: currentItem } = await supabase
           .from('content_items')
           .select('version')
@@ -164,7 +180,7 @@ export const ContentService = {
           updateData.version = 1;
         }
       }
-        
+      
       const { data, error } = await supabase
         .from('content_items')
         .update(updateData)
@@ -188,9 +204,6 @@ export const ContentService = {
     }
   },
   
-  /**
-   * Delete a content item
-   */
   async delete(contentId: string): Promise<boolean> {
     try {
       const { error } = await supabase
@@ -214,13 +227,8 @@ export const ContentService = {
     }
   },
   
-  /**
-   * Get content item versions history
-   */
   async getVersionHistory(contentId: string): Promise<any[]> {
     try {
-      // In a real implementation, we would fetch from a content_versions table
-      // For now, return a simulated version history
       return [
         {
           id: '1',
@@ -242,12 +250,8 @@ export const ContentService = {
     }
   },
   
-  /**
-   * Create a new version of content
-   */
   async createVersion(contentId: string, content: string): Promise<any | null> {
     try {
-      // Get current content to increment version
       const currentContent = await this.getById(contentId);
       
       if (!currentContent) {
@@ -256,13 +260,10 @@ export const ContentService = {
       
       const newVersion = (currentContent.version || 1) + 1;
       
-      // Update content with new version
       await this.update(contentId, {
         content,
         version: newVersion
       });
-      
-      // In a real implementation, we would also create a record in content_versions
       
       return {
         id: `${contentId}-v${newVersion}`,
@@ -280,5 +281,211 @@ export const ContentService = {
       });
       return null;
     }
+  },
+  
+  async updateMetadata(contentId: string, metadata: Partial<ContentMetadata>): Promise<ContentItem | null> {
+    try {
+      const { data: currentContent } = await supabase
+        .from('content_items')
+        .select('metadata')
+        .eq('id', contentId)
+        .single();
+      
+      if (!currentContent) {
+        throw new Error('Content not found');
+      }
+      
+      const updatedMetadata = {
+        ...(currentContent.metadata || {}),
+        ...metadata,
+        lastUpdated: new Date().toISOString(),
+      };
+      
+      const { data, error } = await supabase
+        .from('content_items')
+        .update({
+          metadata: updatedMetadata,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', contentId)
+        .select()
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('Error updating content metadata:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update content metadata',
+        variant: 'destructive',
+      });
+      return null;
+    }
+  },
+  
+  async addTag(contentId: string, tag: string): Promise<string[] | null> {
+    try {
+      const { data: currentContent } = await supabase
+        .from('content_items')
+        .select('metadata')
+        .eq('id', contentId)
+        .single();
+      
+      if (!currentContent) {
+        throw new Error('Content not found');
+      }
+      
+      const currentTags = currentContent.metadata?.tags || [];
+      
+      if (!currentTags.includes(tag)) {
+        const updatedTags = [...currentTags, tag];
+        
+        await supabase
+          .from('content_items')
+          .update({
+            metadata: {
+              ...(currentContent.metadata || {}),
+              tags: updatedTags,
+            },
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', contentId);
+          
+        return updatedTags;
+      }
+      
+      return currentTags;
+    } catch (error: any) {
+      console.error('Error adding tag:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add tag',
+        variant: 'destructive',
+      });
+      return null;
+    }
+  },
+  
+  async removeTag(contentId: string, tag: string): Promise<string[] | null> {
+    try {
+      const { data: currentContent } = await supabase
+        .from('content_items')
+        .select('metadata')
+        .eq('id', contentId)
+        .single();
+      
+      if (!currentContent || !currentContent.metadata) {
+        throw new Error('Content or metadata not found');
+      }
+      
+      const currentTags = currentContent.metadata.tags || [];
+      const updatedTags = currentTags.filter(t => t !== tag);
+      
+      await supabase
+        .from('content_items')
+        .update({
+          metadata: {
+            ...currentContent.metadata,
+            tags: updatedTags,
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', contentId);
+        
+      return updatedTags;
+    } catch (error: any) {
+      console.error('Error removing tag:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to remove tag',
+        variant: 'destructive',
+      });
+      return null;
+    }
+  },
+  
+  async getByMetadata(
+    projectId: string, 
+    metadataQuery: Record<string, any>
+  ): Promise<ContentItem[]> {
+    try {
+      const { data, error } = await supabase
+        .from('content_items')
+        .select('*')
+        .eq('project_id', projectId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      const filteredItems = data.filter(item => {
+        if (!item.metadata) return false;
+        
+        return Object.entries(metadataQuery).every(([key, value]) => {
+          if (Array.isArray(item.metadata[key])) {
+            if (Array.isArray(value)) {
+              return value.some(v => item.metadata[key].includes(v));
+            } else {
+              return item.metadata[key].includes(value);
+            }
+          }
+          
+          if (typeof item.metadata[key] === 'object' && item.metadata[key] !== null) {
+            return JSON.stringify(item.metadata[key]) === JSON.stringify(value);
+          }
+          
+          return item.metadata[key] === value;
+        });
+      });
+      
+      return filteredItems;
+    } catch (error: any) {
+      console.error('Error fetching content by metadata:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to filter content by metadata',
+        variant: 'destructive',
+      });
+      return [];
+    }
+  },
+  
+  async extractMetadata(content: string): Promise<Partial<ContentMetadata>> {
+    const metadata: Partial<ContentMetadata> = {};
+    
+    metadata.wordCount = content.split(/\s+/).length;
+    
+    const words = content.toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .split(/\s+/)
+      .filter(word => word.length > 3);
+      
+    const wordFrequency: Record<string, number> = {};
+    words.forEach(word => {
+      wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+    });
+    
+    metadata.keywords = Object.entries(wordFrequency)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(entry => entry[0]);
+    
+    if (content.match(/[àáâäæãåā]/i)) {
+      metadata.language = 'fr';
+    } else if (content.match(/[ñ]/i)) {
+      metadata.language = 'es';
+    } else if (content.match(/[äöüß]/i)) {
+      metadata.language = 'de';
+    } else {
+      metadata.language = 'en';
+    }
+    
+    metadata.contentFormat = 'text/markdown';
+    
+    return metadata;
   }
 };
