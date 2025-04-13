@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface LoginPageProps {
@@ -41,7 +41,9 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     setLoginError(null);
     
     try {
-      await signIn(email, password);
+      const { error } = await signIn(email, password);
+      
+      if (error) throw error;
       
       // Call success callback if provided
       if (onLoginSuccess) {

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 
 interface RegisterPageProps {
   onRegisterSuccess?: () => void;
@@ -34,7 +34,10 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
     setIsLoading(true);
     
     try {
-      await signUp(email, password, name);
+      const metadata = { name };
+      const { error } = await signUp(email, password, metadata);
+      
+      if (error) throw error;
       
       // Call the success callback if provided
       if (onRegisterSuccess) {
@@ -49,8 +52,12 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
       
       // Redirect to login page
       navigate('/auth/login');
-    } catch (error) {
-      // Error is handled in the signUp function
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Registration failed",
+        description: error.message || "An error occurred during registration.",
+      });
     } finally {
       setIsLoading(false);
     }

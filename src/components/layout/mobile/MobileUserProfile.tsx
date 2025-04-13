@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 
 export const MobileUserProfile: React.FC = () => {
   let user = null;

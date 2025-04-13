@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Button } from '@/components/ui/button';
 import { User, LogOut, Settings, UserCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const MobileUserProfile = () => {

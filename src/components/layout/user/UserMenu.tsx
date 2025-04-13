@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { User, LogOut, UserCircle, Settings, Bell, HelpCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 

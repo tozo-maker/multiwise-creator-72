@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { UnifiedProjectWizard } from '@/components/project-creation/UnifiedProjectWizard';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { ThemeCard } from '@/components/shared/ThemeCard';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
