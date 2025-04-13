@@ -338,7 +338,7 @@ const ContentView = () => {
                   <span className={`text-sm font-medium uppercase ${
                     isDark ? 'text-slate-400' : 'text-slate-600'
                   }`}>
-                    {contentItem?.content_type}
+                    {contentItem?.content_type || contentItem?.type}
                   </span>
                 </div>
                 <CardTitle className={`text-2xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>

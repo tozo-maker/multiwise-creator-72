@@ -23,6 +23,7 @@ import { FeedbackRefinementPanel } from '@/components/content/FeedbackRefinement
 import { OutlineNavigation } from '@/components/outline/OutlineNavigation';
 import { ContentVersionHistory } from '@/components/content/ContentVersionHistory';
 import { ArrowLeft, Save, FilePlus2 } from 'lucide-react';
+import { OutlineItem } from '@/types/outline';
 
 const ContentEditor = () => {
   const { projectId, contentId } = useParams<{ projectId: string; contentId: string }>();
@@ -39,8 +40,8 @@ const ContentEditor = () => {
   const [contentType, setContentType] = useState('lesson');
   const [tags, setTags] = useState<string[]>([]);
   const [category, setCategory] = useState('');
-  const [complexity, setComplexity] = useState('intermediate');
-  const [audience, setAudience] = useState('elementary');
+  const [complexity, setComplexity] = useState<'beginner' | 'intermediate' | 'advanced' | 'expert'>('intermediate');
+  const [audience, setAudience] = useState<'elementary' | 'middle_school' | 'high_school' | 'undergraduate' | 'graduate' | 'adult_learning'>('elementary');
   const [project, setProject] = useState({
     id: projectId || '',
     name: 'Loading...',
@@ -81,7 +82,7 @@ const ContentEditor = () => {
           if (contentData) {
             setContent(contentData.content);
             setTitle(contentData.title);
-            setContentType(contentData.content_type);
+            setContentType(contentData.content_type || contentData.type || 'lesson');
             
             // Extract tags from metadata if available
             if (contentData.metadata?.tags) {
@@ -212,7 +213,7 @@ const ContentEditor = () => {
             for (const section of sections) {
               const itemIndex = section.items.findIndex(i => i.id === relatedOutlineItem.id);
               if (itemIndex >= 0) {
-                const updatedItem = {
+                const updatedItem: OutlineItem = {
                   ...section.items[itemIndex],
                   contentId,
                   status: 'in_progress'
@@ -253,7 +254,7 @@ const ContentEditor = () => {
             for (const section of sections) {
               const itemIndex = section.items.findIndex(i => i.id === relatedOutlineItem.id);
               if (itemIndex >= 0) {
-                const updatedItem = {
+                const updatedItem: OutlineItem = {
                   ...section.items[itemIndex],
                   contentId: contentItem.id,
                   status: 'in_progress'

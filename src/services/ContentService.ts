@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
@@ -5,7 +6,8 @@ import { User } from '@supabase/supabase-js';
 export interface ContentItem {
   id: string;
   title: string;
-  type: string;
+  content_type: string;  // Changed from type to content_type to match database
+  type?: string;         // Keep for backward compatibility
   content: string;
   project_id: string;
   status: 'draft' | 'published' | 'archived' | 'in-review';
@@ -26,6 +28,7 @@ export interface ContentMetadata {
   
   categories?: string[];
   tags?: string[];
+  category?: string;  // Added to match usage in components
   taxonomyTerms?: Record<string, string[]>;
   
   learningObjectives?: string[];
