@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Wizard } from '@/components/shared/wizard/Wizard';
 import { WizardStep } from '@/contexts/WizardContext';
@@ -136,20 +137,19 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
         description: "Please enter a name for your project.",
         variant: "destructive"
       });
-      return null;
+      return false; // Prevent navigation
     }
     
     // Handle template selection - skip to knowledge base if using template
     if (currentStep === 1 && formData.quickStart !== 'custom' && formData.quickStart !== '') {
-      return (
-        <div className="hidden">
-          <button onClick={() => goToStep(5)}></button>
-        </div>
-      );
+      // Use setTimeout to allow React to complete the current render cycle
+      setTimeout(() => {
+        goToStep(5); // Skip to Knowledge Base step
+      }, 0);
+      return true; // Allow navigation but we'll redirect
     }
     
-    // Normal navigation
-    return null;
+    return true; // Allow normal navigation
   };
   
   return (

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Wizard } from '@/components/shared/wizard/Wizard';
 import { WizardStep } from '@/contexts/WizardContext';
@@ -175,22 +174,21 @@ export function EnhancedProjectWizard({ onComplete }: EnhancedProjectWizardProps
         description: "Please enter a name for your project.",
         variant: "destructive"
       });
-      return null;
+      return false; // Prevent navigation
     }
     
     // Handle template selection - skip system/project/language config if using template
     if (currentStep === 1 && formData.quickStart !== 'custom') {
       // Skip to Knowledge Base or Summary step
       const nextStep = formData.hasKnowledgeBase ? 5 : 6;
-      return (
-        <div className="hidden">
-          <button onClick={() => goToStep(nextStep)}></button>
-        </div>
-      );
+      // Use setTimeout to allow React to complete the current render cycle
+      setTimeout(() => {
+        goToStep(nextStep);
+      }, 0);
+      return true; // Allow navigation but we'll redirect
     }
 
-    // Normal navigation
-    return null;
+    return true; // Allow normal navigation
   };
   
   return (

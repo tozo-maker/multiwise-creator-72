@@ -31,7 +31,7 @@ interface WizardProviderProps<T extends Record<string, any>> {
   steps: WizardStep[];
   initialData: T;
   saveKey?: string;
-  navigateLogic?: (currentStep: number, formData: T, goToStep: (step: number) => void) => void;
+  navigateLogic?: (currentStep: number, formData: T, goToStep: (step: number) => void) => boolean | void | React.ReactNode;
 }
 
 const WizardContext = createContext<WizardContextType<any> | null>(null);
@@ -124,8 +124,12 @@ export function WizardProvider<T extends Record<string, any>>({
 
   const nextStep = () => {
     if (navigateLogic) {
-      navigateLogic(currentStep, formData, goToStep);
-      return;
+      const result = navigateLogic(currentStep, formData, goToStep);
+      
+      // If navigateLogic returns false, stop navigation
+      if (result === false) {
+        return;
+      }
     }
     
     const nextVisibleStep = findNextVisibleStep(currentStep);

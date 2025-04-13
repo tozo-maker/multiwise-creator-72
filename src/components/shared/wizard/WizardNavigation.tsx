@@ -26,12 +26,21 @@ export function WizardNavigation({
   nextButtonText = "Continue",
   backButtonText = "Back"
 }: WizardNavigationProps) {
-  const { isFirstStep, isLastStep, nextStep, prevStep, currentStep, steps } = useWizard();
+  const { isFirstStep, isLastStep, nextStep, prevStep, currentStep, steps, getVisibleSteps } = useWizard();
   const { isDark } = useTheme();
   
-  const visibleSteps = steps.filter(step => !step.hidden);
+  const visibleSteps = getVisibleSteps();
   const currentStepIndex = visibleSteps.findIndex(step => step.id === currentStep);
   const progressPercentage = ((currentStepIndex + 1) / visibleSteps.length) * 100;
+
+  // Handle the next step with error handling
+  const handleNextStep = () => {
+    try {
+      nextStep();
+    } catch (error) {
+      console.error('Error navigating to next step:', error);
+    }
+  };
 
   return (
     <div className={`p-6 border-t ${
@@ -88,7 +97,7 @@ export function WizardNavigation({
           {!isLastStep ? (
             <ThemeButton 
               variant="primary"
-              onClick={nextStep}
+              onClick={handleNextStep}
               disabled={isSubmitting || isSaving}
               className="space-x-2"
             >
