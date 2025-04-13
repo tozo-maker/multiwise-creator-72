@@ -19,12 +19,18 @@ interface ContextFilesSectionProps {
   contextFiles: ContextFile[];
   setContextFiles: React.Dispatch<React.SetStateAction<ContextFile[]>>;
   openKnowledgeBaseDialog: () => void;
+  projectId?: string; // Add projectId as optional prop
+  selectedFiles?: string[];
+  onSelectedFilesChange?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export const ContextFilesSection: React.FC<ContextFilesSectionProps> = ({
   contextFiles,
   setContextFiles,
-  openKnowledgeBaseDialog
+  openKnowledgeBaseDialog,
+  projectId,
+  selectedFiles,
+  onSelectedFilesChange
 }) => {
   const handleRemoveContextFile = (id: string) => {
     setContextFiles(contextFiles.filter(file => file.id !== id));

@@ -4,9 +4,15 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 interface ContentPreviewProps {
   content: string;
+  setContent?: React.Dispatch<React.SetStateAction<string>>;
+  contentType?: string;
 }
 
-export const ContentPreview: React.FC<ContentPreviewProps> = ({ content }) => {
+export const ContentPreview: React.FC<ContentPreviewProps> = ({ 
+  content, 
+  setContent,
+  contentType 
+}) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 

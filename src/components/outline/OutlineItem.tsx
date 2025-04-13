@@ -34,7 +34,7 @@ export const OutlineItemComponent: React.FC<OutlineItemComponentProps> = ({
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description || '');
-  const [status, setStatus] = useState(item.status);
+  const [status, setStatus] = useState<"not_started" | "in_progress" | "completed">(item.status);
   
   const handleSaveEdit = () => {
     const updatedItem = {
@@ -101,7 +101,10 @@ export const OutlineItemComponent: React.FC<OutlineItemComponentProps> = ({
           
           <div className="flex items-center">
             <span className="mr-2 text-sm">Status:</span>
-            <Select value={status} onValueChange={setStatus}>
+            <Select 
+              value={status} 
+              onValueChange={(value: "not_started" | "in_progress" | "completed") => setStatus(value)}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>

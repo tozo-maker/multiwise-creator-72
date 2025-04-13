@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -16,11 +15,11 @@ interface ProjectCreationWizardProps {
   isMobile?: boolean;
 }
 
-export function ProjectCreationWizard({ 
+export const ProjectCreationWizard = ({ 
   templateId, 
   onComplete,
   isMobile = false 
-}: ProjectCreationWizardProps) {
+}: ProjectCreationWizardProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<ProjectData>({
     name: '',

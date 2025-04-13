@@ -13,7 +13,7 @@ import { AnthropicService } from '@/services/AnthropicService';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ContentService } from '@/services/ContentService';
 import { toast } from '@/hooks/use-toast';
-import { FileSparkles, FileText, Save, Sparkles } from 'lucide-react';
+import { FileText, Save, Sparkles } from 'lucide-react';
 import { ContentPreview } from './ContentPreview';
 import { ContextFilesSection } from './ContextFilesSection';
 import { ContentFormActions } from './ContentFormActions';
@@ -27,6 +27,12 @@ interface FormValues {
   prompt: string;
   complexity: string;
   audience: string;
+}
+
+interface ContextFile {
+  id: string;
+  name: string;
+  instructions: string;
 }
 
 export const EnhancedContentCreationForm = () => {
@@ -47,6 +53,7 @@ export const EnhancedContentCreationForm = () => {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('edit');
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [contextFiles, setContextFiles] = useState<ContextFile[]>([]);
   const [outline, setOutline] = useState<ProjectOutline | null>(null);
   const [selectedOutlineItem, setSelectedOutlineItem] = useState<OutlineItem | null>(null);
   
@@ -122,8 +129,7 @@ export const EnhancedContentCreationForm = () => {
         project_id: projectId,
         status: 'draft',
         metadata: {
-          complexity: values.complexity,
-          audience: values.audience,
+          audienceLevel: values.audience,
           outlineItemId: selectedOutlineItem?.id,
           knowledgeBaseIds: selectedFiles,
           generatedDate: new Date().toISOString()
@@ -187,6 +193,11 @@ export const EnhancedContentCreationForm = () => {
     }
   };
 
+  const openKnowledgeBaseDialog = () => {
+    // This function would be implemented to open a dialog for knowledge base selection
+    console.log("Open knowledge base dialog");
+  };
+
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -197,7 +208,7 @@ export const EnhancedContentCreationForm = () => {
               <span className="hidden sm:inline">Edit</span>
             </TabsTrigger>
             <TabsTrigger value="preview" className="gap-1" disabled={!generatedContent}>
-              <FileSparkles size={16} />
+              <Sparkles size={16} />
               <span className="hidden sm:inline">Preview</span>
             </TabsTrigger>
           </TabsList>
@@ -352,7 +363,10 @@ export const EnhancedContentCreationForm = () => {
               </Card>
               
               <ContextFilesSection 
-                projectId={projectId || ''} 
+                contextFiles={contextFiles}
+                setContextFiles={setContextFiles}
+                openKnowledgeBaseDialog={openKnowledgeBaseDialog}
+                projectId={projectId}
                 selectedFiles={selectedFiles}
                 onSelectedFilesChange={setSelectedFiles}
               />
