@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +13,8 @@ interface Profile {
   email_notifications?: boolean;
   font_size?: string;
   reduced_motion?: boolean;
+  push_notifications?: boolean;
+  notification_frequency?: string;
 }
 
 interface AuthContextType {
