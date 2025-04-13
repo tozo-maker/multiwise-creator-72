@@ -1,7 +1,6 @@
 
-import React, { useMemo, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProjectWorkspaceTabsProps {
@@ -9,80 +8,49 @@ interface ProjectWorkspaceTabsProps {
   activeTab?: string;
 }
 
-export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = React.memo(({ 
+export const ProjectWorkspaceTabs: React.FC<ProjectWorkspaceTabsProps> = ({ 
   projectId,
-  activeTab 
+  activeTab
 }) => {
-  const location = useLocation();
-  const currentPath = location.pathname;
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const location = useLocation();
   
-  const isTabActive = useCallback((tabPath: string) => {
-    if (activeTab) {
-      return activeTab === tabPath;
-    }
-    
-    if (tabPath === 'overview' && currentPath === `/projects/${projectId}`) {
-      return true;
-    }
-    
-    return currentPath.includes(`/projects/${projectId}/${tabPath}`);
-  }, [activeTab, currentPath, projectId]);
-  
-  const tabs = useMemo(() => [
+  const tabs = [
     { id: 'overview', label: 'Overview', path: `/projects/${projectId}` },
     { id: 'content', label: 'Content', path: `/projects/${projectId}/content` },
-    { id: 'analysis', label: 'Analysis', path: `/projects/${projectId}/analysis` },
-    { id: 'enhancements', label: 'Enhancements', path: `/projects/${projectId}/enhancements` },
+    { id: 'outline', label: 'Outline', path: `/projects/${projectId}/outline` },
     { id: 'knowledge-base', label: 'Knowledge Base', path: `/projects/${projectId}/knowledge-base` },
     { id: 'configuration', label: 'Configuration', path: `/projects/${projectId}/configuration` },
-    { id: 'snapshots', label: 'Snapshots', path: `/projects/${projectId}/snapshots` },
-  ], [projectId]);
+  ];
   
-  const handleKeyDown = useCallback((e: React.KeyboardEvent, path: string) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      window.location.href = path;
-    }
-  }, []);
-
+  const currentTab = activeTab || tabs.find(tab => location.pathname === tab.path)?.id || 'overview';
+  
   return (
-    <div 
-      className={`border-b mb-6 overflow-x-auto ${
-        isDark ? 'border-slate-700' : 'border-slate-200'
-      }`}
-      role="tablist"
-      aria-label="Project Navigation Tabs"
-    >
-      <div className="flex space-x-8">
+    <div className={`border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
+      <div className="flex space-x-1 overflow-x-auto">
         {tabs.map((tab) => (
-          <Link
+          <NavLink
             key={tab.id}
             to={tab.path}
-            className={cn(
-              "pb-2 relative text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded px-1",
-              isTabActive(tab.id)
+            className={({ isActive }) => `
+              px-4 py-2 text-sm font-medium whitespace-nowrap
+              ${isActive || tab.id === currentTab
                 ? isDark
-                  ? "text-indigo-400 border-b-2 border-indigo-500"
-                  : "text-indigo-600 border-b-2 border-indigo-500"
+                  ? 'text-white border-b-2 border-blue-500'
+                  : 'text-blue-600 border-b-2 border-blue-500'
                 : isDark
-                  ? "text-slate-400 hover:text-slate-300"
-                  : "text-slate-600 hover:text-slate-900"
-            )}
-            role="tab"
-            aria-selected={isTabActive(tab.id)}
-            aria-controls={`panel-${tab.id}`}
-            id={`tab-${tab.id}`}
-            tabIndex={isTabActive(tab.id) ? 0 : -1}
-            onKeyDown={(e) => handleKeyDown(e, tab.path)}
+                  ? 'text-slate-400 hover:text-slate-300'
+                  : 'text-slate-600 hover:text-slate-900'
+              }
+              ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}
+              transition-colors
+            `}
           >
             {tab.label}
-          </Link>
+          </NavLink>
         ))}
       </div>
     </div>
   );
-});
-
-ProjectWorkspaceTabs.displayName = 'ProjectWorkspaceTabs';
+};

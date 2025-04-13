@@ -1,361 +1,403 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ContentFormHeader } from './ContentFormHeader';
-import { ContentPreview } from './ContentPreview';
+import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { AnthropicService } from '@/services/AnthropicService';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ContentService } from '@/services/ContentService';
-import { ContentTemplate, TemplateService } from '@/services/TemplateService';
-import { TemplateSelector } from '@/components/content/templates/TemplateSelector';
-import { TemplateParameterForm } from '@/components/content/templates/TemplateParameterForm';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ArrowLeft, Wand2 } from 'lucide-react';
-import { AnthropicService } from '@/services/AnthropicService';
-import { KnowledgeBaseService } from '@/services/KnowledgeBaseService';
+import { toast } from '@/hooks/use-toast';
+import { FileSparkles, FileText, Save, Sparkles } from 'lucide-react';
+import { ContentPreview } from './ContentPreview';
+import { ContextFilesSection } from './ContextFilesSection';
+import { ContentFormActions } from './ContentFormActions';
+import { OutlineItemPicker } from '@/components/outline/OutlineItemPicker';
+import { ProjectOutline, OutlineItem } from '@/types/outline';
+import { OutlineService } from '@/services/OutlineService';
 
-export type ContentType = 'lesson' | 'quiz' | 'activity' | 'assessment' | 'summary';
+interface FormValues {
+  title: string;
+  contentType: string;
+  prompt: string;
+  complexity: string;
+  audience: string;
+}
 
 export const EnhancedContentCreationForm = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const navigate = useNavigate();
-  const { isDark } = useTheme();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const form = useForm<FormValues>({
+    defaultValues: {
+      title: '',
+      contentType: 'lesson',
+      prompt: '',
+      complexity: 'intermediate',
+      audience: 'students',
+    }
+  });
   
-  // Form state
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
-  const [templateParameters, setTemplateParameters] = useState<Record<string, any>>({});
-  const [step, setStep] = useState<'select' | 'configure' | 'edit'>('select');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [knowledgeBaseFiles, setKnowledgeBaseFiles] = useState<any[]>([]);
-  const [selectedKnowledgeBaseFiles, setSelectedKnowledgeBaseFiles] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'ai-generation' | 'manual'>('ai-generation');
+  const [generatedContent, setGeneratedContent] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>('edit');
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [outline, setOutline] = useState<ProjectOutline | null>(null);
+  const [selectedOutlineItem, setSelectedOutlineItem] = useState<OutlineItem | null>(null);
   
-  // Load knowledge base files
   useEffect(() => {
-    const loadKnowledgeBase = async () => {
+    // Fetch project outline
+    const fetchOutline = async () => {
       if (!projectId) return;
       
       try {
-        const files = await KnowledgeBaseService.getFilesByProject(projectId);
-        setKnowledgeBaseFiles(files);
+        const outlineData = await OutlineService.getOutlineByProject(projectId);
+        if (outlineData) {
+          const sections = await OutlineService.getSectionsByOutline(outlineData.id);
+          setOutline({
+            ...outlineData,
+            sections
+          });
+        }
       } catch (error) {
-        console.error('Error loading knowledge base files:', error);
+        console.error('Error fetching outline:', error);
       }
     };
     
-    loadKnowledgeBase();
+    fetchOutline();
   }, [projectId]);
   
-  const handleSelectTemplate = (template: ContentTemplate) => {
-    setSelectedTemplate(template);
-    setTitle(`New ${template.name}`);
-    setStep('configure');
-  };
-  
-  const handleParametersChange = (values: Record<string, any>) => {
-    setTemplateParameters(values);
-  };
-  
-  const handleGenerateContent = async () => {
-    if (!selectedTemplate || !projectId) return;
+  const onSubmit = async (values: FormValues) => {
+    if (!projectId) return;
     
     setIsGenerating(true);
-    
     try {
-      // Generate AI prompt from template parameters
-      const prompt = TemplateService.generatePrompt(selectedTemplate, templateParameters);
+      const promptWithOutlineContext = selectedOutlineItem 
+        ? `${values.prompt}\n\nThis content is for the outline item titled "${selectedOutlineItem.title}". ${selectedOutlineItem.description ? `The description for this item is: ${selectedOutlineItem.description}` : ''}`
+        : values.prompt;
       
-      // Call Anthropic API
-      const response = await AnthropicService.generateContent({
-        prompt,
-        systemPrompt: selectedTemplate.systemPrompt,
+      const response = await AnthropicService.generateEnhancedContent({
+        prompt: promptWithOutlineContext,
         projectId,
-        contentType: selectedTemplate.type,
-        knowledgeBaseIds: selectedKnowledgeBaseFiles
+        contentType: values.contentType,
+        complexity: values.complexity,
+        audience: values.audience,
+        knowledgeBaseIds: selectedFiles,
+        temperature: 0.7
       });
       
-      setContent(response.content);
-      setStep('edit');
+      setGeneratedContent(response.content);
+      setActiveTab('preview');
+      
+      toast({
+        title: 'Content Generated',
+        description: 'AI has created your content successfully'
+      });
     } catch (error) {
       console.error('Error generating content:', error);
-      toast.error('Failed to generate content. Please try again.');
+      toast({
+        title: 'Generation Failed',
+        description: 'Failed to generate content',
+        variant: 'destructive'
+      });
     } finally {
       setIsGenerating(false);
     }
   };
   
-  const handleSave = async () => {
-    if (!title.trim() || !content.trim() || !projectId || !selectedTemplate) {
-      toast.error('Please provide a title and content');
-      return;
-    }
+  const handleSaveContent = async () => {
+    if (!projectId || !generatedContent) return;
     
     try {
-      setIsSaving(true);
-      
-      // Save content to database
-      await ContentService.create({
-        title: title,
-        type: selectedTemplate.type,
-        content: content,
+      const values = form.getValues();
+      const contentItem = await ContentService.create({
+        title: values.title,
+        type: values.contentType,
+        content: generatedContent,
         project_id: projectId,
         status: 'draft',
         metadata: {
-          templateId: selectedTemplate.id,
-          parameters: templateParameters
+          complexity: values.complexity,
+          audience: values.audience,
+          outlineItemId: selectedOutlineItem?.id,
+          knowledgeBaseIds: selectedFiles,
+          generatedDate: new Date().toISOString()
         }
       });
       
-      toast.success('Content saved successfully!');
-      navigate(`/projects/${projectId}/content`);
-    } catch (error: any) {
+      if (contentItem && selectedOutlineItem) {
+        // Update the outline item to link to this content
+        const updatedItem = {
+          ...selectedOutlineItem,
+          contentId: contentItem.id,
+          status: 'in_progress'
+        };
+        
+        // Find the section this item belongs to
+        if (outline) {
+          const section = outline.sections.find(s => 
+            s.items.some(item => item.id === selectedOutlineItem.id)
+          );
+          
+          if (section) {
+            // Update the item in the section
+            const updatedSection = {
+              ...section,
+              items: section.items.map(item => 
+                item.id === selectedOutlineItem.id ? updatedItem : item
+              )
+            };
+            
+            // Update the section in the outline
+            await OutlineService.updateOutlineSections(outline);
+          }
+        }
+      }
+      
+      toast({
+        title: 'Content Saved',
+        description: 'Your content has been saved successfully'
+      });
+    } catch (error) {
       console.error('Error saving content:', error);
-      toast.error('Failed to save content: ' + (error.message || 'Unknown error'));
-    } finally {
-      setIsSaving(false);
+      toast({
+        title: 'Save Failed',
+        description: 'Failed to save content',
+        variant: 'destructive'
+      });
     }
   };
   
-  const renderStepContent = () => {
-    switch (step) {
-      case 'select':
-        return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
-                <span className="text-brand-600 dark:text-brand-400 font-semibold">1</span>
-              </div>
-              <div>
-                <h3 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Select a Template
-                </h3>
-                <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-                  Choose a template for your educational content
-                </p>
-              </div>
-            </div>
-            
-            <TemplateSelector onSelectTemplate={handleSelectTemplate} />
-          </div>
-        );
-        
-      case 'configure':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={() => setStep('select')}
-              >
-                <ArrowLeft className="h-4 w-4" /> Back to Templates
-              </Button>
-            </div>
-            
-            <div className="flex items-center gap-3 my-6">
-              <div className="h-10 w-10 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
-                <span className="text-brand-600 dark:text-brand-400 font-semibold">2</span>
-              </div>
-              <div>
-                <h3 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Configure Template
-                </h3>
-                <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-                  Customize the template settings for your content
-                </p>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title" className={isDark ? 'text-slate-200' : 'text-slate-700'}>
-                  Content Title
-                </Label>
-                <Input
-                  id="title"
-                  placeholder="Enter a title for your content"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className={isDark ? 'bg-slate-700 border-slate-600 text-slate-100' : 'bg-white'}
-                  required
-                />
-              </div>
-              
-              {selectedTemplate && (
-                <TemplateParameterForm
-                  template={selectedTemplate}
-                  onParametersChange={handleParametersChange}
-                  onGenerateContent={handleGenerateContent}
-                  isGenerating={isGenerating}
-                />
-              )}
-            </div>
-          </div>
-        );
-        
-      case 'edit':
-        return (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={() => setStep('configure')}
-              >
-                <ArrowLeft className="h-4 w-4" /> Back to Configuration
-              </Button>
-            </div>
-            
-            <div className="flex items-center gap-3 my-6">
-              <div className="h-10 w-10 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
-                <span className="text-brand-600 dark:text-brand-400 font-semibold">3</span>
-              </div>
-              <div>
-                <h3 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  Edit and Finalize
-                </h3>
-                <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-                  Review, edit, and save your content
-                </p>
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="title" className={isDark ? 'text-slate-200' : 'text-slate-700'}>
-                Content Title
-              </Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={isDark ? 'bg-slate-700 border-slate-600 text-slate-100' : 'bg-white'}
-                required
-              />
-            </div>
-            
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="ai-generation" className="flex items-center gap-2">
-                  <Wand2 className="h-4 w-4" />
-                  AI Generated
-                </TabsTrigger>
-                <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="ai-generation" className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
-                    <div className="p-6">
-                      <h3 className={`text-lg font-medium mb-4 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                        Edit Content
-                      </h3>
-                      <Textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className={`h-[500px] font-mono text-sm ${isDark ? 'bg-slate-700 border-slate-600 text-slate-100' : 'bg-white'}`}
-                        placeholder="Your content will appear here after generation..."
-                      />
-                    </div>
-                  </Card>
-                  
-                  <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
-                    <div className="p-6">
-                      <h3 className={`text-lg font-medium mb-4 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                        Preview
-                      </h3>
-                      <div className="border h-[500px] overflow-auto p-4 rounded-md bg-white dark:bg-slate-900">
-                        <ContentPreview content={content} />
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-                
-                <div className="flex justify-between pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleGenerateContent()}
-                    disabled={isGenerating}
-                    className="flex items-center gap-2"
-                  >
-                    <Wand2 className="h-4 w-4" />
-                    Regenerate
-                  </Button>
-                  
-                  <div className="space-x-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate(`/projects/${projectId}/content`)}
-                      className={isDark ? 'border-slate-600 text-slate-300' : ''}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSave}
-                      disabled={isSaving || !title || !content}
-                      className="bg-brand-600 hover:bg-brand-700 text-white"
-                    >
-                      {isSaving ? 'Saving...' : 'Save Content'}
-                    </Button>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="manual" className="space-y-4 pt-4">
-                <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}>
-                  <div className="p-6">
-                    <h3 className={`text-lg font-medium mb-4 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                      Manual Entry
-                    </h3>
-                    <Textarea
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      className={`h-[500px] font-mono text-sm ${isDark ? 'bg-slate-700 border-slate-600 text-slate-100' : 'bg-white'}`}
-                      placeholder="Write your content here..."
-                    />
-                  </div>
-                </Card>
-                
-                <div className="flex justify-end space-x-3 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/projects/${projectId}/content`)}
-                    className={isDark ? 'border-slate-600 text-slate-300' : ''}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSaving || !title || !content}
-                    className="bg-brand-600 hover:bg-brand-700 text-white"
-                  >
-                    {isSaving ? 'Saving...' : 'Save Content'}
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        );
-        
-      default:
-        return null;
+  const handleSelectOutlineItem = (item: OutlineItem | null) => {
+    setSelectedOutlineItem(item);
+    if (item) {
+      // Update form with outline item details
+      form.setValue('title', item.title);
+      if (item.description) {
+        const currentPrompt = form.getValues('prompt');
+        if (!currentPrompt) {
+          form.setValue('prompt', `Create content based on: ${item.description}`);
+        }
+      }
     }
   };
 
   return (
     <div className="space-y-6">
-      <ContentFormHeader title="Create New Content" />
-      {renderStepContent()}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex justify-between items-center mb-4">
+          <TabsList>
+            <TabsTrigger value="edit" className="gap-1">
+              <FileText size={16} />
+              <span className="hidden sm:inline">Edit</span>
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="gap-1" disabled={!generatedContent}>
+              <FileSparkles size={16} />
+              <span className="hidden sm:inline">Preview</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          {activeTab === 'preview' && generatedContent && (
+            <Button
+              onClick={handleSaveContent}
+              className="gap-2"
+            >
+              <Save size={16} />
+              Save Content
+            </Button>
+          )}
+        </div>
+        
+        <TabsContent value="edit" className="space-y-4 m-0">
+          {outline && (
+            <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white'}>
+              <CardContent className="p-4">
+                <OutlineItemPicker 
+                  outline={outline} 
+                  selectedItem={selectedOutlineItem}
+                  onSelectItem={handleSelectOutlineItem}
+                />
+              </CardContent>
+            </Card>
+          )}
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white'}>
+                <CardContent className="p-4">
+                  <div className="grid gap-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Content Title</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter a title for your content" 
+                              {...field} 
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="contentType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Content Type</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="lesson">Lesson</SelectItem>
+                                <SelectItem value="quiz">Quiz</SelectItem>
+                                <SelectItem value="worksheet">Worksheet</SelectItem>
+                                <SelectItem value="presentation">Presentation</SelectItem>
+                                <SelectItem value="summary">Summary</SelectItem>
+                                <SelectItem value="exercise">Exercise</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="audience"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Audience</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select audience" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="elementary">Elementary</SelectItem>
+                                <SelectItem value="middle_school">Middle School</SelectItem>
+                                <SelectItem value="high_school">High School</SelectItem>
+                                <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                                <SelectItem value="graduate">Graduate</SelectItem>
+                                <SelectItem value="adult_learning">Adult Learning</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="complexity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Complexity</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select complexity" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="beginner">Beginner</SelectItem>
+                                <SelectItem value="intermediate">Intermediate</SelectItem>
+                                <SelectItem value="advanced">Advanced</SelectItem>
+                                <SelectItem value="expert">Expert</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="prompt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Content Prompt</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe what content you want to generate" 
+                              className="min-h-[150px]"
+                              {...field} 
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <ContextFilesSection 
+                projectId={projectId || ''} 
+                selectedFiles={selectedFiles}
+                onSelectedFilesChange={setSelectedFiles}
+              />
+              
+              <div className="flex justify-end">
+                <Button 
+                  type="submit" 
+                  disabled={isGenerating}
+                  className="gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-b-0 border-white rounded-full"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      Generate Content
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </TabsContent>
+        
+        <TabsContent value="preview" className="m-0">
+          {generatedContent ? (
+            <ContentPreview 
+              content={generatedContent} 
+              setContent={setGeneratedContent}
+              contentType={form.getValues('contentType')} 
+            />
+          ) : (
+            <Card className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white'}>
+              <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground">
+                  Generate content to preview it here
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
-
-export default EnhancedContentCreationForm;
