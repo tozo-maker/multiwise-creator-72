@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -24,6 +25,7 @@ import NotFound from '@/pages/error/NotFound';
 import { PrivateRoute } from '@/components/auth/PrivateRoute';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { AuthProfileProvider } from '@/contexts/AuthProfileContext';
 import ContentCreation from '@/pages/projects/ContentCreation';
 import ContentView from '@/pages/projects/ContentView';
 
@@ -42,39 +44,41 @@ function App() {
 
   return (
     <div className={isDark ? 'dark' : 'light'}>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth/login" element={<LoginPage />} />
-          <Route path="/auth/register" element={<RegisterPage />} />
-          
-          <Route element={<PrivateRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/profile" element={<UserProfile />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+      <AuthProfileProvider>
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/register" element={<RegisterPage />} />
             
-            <Route path="/projects/create" element={<CreateProject />} />
-            <Route path="/projects/:projectId" element={<ProjectWorkspace />} />
-            <Route path="/projects/:projectId/configuration" element={<ConfigurationWorkspace />} />
-            <Route path="/projects/:projectId/content" element={<ContentWorkspace />} />
-            <Route path="/projects/:projectId/content/create" element={<ContentCreation />} />
-            <Route path="/projects/:projectId/content/:contentId" element={<ContentView />} />
-            <Route path="/projects/:projectId/analysis" element={<AnalysisWorkspace />} />
-            <Route path="/projects/:projectId/enhancements" element={<EnhancementsWorkspace />} />
-            <Route path="/projects/:projectId/snapshots" element={<SnapshotsWorkspace />} />
-            <Route path="/projects/:projectId/knowledge-base" element={<KnowledgeBase />} />
-            <Route path="/projects/:projectId/knowledge-base/advanced" element={<KnowledgeBaseAdvanced />} />
-            <Route path="/projects/:projectId/config" element={<ConfigurationWorkspace />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
-      <Toaster />
+            <Route element={<PrivateRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/profile" element={<UserProfile />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
+              
+              <Route path="/projects/create" element={<CreateProject />} />
+              <Route path="/projects/:projectId" element={<ProjectWorkspace />} />
+              <Route path="/projects/:projectId/configuration" element={<ConfigurationWorkspace />} />
+              <Route path="/projects/:projectId/content" element={<ContentWorkspace />} />
+              <Route path="/projects/:projectId/content/create" element={<ContentCreation />} />
+              <Route path="/projects/:projectId/content/:contentId" element={<ContentView />} />
+              <Route path="/projects/:projectId/analysis" element={<AnalysisWorkspace />} />
+              <Route path="/projects/:projectId/enhancements" element={<EnhancementsWorkspace />} />
+              <Route path="/projects/:projectId/snapshots" element={<SnapshotsWorkspace />} />
+              <Route path="/projects/:projectId/knowledge-base" element={<KnowledgeBase />} />
+              <Route path="/projects/:projectId/knowledge-base/advanced" element={<KnowledgeBaseAdvanced />} />
+              <Route path="/projects/:projectId/config" element={<ConfigurationWorkspace />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+        <Toaster />
+      </AuthProfileProvider>
     </div>
   );
 }

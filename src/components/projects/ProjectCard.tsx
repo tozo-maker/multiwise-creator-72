@@ -1,13 +1,17 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Project } from '@/types/supabase-custom';
+import { ProjectQuickActions } from './list/ProjectQuickActions';
 
 export type ProjectCardProps = Project;
 
 interface ProjectCardComponentProps extends ProjectCardProps {
   className?: string;
+  showActions?: boolean;
+  onActionComplete?: () => void;
 }
 
 export const ProjectCard: React.FC<ProjectCardComponentProps> = ({
@@ -18,7 +22,9 @@ export const ProjectCard: React.FC<ProjectCardComponentProps> = ({
   progress,
   lastModified,
   className,
-  status = 'active'
+  status = 'active',
+  showActions = true,
+  onActionComplete
 }) => {
   const statusColors = {
     active: 'text-green-500',
@@ -40,6 +46,16 @@ export const ProjectCard: React.FC<ProjectCardComponentProps> = ({
           <span>Progress: {progress}%</span>
           <span>Last Modified: {lastModified}</span>
         </div>
+        
+        {showActions && (
+          <div className="pt-2 flex justify-end">
+            <ProjectQuickActions 
+              project={{ id, name, type, targetLanguage, progress, lastModified, status }} 
+              size="compact"
+              onActionComplete={onActionComplete}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -5,12 +5,16 @@ import { DashboardProjectSection } from './DashboardProjectSection';
 import { DashboardAIInsights } from './DashboardAIInsights';
 import { DashboardQuickActions } from './DashboardQuickActions';
 import { DashboardActivityTimeline } from './DashboardActivityTimeline';
+import { ProfileCompletionCard } from '@/components/auth/ProfileCompletionCard';
+import { useAuthProfile } from '@/contexts/AuthProfileContext';
 
 interface DashboardGridProps {
   hasProjects: boolean;
 }
 
 export const DashboardGrid: React.FC<DashboardGridProps> = React.memo(({ hasProjects }) => {
+  const { isProfileComplete } = useAuthProfile();
+  
   return (
     <>
       <motion.div
@@ -42,6 +46,9 @@ export const DashboardGrid: React.FC<DashboardGridProps> = React.memo(({ hasProj
           transition={{ duration: 0.5, delay: 0.5 }}
         >
           <div className="space-y-8">
+            {!isProfileComplete && (
+              <ProfileCompletionCard />
+            )}
             <DashboardQuickActions hasProjects={hasProjects} />
             <DashboardActivityTimeline />
           </div>

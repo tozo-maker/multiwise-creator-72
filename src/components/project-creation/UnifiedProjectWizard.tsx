@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Wizard } from '@/components/shared/wizard/Wizard';
 import { WizardStep } from '@/contexts/WizardContext';
-import { useToast } from '@/hooks/use-toast';
 import { ProjectBasicsStep } from './steps/ProjectBasicsStep';
 import { QuickStartStep } from './steps/QuickStartStep';
 import { SystemConfigStep } from './steps/SystemConfigStep';
@@ -9,21 +9,16 @@ import { ProjectConfigStep } from './steps/ProjectConfigStep';
 import { LanguageConfigStep } from './steps/LanguageConfigStep';
 import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { FinalReviewStep } from './steps/FinalReviewStep';
-import { ProjectService } from '@/services/ProjectService';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { ProjectData } from './hooks/useProjectWizard';
+import { WizardNavigationManager } from './WizardNavigationManager';
+import { useProjectCreation } from './hooks/useProjectCreation';
 
 interface UnifiedProjectWizardProps {
   onComplete: (projectId: string) => void;
 }
 
 export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [isCreating, setIsCreating] = useState(false);
+  const { isCreating, handleProjectCreate } = useProjectCreation({ onComplete });
   
   const steps: WizardStep[] = [
     { id: 0, name: 'Project Info' },
@@ -49,24 +44,6 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     deadline: '',
   };
   
-  const navigateLogic = (currentStep: number, formData: ProjectData, goToStep: (step: number) => void) => {
-    if (currentStep === 0 && !formData.name) {
-      toast({
-        title: "Project name required",
-        description: "Please enter a name for your project.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (currentStep === 1 && formData.quickStart !== 'custom' && formData.quickStart !== '') {
-      goToStep(5);
-      return;
-    }
-    
-    goToStep(currentStep + 1);
-  };
-  
   const renderStep = (stepId: number, formData: ProjectData, updateData: (data: Partial<ProjectData>) => void) => {
     switch (stepId) {
       case 0:
@@ -88,150 +65,27 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     }
   };
   
-  const processKnowledgeBaseFiles = async (projectId: string, fileNames: string[]) => {
-    if (!user || !fileNames.length) return;
-    
-    console.log('Processing knowledge base files for project:', projectId);
-    console.log('Files to process:', fileNames);
-    
-    try {
-      const results = fileNames.map(async (fileName) => {
-        const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
-        
-        const category = 
-          ['pdf', 'doc', 'docx'].includes(fileExtension) ? 'Documents' :
-          ['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension) ? 'Images' :
-          'Other';
-        
-        const fileSize = 'Unknown';
-              
-        const { data: fileData, error: dbError } = await supabase
-          .from('knowledge_base_files')
-          .insert({
-            project_id: projectId,
-            user_id: user.id,
-            name: fileName,
-            description: `File uploaded during project creation for ${projectId}`,
-            file_type: fileExtension,
-            category: category,
-            size: fileSize,
-            url: ''
-          })
-          .select()
-          .single();
-            
-        if (dbError) {
-          console.error('Error adding file to database:', dbError);
-          throw dbError;
-        }
-        
-        console.log('File added to knowledge base:', fileData);
-        
-        return fileData;
-      });
-      
-      const fileRecords = await Promise.all(results);
-      console.log('All files processed successfully:', fileRecords);
-      
-      return fileRecords;
-    } catch (error) {
-      console.error('Error processing knowledge base files:', error);
-      toast({
-        title: "Warning",
-        description: "Some files could not be processed. You can add them later in the Knowledge Base.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const handleComplete = async (data: ProjectData) => {
-    if (isCreating) return;
-    
-    setIsCreating(true);
-    
-    toast({
-      title: "Creating project...",
-      description: "Your project is being set up."
-    });
-    
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to create a project",
-        variant: "destructive"
-      });
-      navigate("/auth");
-      setIsCreating(false);
-      return;
-    }
-    
-    try {
-      console.log('Creating project with data:', {
-        name: data.name,
-        description: data.description,
-        type: data.type,
-        targetLanguage: data.language,
-        deadline: data.deadline
-      });
-      
-      const project = await ProjectService.create({
-        name: data.name,
-        description: data.description || '',
-        type: data.type || 'Textbook',
-        targetLanguage: data.language || 'English',
-        deadline: data.deadline
-      });
-      
-      console.log('Project created successfully:', project);
-      
-      if (project && project.id) {
-        if (data.hasKnowledgeBase && data.knowledgeBaseFiles && data.knowledgeBaseFiles.length > 0) {
-          console.log(`Processing ${data.knowledgeBaseFiles.length} knowledge base files`);
-          toast({
-            title: "Processing files",
-            description: `Recording ${data.knowledgeBaseFiles.length} files to knowledge base...`
-          });
-          
-          await processKnowledgeBaseFiles(project.id, data.knowledgeBaseFiles);
-        }
-        
-        if (typeof localStorage !== 'undefined') {
-          localStorage.removeItem('wizard-form-project-wizard');
-        }
-        
-        toast({
-          title: "Project created",
-          description: "Your project has been created successfully!"
-        });
-        
-        onComplete(project.id);
-      } else {
-        throw new Error("Failed to get project ID");
-      }
-    } catch (error) {
-      console.error("Error creating project:", error);
-      toast({
-        title: "Error",
-        description: "There was an error creating your project. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsCreating(false);
-    }
-  };
-  
   return (
     <Wizard
       steps={steps}
       initialData={initialData}
       saveKey="project-wizard"
-      onComplete={handleComplete}
+      onComplete={handleProjectCreate}
       renderStep={renderStep}
-      navigateLogic={navigateLogic}
+      navigateLogic={(currentStep, formData, goToStep) => (
+        <WizardNavigationManager 
+          currentStep={currentStep}
+          formData={formData}
+          goToStep={goToStep}
+        >
+          {(navigateToNext) => navigateToNext()}
+        </WizardNavigationManager>
+      )}
       showStepIndicator={true}
       title="Create New Project"
       description="Configure your educational content project by following these steps."
       className="w-full"
+      isSubmitting={isCreating}
     />
   );
 }
