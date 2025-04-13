@@ -77,6 +77,7 @@ export const EnhancedContentCreationForm = () => {
       // Call Anthropic API
       const response = await AnthropicService.generateContent({
         prompt,
+        systemPrompt: selectedTemplate.systemPrompt,
         projectId,
         contentType: selectedTemplate.type,
         knowledgeBaseIds: selectedKnowledgeBaseFiles

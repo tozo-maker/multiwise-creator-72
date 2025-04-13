@@ -50,6 +50,7 @@ const CONTENT_TEMPLATES: ContentTemplate[] = [
     isDefault: true,
     icon: 'book-open',
     category: 'Lessons',
+    systemPrompt: 'You are an expert educational content creator specializing in crafting well-structured, engaging lessons. Focus on clear learning objectives, logical organization, and meaningful assessment.',
     promptTemplate: 'Create a detailed lesson on {topic} for {audience} students. Include clear learning objectives, {sectionCount} main content sections, examples, and {questionCount} assessment questions.',
     parameters: [
       {
@@ -135,6 +136,7 @@ const CONTENT_TEMPLATES: ContentTemplate[] = [
     isDefault: true,
     icon: 'check-square',
     category: 'Assessments',
+    systemPrompt: 'You are an expert assessment designer who creates effective multiple-choice questions. Focus on clarity, educational validity, and proper distractors.',
     promptTemplate: 'Create a {questionCount} question multiple-choice quiz on {topic} for {audience} students. Each question should have {optionCount} options with one correct answer. Include an answer key.',
     parameters: [
       {
@@ -201,6 +203,7 @@ const CONTENT_TEMPLATES: ContentTemplate[] = [
     type: 'activity',
     icon: 'users',
     category: 'Activities',
+    systemPrompt: 'You are an expert in designing engaging educational activities. Focus on student interaction, clear instructions, and meaningful learning outcomes.',
     promptTemplate: 'Design an interactive {activityType} activity on {topic} for {audience} students that takes {duration} minutes to complete. Include materials needed, step-by-step instructions, and discussion questions.',
     parameters: [
       {
@@ -286,6 +289,7 @@ const CONTENT_TEMPLATES: ContentTemplate[] = [
     type: 'assessment',
     icon: 'clipboard-check',
     category: 'Assessments',
+    systemPrompt: 'You are an expert in assessment design. Create clear, fair rubrics with well-defined performance levels and observable criteria.',
     promptTemplate: 'Create a detailed assessment rubric for {assessmentType} on {topic} for {audience} students. Include {criteriaCount} evaluation criteria with {levelCount} performance levels.',
     parameters: [
       {
@@ -373,6 +377,7 @@ const CONTENT_TEMPLATES: ContentTemplate[] = [
     type: 'summary',
     icon: 'file-text',
     category: 'Study Materials',
+    systemPrompt: 'You are an expert in educational content summarization. Create clear, concise summaries that highlight key concepts and their relationships.',
     promptTemplate: 'Create a {length} summary of key concepts on {topic} for {audience} students. Include {conceptCount} main concepts with definitions and examples.',
     parameters: [
       {
@@ -937,10 +942,7 @@ export const TemplateService = {
   /**
    * Generate an AI prompt from a template with parameter values using advanced prompt engineering
    */
-  generatePrompt(template: ContentTemplate, parameterValues: Record<string, any>, knowledgeBaseContext?: string): {
-    systemPrompt: string;
-    userPrompt: string;
-  } {
+  generatePrompt(template: ContentTemplate, parameterValues: Record<string, any>, knowledgeBaseContext?: string): string {
     let prompt = template.promptTemplate;
     
     // Replace parameters in the template
@@ -977,16 +979,7 @@ export const TemplateService = {
     prompt += '\n- Include clear section headings';
     prompt += '\n- Keep content concise and focused';
     
-    // Enhanced system prompt with more context
-    let systemPrompt = template.systemPrompt || 'You are an expert educational content creator specialized in creating high-quality educational content.';
-    
-    // Add additional system context based on the template type
-    systemPrompt += ` Focus on creating content that is pedagogically sound, engaging, and aligned with best practices in ${template.type} design.`;
-    
-    return {
-      systemPrompt,
-      userPrompt: prompt
-    };
+    return prompt;
   },
   
   /**
