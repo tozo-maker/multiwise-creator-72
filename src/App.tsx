@@ -24,7 +24,7 @@ import { Help } from '@/pages/help/Help';
 import NotFound from '@/pages/error/NotFound';
 import { PrivateRoute } from '@/components/auth/PrivateRoute';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { AuthProfileProvider } from '@/contexts/AuthProfileContext';
 import ContentCreation from '@/pages/projects/ContentCreation';
 import ContentView from '@/pages/projects/ContentView';

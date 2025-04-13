@@ -4,14 +4,14 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.tsx';
 import './index.css';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { UnifiedAuthProvider } from './contexts/UnifiedAuthContext';
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
-    <AuthProvider>
+    <UnifiedAuthProvider>
       <ThemeProvider>
         <App />
       </ThemeProvider>
-    </AuthProvider>
+    </UnifiedAuthProvider>
   </BrowserRouter>
 );
