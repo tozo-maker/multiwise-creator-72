@@ -131,7 +131,9 @@ export const EnhancedContentCreationForm = () => {
         metadata: {
           audience: values.audience,
           difficultyLevel: values.complexity,
-          outlineItemId: selectedOutlineItem?.id,
+          custom: {
+            outlineItemId: selectedOutlineItem?.id
+          },
           knowledgeBaseIds: selectedFiles,
           generatedDate: new Date().toISOString()
         }
