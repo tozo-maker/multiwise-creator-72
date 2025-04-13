@@ -144,13 +144,30 @@ export const ContentService = {
         versionIncrease = 0;
       }
       
+      let updateData: any = {
+        ...params,
+        updated_at: new Date().toISOString()
+      };
+      
+      // Handle version increment
+      if (versionIncrease > 0) {
+        // First get the current version
+        const { data: currentItem } = await supabase
+          .from('content_items')
+          .select('version')
+          .eq('id', contentId)
+          .single();
+        
+        if (currentItem) {
+          updateData.version = (currentItem.version || 0) + 1;
+        } else {
+          updateData.version = 1;
+        }
+      }
+        
       const { data, error } = await supabase
         .from('content_items')
-        .update({
-          ...params,
-          version: versionIncrease > 0 ? supabase.raw('version + 1') : params.version,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', contentId)
         .select()
         .single();
