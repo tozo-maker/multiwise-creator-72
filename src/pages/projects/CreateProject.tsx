@@ -1,14 +1,14 @@
 
 import React, { useEffect } from 'react';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { UnifiedProjectWizard } from '@/components/project-creation/UnifiedProjectWizard';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { ThemeCard } from '@/components/shared/ThemeCard';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { EnhancedProjectWizard } from '@/components/project-creation/EnhancedProjectWizard';
+import { ModernLayout } from '@/components/layout/ModernLayout';
 
 export const CreateProject: React.FC = () => {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ export const CreateProject: React.FC = () => {
   }
   
   return (
-    <DashboardLayout contentWidth="wide">
+    <ModernLayout contentWidth="wide">
       <div className="w-full py-6">
         <div className="mb-6">
           <PageBreadcrumbs items={breadcrumbItems} />
@@ -56,19 +56,19 @@ export const CreateProject: React.FC = () => {
             <CardHeader className="pb-3">
               <CardTitle className="text-2xl font-bold">Create New Project</CardTitle>
               <CardDescription>
-                Configure your educational content project by following these steps
+                Configure your educational content project using our enhanced wizard
               </CardDescription>
             </CardHeader>
           </ThemeCard>
         </div>
         
-        <div className="w-full">
-          <UnifiedProjectWizard
+        <div className="w-full max-w-5xl mx-auto">
+          <EnhancedProjectWizard
             onComplete={handleProjectCreated}
           />
         </div>
       </div>
-    </DashboardLayout>
+    </ModernLayout>
   );
 };
 

@@ -5,6 +5,7 @@ export interface WizardStep {
   id: number;
   name: string;
   hidden?: boolean;
+  conditional?: (data: any) => boolean;
 }
 
 interface WizardContextType<T extends Record<string, any>> {
@@ -18,6 +19,11 @@ interface WizardContextType<T extends Record<string, any>> {
   hasVisited: (stepId: number) => boolean;
   isFirstStep: boolean;
   isLastStep: boolean;
+  getVisibleSteps: () => WizardStep[];
+  isStepVisible: (stepId: number) => boolean;
+  isStepAvailable: (stepId: number) => boolean;
+  resetForm: () => void;
+  stepProgress: number;
 }
 
 interface WizardProviderProps<T extends Record<string, any>> {
@@ -64,9 +70,27 @@ export function WizardProvider<T extends Record<string, any>>({
   const updateFormData = (data: Partial<T>) => {
     setFormData(prev => ({ ...prev, ...data }));
   };
+  
+  const isStepVisible = (stepId: number): boolean => {
+    const step = steps.find(s => s.id === stepId);
+    if (!step) return false;
+    
+    if (step.hidden) return false;
+    if (step.conditional && !step.conditional(formData)) return false;
+    
+    return true;
+  };
+  
+  const isStepAvailable = (stepId: number): boolean => {
+    return isStepVisible(stepId) && hasVisited(stepId);
+  };
+  
+  const getVisibleSteps = (): WizardStep[] => {
+    return steps.filter(step => isStepVisible(step.id));
+  };
 
   const goToStep = (step: number) => {
-    if (step >= 0 && step < steps.length) {
+    if (step >= 0 && step < steps.length && isStepVisible(step)) {
       setCurrentStep(step);
       setVisitedSteps(prev => {
         const updated = new Set(prev);
@@ -76,17 +100,44 @@ export function WizardProvider<T extends Record<string, any>>({
     }
   };
 
+  const findNextVisibleStep = (startStep: number): number => {
+    let nextStep = startStep + 1;
+    while (nextStep < steps.length) {
+      if (isStepVisible(nextStep)) {
+        return nextStep;
+      }
+      nextStep++;
+    }
+    return -1; // No visible step found
+  };
+  
+  const findPrevVisibleStep = (startStep: number): number => {
+    let prevStep = startStep - 1;
+    while (prevStep >= 0) {
+      if (isStepVisible(prevStep)) {
+        return prevStep;
+      }
+      prevStep--;
+    }
+    return -1; // No visible step found
+  };
+
   const nextStep = () => {
     if (navigateLogic) {
       navigateLogic(currentStep, formData, goToStep);
-    } else if (currentStep < steps.length - 1) {
-      goToStep(currentStep + 1);
+      return;
+    }
+    
+    const nextVisibleStep = findNextVisibleStep(currentStep);
+    if (nextVisibleStep !== -1) {
+      goToStep(nextVisibleStep);
     }
   };
 
   const prevStep = () => {
-    if (currentStep > 0) {
-      goToStep(currentStep - 1);
+    const prevVisibleStep = findPrevVisibleStep(currentStep);
+    if (prevVisibleStep !== -1) {
+      goToStep(prevVisibleStep);
     }
   };
 
@@ -96,6 +147,20 @@ export function WizardProvider<T extends Record<string, any>>({
       return false;
     }
     return visitedSteps.has(step);
+  };
+  
+  const resetForm = () => {
+    setFormData(initialData);
+    setCurrentStep(0);
+    setVisitedSteps(new Set([0]));
+  };
+  
+  // Calculate visible step progress percentage
+  const calculateStepProgress = (): number => {
+    const visibleSteps = getVisibleSteps();
+    const currentStepIndex = visibleSteps.findIndex(step => step.id === currentStep);
+    if (currentStepIndex === -1) return 0;
+    return ((currentStepIndex + 1) / visibleSteps.length) * 100;
   };
 
   const value = {
@@ -108,7 +173,12 @@ export function WizardProvider<T extends Record<string, any>>({
     goToStep,
     hasVisited,
     isFirstStep: currentStep === 0,
-    isLastStep: currentStep === steps.length - 1,
+    isLastStep: currentStep === steps.length - 1 || findNextVisibleStep(currentStep) === -1,
+    getVisibleSteps,
+    isStepVisible,
+    isStepAvailable,
+    resetForm,
+    stepProgress: calculateStepProgress()
   };
 
   return (
