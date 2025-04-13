@@ -2,31 +2,29 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
-import { History, Eye, RotateCcw } from 'lucide-react';
+import { History, Eye, RotateCcw, Download, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
-import { ContentService } from '@/services/ContentService';
-
-interface ContentVersion {
-  id: string;
-  content_id: string;
-  version: number;
-  changes?: string;
-  created_at: string;
-  user_id?: string;
-}
+import { ContentService, ContentVersion } from '@/services/ContentService';
+import { 
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface ContentVersionHistoryProps {
   contentId: string;
   currentVersion: number;
   onRestoreVersion: (version: ContentVersion) => void;
+  onViewVersion?: (version: ContentVersion) => void;
 }
 
 export const ContentVersionHistory: React.FC<ContentVersionHistoryProps> = ({
   contentId,
   currentVersion,
-  onRestoreVersion
+  onRestoreVersion,
+  onViewVersion
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -56,15 +54,35 @@ export const ContentVersionHistory: React.FC<ContentVersionHistoryProps> = ({
   }, [contentId]);
   
   const handleViewVersion = (version: ContentVersion) => {
-    // In a real app, this would show a preview of the historical version
-    toast({
-      title: 'View Version',
-      description: `Viewing version ${version.version}`,
-    });
+    if (onViewVersion) {
+      onViewVersion(version);
+    } else {
+      // Default view behavior
+      toast({
+        title: 'View Version',
+        description: `Viewing version ${version.version}`,
+      });
+    }
   };
   
   const handleRestoreVersion = (version: ContentVersion) => {
     onRestoreVersion(version);
+  };
+  
+  // Format date for better readability
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch (e) {
+      return dateString;
+    }
   };
   
   return (
@@ -113,11 +131,43 @@ export const ContentVersionHistory: React.FC<ContentVersionHistoryProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className={`font-medium ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
-                      Version {version.version}
-                    </div>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <div className={`font-medium cursor-help ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
+                          Version {version.version}
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent 
+                        align="start" 
+                        side="right" 
+                        className={isDark ? 'bg-slate-800 border-slate-700' : 'bg-white'}
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-2">
+                            <Calendar className="h-4 w-4 mt-0.5 text-slate-500" />
+                            <div>
+                              <div className="text-xs font-medium">Created:</div>
+                              <div className="text-sm">{formatDate(version.created_at)}</div>
+                            </div>
+                          </div>
+                          {version.title && (
+                            <div>
+                              <div className="text-xs font-medium">Title:</div>
+                              <div className="text-sm">{version.title}</div>
+                            </div>
+                          )}
+                          {version.metadata?.wordCount && (
+                            <div>
+                              <div className="text-xs font-medium">Word count:</div>
+                              <div className="text-sm">{version.metadata.wordCount} words</div>
+                            </div>
+                          )}
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                    
                     <div className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {new Date(version.created_at).toLocaleString()}
+                      {formatDate(version.created_at)}
                     </div>
                     {version.changes && (
                       <div className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>

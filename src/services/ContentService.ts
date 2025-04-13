@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
@@ -74,6 +73,18 @@ export interface ContentUpdateParams {
   metadata?: ContentMetadata;
   version?: number;
   approval_workflow?: any[];
+}
+
+export interface ContentVersion {
+  id: string;
+  content_id: string;
+  version: number;
+  content: string;
+  title?: string;
+  changes?: string;
+  metadata?: ContentMetadata;
+  created_at: string;
+  created_by?: string;
 }
 
 export const ContentService = {
@@ -174,18 +185,18 @@ export const ContentService = {
         updated_at: new Date().toISOString()
       };
       
-      if (versionIncrease > 0) {
-        const { data: currentItem } = await supabase
-          .from('content_items')
-          .select('version')
-          .eq('id', contentId)
-          .single();
+      const { data: currentItem } = await supabase
+        .from('content_items')
+        .select('*')
+        .eq('id', contentId)
+        .single();
+      
+      if (currentItem && versionIncrease > 0) {
+        updateData.version = (currentItem.version || 0) + 1;
         
-        if (currentItem) {
-          updateData.version = (currentItem.version || 0) + 1;
-        } else {
-          updateData.version = 1;
-        }
+        await this.archiveCurrentVersion(currentItem);
+      } else if (!currentItem) {
+        updateData.version = 1;
       }
       
       const { data, error } = await supabase
@@ -234,16 +245,55 @@ export const ContentService = {
     }
   },
   
-  async getVersionHistory(contentId: string): Promise<any[]> {
+  async archiveCurrentVersion(currentItem: ContentItem): Promise<void> {
     try {
+      await supabase
+        .from('content_versions')
+        .insert({
+          content_id: currentItem.id,
+          version: currentItem.version || 1,
+          content: currentItem.content,
+          title: currentItem.title,
+          metadata: currentItem.metadata,
+          changes: `Update from version ${currentItem.version || 1}`,
+        });
+    } catch (error) {
+      console.error('Error archiving content version:', error);
+    }
+  },
+  
+  async getVersionHistory(contentId: string): Promise<ContentVersion[]> {
+    try {
+      const { data, error } = await supabase
+        .from('content_versions')
+        .select('*')
+        .eq('content_id', contentId)
+        .order('version', { ascending: false });
+        
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        return data;
+      }
+      
+      const { data: contentItem } = await supabase
+        .from('content_items')
+        .select('*')
+        .eq('id', contentId)
+        .single();
+        
       return [
         {
           id: '1',
           content_id: contentId,
-          version: 1,
+          version: contentItem?.version || 1,
+          content: contentItem?.content || '',
+          title: contentItem?.title,
           changes: 'Initial version',
-          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          user_id: 'user1'
+          created_at: contentItem?.created_at || new Date().toISOString(),
+          created_by: contentItem?.user_id
         }
       ];
     } catch (error: any) {
@@ -257,7 +307,7 @@ export const ContentService = {
     }
   },
   
-  async createVersion(contentId: string, content: string): Promise<any | null> {
+  async createVersion(contentId: string, content: string, changeDescription: string = ''): Promise<ContentVersion | null> {
     try {
       const currentContent = await this.getById(contentId);
       
@@ -267,23 +317,99 @@ export const ContentService = {
       
       const newVersion = (currentContent.version || 1) + 1;
       
+      const { data: versionData, error: versionError } = await supabase
+        .from('content_versions')
+        .insert({
+          content_id: contentId,
+          version: newVersion - 1,
+          content: currentContent.content,
+          title: currentContent.title,
+          metadata: currentContent.metadata,
+          changes: changeDescription || 'Version update',
+        })
+        .select()
+        .single();
+        
+      if (versionError) throw versionError;
+      
       await this.update(contentId, {
         content,
         version: newVersion
       });
       
       return {
-        id: `${contentId}-v${newVersion}`,
+        id: versionData.id,
         content_id: contentId,
         version: newVersion,
         content: content,
-        created_at: new Date().toISOString()
+        title: currentContent.title,
+        changes: changeDescription || 'New version created',
+        created_at: new Date().toISOString(),
+        created_by: currentContent.user_id
       };
     } catch (error: any) {
       console.error('Error creating content version:', error);
       toast({
         title: 'Error',
         description: 'Failed to create new version',
+        variant: 'destructive',
+      });
+      return null;
+    }
+  },
+  
+  async restoreVersion(versionId: string): Promise<ContentItem | null> {
+    try {
+      const { data: versionData, error: versionError } = await supabase
+        .from('content_versions')
+        .select('*')
+        .eq('id', versionId)
+        .single();
+        
+      if (versionError || !versionData) {
+        throw new Error('Version not found');
+      }
+      
+      const { data: currentContent, error: contentError } = await supabase
+        .from('content_items')
+        .select('*')
+        .eq('id', versionData.content_id)
+        .single();
+        
+      if (contentError || !currentContent) {
+        throw new Error('Content not found');
+      }
+      
+      await this.archiveCurrentVersion(currentContent);
+      
+      const newVersion = (currentContent.version || 1) + 1;
+      
+      const { data: updatedContent, error: updateError } = await supabase
+        .from('content_items')
+        .update({
+          content: versionData.content,
+          title: versionData.title,
+          metadata: versionData.metadata,
+          version: newVersion,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', versionData.content_id)
+        .select()
+        .single();
+        
+      if (updateError) throw updateError;
+      
+      toast({
+        title: 'Version restored',
+        description: `Restored to version ${versionData.version}`,
+      });
+      
+      return updatedContent;
+    } catch (error: any) {
+      console.error('Error restoring content version:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to restore version',
         variant: 'destructive',
       });
       return null;

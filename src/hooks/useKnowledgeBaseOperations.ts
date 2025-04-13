@@ -19,8 +19,10 @@ export const useKnowledgeBaseFileOperations = ({
 }: UseKnowledgeBaseOperationsProps) => {
   const { toast } = useToast();
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [tagModalOpen, setTagModalOpen] = useState(false);
   const [currentFile, setCurrentFile] = useState<KBFile | null>(null);
   const [editedDescription, setEditedDescription] = useState('');
+  const [editedTags, setEditedTags] = useState<string[]>([]);
 
   const handleEditFile = (id: string) => {
     const file = files.find(f => f.id === id);
@@ -28,6 +30,15 @@ export const useKnowledgeBaseFileOperations = ({
       setCurrentFile(file);
       setEditedDescription(file.description);
       setEditModalOpen(true);
+    }
+  };
+  
+  const handleManageTags = (id: string) => {
+    const file = files.find(f => f.id === id);
+    if (file) {
+      setCurrentFile(file);
+      setEditedTags(file.tags || []);
+      setTagModalOpen(true);
     }
   };
 
@@ -60,6 +71,40 @@ export const useKnowledgeBaseFileOperations = ({
       toast({
         title: 'Error',
         description: 'Failed to update file description',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  const saveTags = async () => {
+    if (!currentFile) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('knowledge_base_files')
+        .update({ tags: editedTags })
+        .eq('id', currentFile.id)
+        .select();
+        
+      if (error) throw error;
+      
+      setFiles(files.map(file => 
+        file.id === currentFile.id 
+          ? { ...file, tags: editedTags } 
+          : file
+      ));
+      
+      toast({
+        title: "Updated tags",
+        description: `Tags updated for "${currentFile.name}"`
+      });
+      
+      setTagModalOpen(false);
+    } catch (error) {
+      console.error('Error updating file tags:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update file tags',
         variant: 'destructive'
       });
     }
@@ -99,6 +144,7 @@ export const useKnowledgeBaseFileOperations = ({
   };
 
   return {
+    // Edit description modal
     editModalOpen,
     setEditModalOpen,
     currentFile,
@@ -106,6 +152,16 @@ export const useKnowledgeBaseFileOperations = ({
     setEditedDescription,
     handleEditFile,
     saveDescription,
+    
+    // Tag management
+    tagModalOpen,
+    setTagModalOpen,
+    editedTags,
+    setEditedTags,
+    handleManageTags,
+    saveTags,
+    
+    // File operations
     handleDeleteFile,
     handleFilesUploaded
   };

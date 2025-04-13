@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -57,7 +58,9 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
         size: file.size || 'Unknown',
         uploadDate: new Date(file.created_at).toLocaleDateString(),
         category: file.category || 'Other',
-        url: file.url || ''
+        tags: file.tags || [],
+        url: file.url || '',
+        project_id: file.project_id
       }));
       
       console.log('Formatted files:', formattedFiles);
@@ -101,6 +104,15 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
     setCategories(categoryList);
   };
 
+  // Handle file tag updates
+  const updateFileTags = (file: KBFile, tags: string[]) => {
+    setFiles(files.map(f => 
+      f.id === file.id 
+        ? { ...f, tags } 
+        : f
+    ));
+  };
+
   useEffect(() => {
     fetchKnowledgeBaseFiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,6 +124,7 @@ export const useKnowledgeBaseFiles = (projectId?: string) => {
     categories,
     isLoading,
     updateCategories,
+    updateFileTags,
     refreshFiles: fetchKnowledgeBaseFiles
   };
 };
