@@ -24,6 +24,7 @@ interface KnowledgeBaseFileListProps {
   onPreview: (id: string) => void;
   onDownload: (id: string) => void;
   categories?: string[];
+  projectId?: string;
 }
 
 export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
@@ -32,7 +33,8 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
   onEdit,
   onPreview,
   onDownload,
-  categories = []
+  categories = [],
+  projectId
 }) => {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [sortField, setSortField] = useState<keyof KBFile>('uploadDate');
@@ -81,6 +83,7 @@ export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
         sortField={sortField}
         sortDirection={sortDirection}
         onSortChange={toggleSort}
+        projectId={projectId}
       />
       
       <div className="flex justify-between items-center text-sm text-slate-500 mt-4">

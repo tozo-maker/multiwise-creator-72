@@ -15,6 +15,7 @@ interface KnowledgeBaseContentProps {
   onPreviewFile: (id: string) => void;
   onDownloadFile: (id: string) => void;
   onFilesUploaded: (files: { file: File, description: string }[]) => void;
+  projectId?: string;
 }
 
 export const KnowledgeBaseContent: React.FC<KnowledgeBaseContentProps> = ({
@@ -24,7 +25,8 @@ export const KnowledgeBaseContent: React.FC<KnowledgeBaseContentProps> = ({
   onEditDescription,
   onPreviewFile,
   onDownloadFile,
-  onFilesUploaded
+  onFilesUploaded,
+  projectId
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -78,7 +80,8 @@ export const KnowledgeBaseContent: React.FC<KnowledgeBaseContentProps> = ({
               onDelete={onDeleteFile} 
               onEdit={handleEditButtonClick} 
               onPreview={onPreviewFile} 
-              onDownload={onDownloadFile} 
+              onDownload={onDownloadFile}
+              projectId={projectId}
             />
           )}
         </CardContent>

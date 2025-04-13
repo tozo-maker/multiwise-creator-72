@@ -9,7 +9,241 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      analysis_results: {
+        Row: {
+          analysis_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          project_id: string
+          results: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          project_id: string
+          results: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          project_id?: string
+          results?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analysis_results_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_items: {
+        Row: {
+          content: string | null
+          content_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          content_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_insights: {
+        Row: {
+          complexity_level: string | null
+          created_at: string
+          file_id: string
+          id: string
+          key_concepts: Json | null
+          language_detected: string | null
+          project_id: string
+          sentiment_score: number | null
+          summary: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          complexity_level?: string | null
+          created_at?: string
+          file_id: string
+          id?: string
+          key_concepts?: Json | null
+          language_detected?: string | null
+          project_id: string
+          sentiment_score?: number | null
+          summary?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          complexity_level?: string | null
+          created_at?: string
+          file_id?: string
+          id?: string
+          key_concepts?: Json | null
+          language_detected?: string | null
+          project_id?: string
+          sentiment_score?: number | null
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_insights_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_base_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_insights_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_base_files: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          file_type: string
+          id: string
+          name: string
+          project_id: string
+          size: string | null
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_type: string
+          id?: string
+          name: string
+          project_id: string
+          size?: string | null
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_type?: string
+          id?: string
+          name?: string
+          project_id?: string
+          size?: string | null
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          name: string
+          progress: number
+          status: string
+          target_language: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          progress?: number
+          status?: string
+          target_language: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          progress?: number
+          status?: string
+          target_language?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

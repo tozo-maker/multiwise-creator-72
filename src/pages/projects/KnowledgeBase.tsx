@@ -296,6 +296,7 @@ export const KnowledgeBase = () => {
           onPreviewFile={handlePreviewFile}
           onDownloadFile={handleDownloadFile}
           onFilesUploaded={handleFilesUploaded}
+          projectId={projectId}
         />
         
         <KnowledgeBaseDescription
