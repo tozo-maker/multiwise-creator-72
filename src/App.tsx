@@ -18,6 +18,7 @@ import EnhancedContentCreation from './pages/projects/EnhancedContentCreation'
 import Help from './pages/help/Help'
 import ContentView from './pages/projects/ContentView'
 import OutlineWorkspace from './pages/projects/OutlineWorkspace'
+import KnowledgeBasePage from './pages/knowledge/KnowledgeBasePage'
 
 function App() {
   // Handler for project creation completion
@@ -52,6 +53,7 @@ function App() {
       <Route path="/projects/:projectId/knowledge-base" element={<KnowledgeBase />} />
       <Route path="/projects/:projectId/configuration" element={<ConfigurationWorkspace />} />
       <Route path="/projects/:projectId/outline" element={<OutlineWorkspace />} />
+      <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
       <Route path="/help" element={<Help />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
