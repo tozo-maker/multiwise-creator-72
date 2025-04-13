@@ -32,14 +32,14 @@ export const FileListFilter: React.FC<FileListFilterProps> = ({
         <div className="flex flex-col w-full md:w-48 gap-2">
           <Label htmlFor="category-filter" className="text-xs">Filter by Category</Label>
           <Select 
-            value={categoryFilter || ''} 
-            onValueChange={value => onCategoryFilterChange(value || null)}
+            value={categoryFilter || 'all'} 
+            onValueChange={value => onCategoryFilterChange(value === 'all' ? null : value)}
           >
             <SelectTrigger id="category-filter" className="h-9">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               {validCategories.map((category, index) => (
                 <SelectItem key={index} value={category}>{category}</SelectItem>
               ))}
@@ -51,14 +51,14 @@ export const FileListFilter: React.FC<FileListFilterProps> = ({
           <div className="flex flex-col w-full md:w-48 gap-2">
             <Label htmlFor="tag-filter" className="text-xs">Filter by Tag</Label>
             <Select 
-              value={tagFilter || ''} 
-              onValueChange={value => onTagFilterChange(value || null)}
+              value={tagFilter || 'all'} 
+              onValueChange={value => onTagFilterChange(value === 'all' ? null : value)}
             >
               <SelectTrigger id="tag-filter" className="h-9">
                 <SelectValue placeholder="All Tags" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Tags</SelectItem>
+                <SelectItem value="all">All Tags</SelectItem>
                 {tags.map((tag, index) => (
                   <SelectItem key={index} value={tag}>
                     <div className="flex items-center gap-1.5">

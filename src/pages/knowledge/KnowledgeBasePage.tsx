@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { KnowledgeBaseTabs } from '@/components/knowledge/KnowledgeBaseTabs';
