@@ -1,4 +1,3 @@
-
 import { ContentTemplate, TemplateParameter, ContentStructure } from './TemplateService';
 
 /**
@@ -72,6 +71,7 @@ export const createEducationalTemplate = (
     variations?: TemplateVariation[];
   }
 ): ContentTemplate => {
+  // Use type assertion to handle the conversion
   return {
     ...baseInfo,
     complexity: 'intermediate', // default
@@ -85,7 +85,7 @@ export const createEducationalTemplate = (
     metadata: {
       variations: templateOptions.variations || []
     }
-  } as ContentTemplate;
+  } as unknown as ContentTemplate;
 };
 
 /**
@@ -93,7 +93,7 @@ export const createEducationalTemplate = (
  */
 export const createTemplateFromSample = (
   sampleContent: string,
-  type: string,
+  type: ContentTemplate['type'],
   name: string,
   description: string
 ): ContentTemplate => {

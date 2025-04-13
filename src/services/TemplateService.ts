@@ -4,7 +4,10 @@ export interface ContentTemplate {
   id: string;
   name: string;
   description: string;
-  type: 'lesson' | 'quiz' | 'activity' | 'assessment' | 'summary' | 'worksheet' | 'presentation' | 'research' | 'guide' | 'case_study';
+  type: 'lesson' | 'quiz' | 'activity' | 'assessment' | 'summary' | 'worksheet' | 'presentation' | 'research' | 'guide' | 'case_study' | 
+        'lecture_notes' | 'syllabus' | 'student_guide' | 'lab_exercise' | 'educational_game' | 
+        'interactive_tutorial' | 'concept_map' | 'annotated_bibliography' | 'discussion_guide' | 
+        'differentiated_instruction' | 'assessment_rubric' | 'learning_path' | 'unit_plan';
   promptTemplate: string;
   systemPrompt: string;
   parameters: TemplateParameter[];
@@ -12,8 +15,9 @@ export interface ContentTemplate {
   icon?: string;
   category?: string;
   isDefault?: boolean;
-  complexity?: 'beginner' | 'intermediate' | 'advanced';
+  complexity?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   estimatedLength?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface TemplateParameter {

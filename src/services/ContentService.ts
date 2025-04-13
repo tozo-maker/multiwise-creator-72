@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
@@ -46,6 +47,12 @@ export interface ContentMetadata {
   wordCount?: number;
   fileSize?: number;
   lastRendered?: string;
+  
+  // Add missing properties that are being referenced
+  templateId?: string;
+  parameters?: Record<string, any>;
+  approvalWorkflow?: any[];
+  variations?: any[];
   
   custom?: Record<string, any>;
 }
