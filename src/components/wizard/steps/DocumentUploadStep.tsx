@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { KnowledgeBaseUpload } from '@/components/knowledge/KnowledgeBaseUpload';
 import { Button } from '@/components/ui/button';
 import { ConfigData } from '../types';
@@ -17,7 +17,14 @@ export const DocumentUploadStep: React.FC<DocumentUploadStepProps> = ({
   const [uploadedFiles, setUploadedFiles] = useState<any[]>(data.uploadedDocuments || []);
   
   const handleFilesUploaded = (newFiles: any[]) => {
-    const updatedFiles = [...uploadedFiles, ...newFiles];
+    // Ensure each file has an id property
+    const filesWithIds = newFiles.map(file => ({
+      id: file.id || `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: file.name,
+      description: file.description || ''
+    }));
+    
+    const updatedFiles = [...uploadedFiles, ...filesWithIds];
     setUploadedFiles(updatedFiles);
     updateData({ uploadedDocuments: updatedFiles });
   };
@@ -38,7 +45,7 @@ export const DocumentUploadStep: React.FC<DocumentUploadStepProps> = ({
               <h3 className="text-sm font-medium mb-2">Uploaded Documents ({uploadedFiles.length})</h3>
               <ul className="space-y-1">
                 {uploadedFiles.map((file, index) => (
-                  <li key={index} className="text-sm text-slate-600 flex items-center gap-2">
+                  <li key={file.id || index} className="text-sm text-slate-600 flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
                     {file.name}
                   </li>

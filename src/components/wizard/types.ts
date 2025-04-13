@@ -32,8 +32,10 @@ export interface ConfigData {
   formatting: string;
   scriptType: string;
   // Documents
-  uploadedDocuments: { name: string; description: string }[];
+  uploadedDocuments: { id: string; name: string; description: string }[];
   needsDocumentUpload: boolean;
+  // Project ID for API calls
+  projectId?: string;
   // Metadata
   createdDate: string;
   lastModified: string;
