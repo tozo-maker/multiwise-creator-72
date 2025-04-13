@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ interface FormValues {
   title: string;
   contentType: string;
   prompt: string;
-  complexity: string;
+  complexity: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   audience: 'elementary' | 'middle_school' | 'high_school' | 'undergraduate' | 'graduate' | 'adult_learning';
 }
 
