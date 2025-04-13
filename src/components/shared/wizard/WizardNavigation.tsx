@@ -3,12 +3,14 @@ import React from 'react';
 import { useWizard } from '@/contexts/WizardContext';
 import { ThemeButton } from '@/components/shared/ThemeButton';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Loader2 } from 'lucide-react';
 
 interface WizardNavigationProps {
   onComplete: () => void;
+  isSubmitting?: boolean;
 }
 
-export function WizardNavigation({ onComplete }: WizardNavigationProps) {
+export function WizardNavigation({ onComplete, isSubmitting = false }: WizardNavigationProps) {
   const { isFirstStep, isLastStep, nextStep, prevStep } = useWizard();
   const { isDark } = useTheme();
 
@@ -19,7 +21,7 @@ export function WizardNavigation({ onComplete }: WizardNavigationProps) {
       <ThemeButton 
         variant="outline" 
         onClick={prevStep}
-        disabled={isFirstStep}
+        disabled={isFirstStep || isSubmitting}
       >
         Back
       </ThemeButton>
@@ -28,6 +30,7 @@ export function WizardNavigation({ onComplete }: WizardNavigationProps) {
         <ThemeButton 
           variant="primary"
           onClick={nextStep}
+          disabled={isSubmitting}
         >
           Continue
         </ThemeButton>
@@ -35,8 +38,16 @@ export function WizardNavigation({ onComplete }: WizardNavigationProps) {
         <ThemeButton 
           variant="primary"
           onClick={onComplete}
+          disabled={isSubmitting}
         >
-          Create Project
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Project...
+            </>
+          ) : (
+            "Create Project"
+          )}
         </ThemeButton>
       )}
     </div>

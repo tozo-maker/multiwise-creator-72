@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Project, KnowledgeBaseFile } from '@/types/supabase-custom';
 import { ActivityData, ContentGenerationData } from '@/contexts/DashboardContext';
@@ -185,6 +184,10 @@ export const ProjectService = {
       status: data.status as 'active' | 'archived' | 'completed',
       deadline: data.deadline || 'Not set'
     };
+  },
+  
+  async updateStatus(id: string, status: 'active' | 'archived' | 'completed'): Promise<Project> {
+    return this.update(id, { status });
   },
   
   async delete(id: string): Promise<void> {
@@ -410,4 +413,3 @@ export const ProjectService = {
     }
   }
 };
-

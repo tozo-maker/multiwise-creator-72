@@ -16,9 +16,10 @@ interface WizardProps<T extends Record<string, any>> {
   saveKey?: string;
   onComplete: (data: T) => void;
   renderStep: (stepId: number, data: T, updateData: (data: Partial<T>) => void) => React.ReactNode;
-  navigateLogic?: (currentStep: number, formData: T, goToStep: (step: number) => void) => void;
+  navigateLogic?: (currentStep: number, formData: T, goToStep: (step: number) => void) => React.ReactNode;
   className?: string;
   showStepIndicator?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function Wizard<T extends Record<string, any>>({
@@ -32,6 +33,7 @@ export function Wizard<T extends Record<string, any>>({
   navigateLogic,
   className = '',
   showStepIndicator = true,
+  isSubmitting = false,
 }: WizardProps<T>) {
   const { isDark } = useTheme();
   
@@ -64,6 +66,7 @@ export function Wizard<T extends Record<string, any>>({
               
               <WizardNavigation 
                 onComplete={() => onComplete(formData)}
+                isSubmitting={isSubmitting}
               />
             </ThemeCard>
           </div>

@@ -78,7 +78,9 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
           formData={formData}
           goToStep={goToStep}
         >
-          {(navigateToNext) => navigateToNext()}
+          {(navigateToNext) => {
+            return <span onClick={navigateToNext} style={{ display: 'none' }}></span>;
+          }}
         </WizardNavigationManager>
       )}
       showStepIndicator={true}
