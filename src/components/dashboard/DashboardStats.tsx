@@ -41,7 +41,8 @@ export const DashboardStats = ({ className, onRefresh, isRefreshing = false }: D
           title="Total Projects"
           value={projectStats.totalProjects}
           icon={<Book />}
-          trend={projectStats.totalProjects > 0 ? "up" : "neutral"}
+          trend="up"
+          trendUp={projectStats.totalProjects > 0}
           trendValue={projectStats.totalProjects > 0 ? "+1" : "0"}
           backgroundColor="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
           ariaLabel={`Total projects: ${projectStats.totalProjects}`}
@@ -50,7 +51,8 @@ export const DashboardStats = ({ className, onRefresh, isRefreshing = false }: D
           title="Active Projects"
           value={projectStats.activeProjects}
           icon={<GitBranch />}
-          trend={projectStats.activeProjects > 0 ? "up" : "neutral"}
+          trend="up"
+          trendUp={projectStats.activeProjects > 0}
           trendValue={projectStats.activeProjects > 0 ? "+1" : "0"}
           backgroundColor="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
           ariaLabel={`Active projects: ${projectStats.activeProjects}`}
@@ -59,7 +61,8 @@ export const DashboardStats = ({ className, onRefresh, isRefreshing = false }: D
           title="Content Items"
           value={projectStats.contentCount}
           icon={<FileText />}
-          trend={projectStats.contentCount > 0 ? "up" : "neutral"}
+          trend="up"
+          trendUp={projectStats.contentCount > 0}
           trendValue={projectStats.contentCount > 0 ? "+1" : "0"}
           backgroundColor="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
           ariaLabel={`Content items: ${projectStats.contentCount}`}
@@ -68,7 +71,8 @@ export const DashboardStats = ({ className, onRefresh, isRefreshing = false }: D
           title="Reference Files"
           value={projectStats.knowledgeBaseFiles}
           icon={<BarChart3 />}
-          trend={projectStats.knowledgeBaseFiles > 0 ? "up" : "neutral"}
+          trend="up"
+          trendUp={projectStats.knowledgeBaseFiles > 0}
           trendValue={projectStats.knowledgeBaseFiles > 0 ? "+1" : "0"}
           backgroundColor="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
           ariaLabel={`Reference files: ${projectStats.knowledgeBaseFiles}`}

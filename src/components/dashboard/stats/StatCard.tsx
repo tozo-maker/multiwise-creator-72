@@ -7,8 +7,9 @@ import { motion } from 'framer-motion';
 interface StatCardProps {
   title: string;
   value: number | string;
-  icon: React.ReactNode; // Changed from icon component to ReactNode
+  icon: React.ReactNode;
   trend: string;
+  trendValue?: string; // Added trendValue prop
   trendUp?: boolean;
   backgroundColor: string;
   ariaLabel: string;
@@ -19,7 +20,8 @@ export const StatCard: React.FC<StatCardProps> = ({
   value,
   icon,
   trend,
-  trendUp = true, // Default to true if not provided
+  trendValue, // Added parameter
+  trendUp = true,
   backgroundColor,
   ariaLabel
 }) => {
@@ -40,7 +42,7 @@ export const StatCard: React.FC<StatCardProps> = ({
                   <ArrowUpRight className="h-3 w-3 mr-1" /> : 
                   <ArrowDownRight className="h-3 w-3 mr-1" />
                 }
-                {trend}
+                {trendValue || trend}
               </p>
             </div>
             <div className={`p-2 rounded-full ${backgroundColor} transition-transform hover:scale-110 duration-300`}>
