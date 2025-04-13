@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { ThemeRadioGroup } from '@/components/shared/ThemeRadioGroup';
 import { ThemeSelect } from '@/components/shared/ThemeSelect';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const AppearanceTab = () => {

@@ -12,6 +12,8 @@ interface Profile {
   theme?: string;
   bio?: string;
   email_notifications?: boolean;
+  font_size?: string;
+  reduced_motion?: boolean;
 }
 
 interface AuthContextType {
