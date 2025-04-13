@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Wizard } from '@/components/shared/wizard/Wizard';
 import { WizardStep } from '@/contexts/WizardContext';
@@ -12,6 +11,7 @@ import { FinalReviewStep } from './steps/FinalReviewStep';
 import { ProjectData } from './hooks/useProjectWizard';
 import { WizardNavigationManager } from './WizardNavigationManager';
 import { useProjectCreation } from './hooks/useProjectCreation';
+import { EnhancedProjectData } from './types/project-wizard-types';
 
 interface UnifiedProjectWizardProps {
   onComplete: (projectId: string) => void;
@@ -30,21 +30,82 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
     { id: 6, name: 'Summary' }
   ];
   
-  const initialData: ProjectData = {
+  // Create an enhanced initial data object that contains all required properties
+  const initialData: EnhancedProjectData = {
+    // Basic information
     name: '',
     description: '',
+    
+    // Quick Start
+    quickStart: 'custom',
+    templateId: 'custom',
+    
+    // System Configuration
+    interfaceLanguage: 'English',
+    experienceLevel: 'Intermediate',
+    interactionMode: 'Guided',
+    outputDetail: 'Balanced',
+    systemBehavior: 'Collaborative',
+    
+    // Project Configuration
+    projectType: 'Textbook',
+    customProjectType: '',
+    subjects: [],
+    levels: ['Students'],
+    pedagogy: 'Standard',
+    customPedagogy: '',
+    wordCount: 5000,
+    wordDistribution: 'balanced',
+    wordEnforcement: 'flexible',
+    
+    // Language Configuration
+    targetLanguage: 'English',
+    goal: 'Teaching',
+    complexity: 'Intermediate',
+    culturalIntegration: 'Standard',
+    terminology: 'Standard',
+    markers: 'Headings',
+    standards: [],
+    customStandards: [],
+    structure: 'Traditional',
+    formatting: 'Standard',
+    scriptType: 'Latin',
+    
+    // Knowledge Base
+    hasKnowledgeBase: false,
+    knowledgeBaseFiles: [],
+    
+    // Other settings
+    deadline: '',
+    
+    // Adding the missing properties to match ProjectData
     type: 'Textbook',
     language: 'English',
     targetAudience: 'Students',
-    complexity: 'Intermediate',
-    quickStart: 'custom',
-    templateId: 'custom',
-    hasKnowledgeBase: false,
-    knowledgeBaseFiles: [],
-    deadline: '',
   };
   
-  const renderStep = (stepId: number, formData: ProjectData, updateData: (data: Partial<ProjectData>) => void) => {
+  // Create a handler that converts EnhancedProjectData to ProjectData
+  const handleEnhancedProjectCreate = (data: EnhancedProjectData) => {
+    // Create the ProjectData object with required properties
+    const projectData: ProjectData = {
+      name: data.name,
+      description: data.description,
+      type: data.projectType,
+      language: data.targetLanguage,
+      targetAudience: data.levels[0] || 'Students',
+      complexity: data.complexity,
+      quickStart: data.quickStart,
+      templateId: data.templateId,
+      hasKnowledgeBase: data.hasKnowledgeBase,
+      knowledgeBaseFiles: data.knowledgeBaseFiles,
+      deadline: data.deadline,
+    };
+    
+    // Call the original handler with the converted data
+    handleProjectCreate(projectData);
+  };
+  
+  const renderStep = (stepId: number, formData: EnhancedProjectData, updateData: (data: Partial<EnhancedProjectData>) => void) => {
     switch (stepId) {
       case 0:
         return <ProjectBasicsStep data={formData} updateData={updateData} />;
@@ -70,7 +131,7 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       steps={steps}
       initialData={initialData}
       saveKey="project-wizard"
-      onComplete={handleProjectCreate}
+      onComplete={handleEnhancedProjectCreate}
       renderStep={renderStep}
       navigateLogic={(currentStep, formData, goToStep) => (
         <WizardNavigationManager 
