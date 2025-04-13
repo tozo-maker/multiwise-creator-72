@@ -9,7 +9,7 @@ import { ContentItemsCard } from '@/components/content/ContentItemsCard';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ContentItem } from '@/components/content/ContentItemsList';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
