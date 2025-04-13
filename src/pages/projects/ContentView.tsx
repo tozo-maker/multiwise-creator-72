@@ -33,7 +33,7 @@ const ContentView = () => {
     targetLanguage: 'Loading...'
   });
   const [contentItem, setContentItem] = useState<ContentItem | null>(null);
-  const [status, setStatus] = useState<'draft' | 'in-review' | 'completed'>('draft');
+  const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
   
   useEffect(() => {
     const fetchData = async () => {
@@ -88,10 +88,10 @@ const ContentView = () => {
       setIsSaving(true);
       
       await ContentService.update(contentItem.id, {
-        status: newStatus as 'draft' | 'in-review' | 'completed'
+        status: newStatus as 'draft' | 'published' | 'archived'
       });
       
-      setStatus(newStatus as 'draft' | 'in-review' | 'completed');
+      setStatus(newStatus as 'draft' | 'published' | 'archived');
       
       toast({
         title: 'Status Updated',
@@ -167,8 +167,8 @@ const ContentView = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="in-review">In Review</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
             

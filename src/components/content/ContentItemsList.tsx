@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Plus } from 'lucide-react';
@@ -10,7 +9,7 @@ export interface ContentItem {
   id: string;
   title: string;
   type: string;
-  status: 'draft' | 'completed' | 'in-review';
+  status: 'draft' | 'published' | 'archived';
   lastModified: string;
 }
 
@@ -74,9 +73,9 @@ const ContentItem: React.FC<{ item: ContentItem; projectId: string; theme: strin
       switch (status) {
         case 'draft':
           return 'bg-yellow-900/30 text-yellow-300';
-        case 'completed':
+        case 'published':
           return 'bg-green-900/30 text-green-300';
-        case 'in-review':
+        case 'archived':
           return 'bg-blue-900/30 text-blue-300';
         default:
           return 'bg-slate-800 text-slate-300';
@@ -85,9 +84,9 @@ const ContentItem: React.FC<{ item: ContentItem; projectId: string; theme: strin
       switch (status) {
         case 'draft':
           return 'bg-yellow-100 text-yellow-800';
-        case 'completed':
+        case 'published':
           return 'bg-green-100 text-green-800';
-        case 'in-review':
+        case 'archived':
           return 'bg-blue-100 text-blue-800';
         default:
           return 'bg-slate-100 text-slate-800';

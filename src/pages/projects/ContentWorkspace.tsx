@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
@@ -58,7 +59,7 @@ const ContentWorkspace = () => {
         setIsLoading(true);
         const items = await ContentService.getByProject(projectId);
         
-        const formattedItems = items.map(item => ({
+        const formattedItems: ContentItem[] = items.map(item => ({
           id: item.id,
           title: item.title,
           type: item.type,
