@@ -9,9 +9,9 @@ import { LanguageConfigStep } from './steps/LanguageConfigStep';
 import { KnowledgeBaseStep } from './steps/KnowledgeBaseStep';
 import { FinalReviewStep } from './steps/FinalReviewStep';
 import { ProjectData } from './hooks/useProjectWizard';
-import { WizardNavigationManager } from './WizardNavigationManager';
 import { useProjectCreation } from './hooks/useProjectCreation';
 import { EnhancedProjectData } from './types/project-wizard-types';
+import { useToast } from '@/hooks/use-toast';
 
 interface UnifiedProjectWizardProps {
   onComplete: (projectId: string) => void;
@@ -19,6 +19,7 @@ interface UnifiedProjectWizardProps {
 
 export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) {
   const { isCreating, handleProjectCreate } = useProjectCreation({ onComplete });
+  const { toast } = useToast();
   
   const steps: WizardStep[] = [
     { id: 0, name: 'Project Info' },
@@ -125,6 +126,31 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
         return null;
     }
   };
+
+  // Custom navigation logic to handle validation
+  const handleNavigateLogic = (currentStep: number, formData: EnhancedProjectData, goToStep: (step: number) => void) => {
+    // Validate required fields
+    if (currentStep === 0 && !formData.name) {
+      toast({
+        title: "Project name required",
+        description: "Please enter a name for your project.",
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    // Handle template selection - skip to knowledge base if using template
+    if (currentStep === 1 && formData.quickStart !== 'custom' && formData.quickStart !== '') {
+      return (
+        <div className="hidden">
+          <button onClick={() => goToStep(5)}></button>
+        </div>
+      );
+    }
+    
+    // Normal navigation
+    return null;
+  };
   
   return (
     <Wizard
@@ -133,17 +159,7 @@ export function UnifiedProjectWizard({ onComplete }: UnifiedProjectWizardProps) 
       saveKey="project-wizard"
       onComplete={handleEnhancedProjectCreate}
       renderStep={renderStep}
-      navigateLogic={(currentStep, formData, goToStep) => (
-        <WizardNavigationManager 
-          currentStep={currentStep}
-          formData={formData}
-          goToStep={goToStep}
-        >
-          {(navigateToNext) => {
-            return <span onClick={navigateToNext} style={{ display: 'none' }}></span>;
-          }}
-        </WizardNavigationManager>
-      )}
+      navigateLogic={handleNavigateLogic}
       showStepIndicator={true}
       title="Create New Project"
       description="Configure your educational content project by following these steps."
