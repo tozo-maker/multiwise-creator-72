@@ -1,22 +1,38 @@
+
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export const PrivateRoute = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const location = useLocation();
+  const { toast } = useToast();
   const [isReady, setIsReady] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
   
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const readyTimer = setTimeout(() => {
       setIsReady(true);
     }, 300);
+
+    const timeoutTimer = setTimeout(() => {
+      setLoadingTimeout(true);
+      toast({
+        title: "Loading Timeout",
+        description: "Authentication is taking longer than expected",
+        variant: "default"
+      });
+    }, 5000);
     
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(readyTimer);
+      clearTimeout(timeoutTimer);
+    };
   }, []);
   
-  if (isLoading || !isReady) {
+  if (authLoading || !isReady) {
     return (
       <div className="flex items-center justify-center h-screen p-6">
         <div className="w-full max-w-md space-y-4">
@@ -26,13 +42,18 @@ export const PrivateRoute = () => {
             <Skeleton className="h-8 w-full" />
             <Skeleton className="h-8 w-full" />
           </div>
+          {loadingTimeout && (
+            <div className="text-center text-sm text-muted-foreground">
+              Taking longer than usual. Please check your connection.
+            </div>
+          )}
         </div>
       </div>
     );
   }
   
   if (location.pathname === '/dashboard') {
-    return <Outlet />;
+    return user ? <Outlet /> : <Navigate to="/auth/login" />;
   }
   
   if (!user) {

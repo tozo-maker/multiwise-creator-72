@@ -4,6 +4,7 @@ import { Project } from '@/types/supabase-custom';
 import { ProjectService } from '@/services/ProjectService';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 // Define types for our context
 export interface ProjectStats {
@@ -45,6 +46,7 @@ interface DashboardContextType {
   isFirstVisit: boolean;
   refreshProjects: () => Promise<void>;
   isDemo: boolean;
+  refreshError: string | null;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -92,6 +94,7 @@ const emptyProjectStats: ProjectStats = {
 };
 
 export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }) => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All Types');
   const [filterLanguage, setFilterLanguage] = useState('All Languages');
@@ -105,6 +108,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const [realContentGeneration, setRealContentGeneration] = useState<ContentGenerationData[]>([]);
   const [contentItemsCount, setContentItemsCount] = useState(0);
   const [knowledgeBaseFilesCount, setKnowledgeBaseFilesCount] = useState(0);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const { user } = useAuth();
   
   const isDemo = false;
@@ -114,21 +118,20 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const fetchProjects = async () => {
     if (!user) {
       setIsLoading(false);
-      return;
+      return [];
     }
     
-    setIsLoading(true);
     try {
-      console.log('Fetching projects for user:', user.id);
       const data = await ProjectService.getAll();
-      console.log('Fetched projects:', data);
-      setProjects(data);
-    } catch (error) {
+      return data;
+    } catch (error: any) {
       console.error('Error fetching projects:', error);
-      // Still set projects to empty array on error
-      setProjects([]);
-    } finally {
-      setIsLoading(false);
+      toast({
+        title: "Project Fetch Error",
+        description: error.message || "Failed to fetch projects",
+        variant: "destructive"
+      });
+      return [];
     }
   };
 
@@ -201,10 +204,37 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   };
 
   const refreshProjects = async () => {
-    await fetchProjects();
-    await fetchContentItemsCount();
-    await fetchKnowledgeBaseFilesCount();
-    await fetchAnalyticsData();
+    setRefreshError(null);
+    try {
+      const [projectsData, contentCount, knowledgeBaseCount, activityData, contentGenData] = await Promise.all([
+        fetchProjects(),
+        fetchContentItemsCount(),
+        fetchKnowledgeBaseFilesCount(),
+        ProjectService.getActivityData(),
+        ProjectService.getContentGenerationData()
+      ]);
+
+      setProjects(projectsData);
+      setContentItemsCount(contentCount);
+      setKnowledgeBaseFilesCount(knowledgeBaseCount);
+      setRealActivityData(activityData.length > 0 ? activityData : emptyActivityData);
+      setRealContentGeneration(contentGenData.length > 0 ? contentGenData : emptyContentGenerationData);
+
+      toast({
+        title: "Dashboard Refreshed",
+        description: "Your dashboard data has been updated",
+        variant: "default"
+      });
+    } catch (error: any) {
+      console.error('Dashboard refresh error:', error);
+      setRefreshError(error.message || 'Failed to refresh dashboard');
+      
+      toast({
+        title: "Refresh Failed",
+        description: refreshError || "Unable to update dashboard data",
+        variant: "destructive"
+      });
+    }
   };
 
   useEffect(() => {
@@ -318,7 +348,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
         isLoading,
         isFirstVisit,
         refreshProjects,
-        isDemo
+        isDemo,
+        refreshError
       }}
     >
       {children}
