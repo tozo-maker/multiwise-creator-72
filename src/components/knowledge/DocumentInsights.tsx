@@ -9,20 +9,30 @@ import { Badge } from '@/components/ui/badge';
 import { DocumentReAnalysisButton } from './DocumentReAnalysisButton';
 
 interface DocumentInsightsProps {
-  fileId: string;
-  projectId: string;
+  fileId?: string;
+  projectId?: string;
+  insight?: DocumentInsight | null;
+  isLoading?: boolean;
+  fileName?: string;
+  onProcessDocument?: () => Promise<void>;
 }
 
 export const DocumentInsights: React.FC<DocumentInsightsProps> = ({
   fileId,
-  projectId
+  projectId,
+  insight: providedInsight,
+  isLoading: providedIsLoading,
+  fileName,
+  onProcessDocument
 }) => {
-  const [insights, setInsights] = useState<DocumentInsight | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [insights, setInsights] = useState<DocumentInsight | null>(providedInsight || null);
+  const [isLoading, setIsLoading] = useState(providedIsLoading || false);
   const { toast } = useToast();
 
-  // Load insights
+  // Load insights if not provided and fileId exists
   const loadInsights = async () => {
+    if (!fileId || providedInsight) return;
+    
     try {
       setIsLoading(true);
       const data = await DocumentInsightService.getByFileId(fileId);
@@ -35,12 +45,20 @@ export const DocumentInsights: React.FC<DocumentInsightsProps> = ({
   };
 
   useEffect(() => {
-    loadInsights();
-  }, [fileId]);
+    if (providedInsight) {
+      setInsights(providedInsight);
+    } else {
+      loadInsights();
+    }
+  }, [fileId, providedInsight]);
 
   // Handle insight refresh
   const handleRefresh = () => {
-    loadInsights();
+    if (onProcessDocument) {
+      onProcessDocument();
+    } else {
+      loadInsights();
+    }
   };
 
   // Get sentiment label and color
@@ -67,6 +85,9 @@ export const DocumentInsights: React.FC<DocumentInsightsProps> = ({
     }
   };
 
+  // If we don't have a fileId and no insight was provided, render nothing
+  if (!fileId && !providedInsight) return null;
+
   return (
     <div className="mt-2">
       <Popover>
@@ -85,21 +106,47 @@ export const DocumentInsights: React.FC<DocumentInsightsProps> = ({
           {!insights ? (
             <div className="p-2">
               <p className="text-sm text-slate-500 mb-3">No insights available for this document.</p>
-              <DocumentReAnalysisButton 
-                fileId={fileId} 
-                projectId={projectId}
-                onAnalysisComplete={handleRefresh}
-              />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">Document Insights</h3>
+              {fileId && projectId && (
                 <DocumentReAnalysisButton 
                   fileId={fileId} 
                   projectId={projectId}
                   onAnalysisComplete={handleRefresh}
                 />
+              )}
+              {onProcessDocument && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={onProcessDocument}
+                  className="gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Analyze Document
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="font-medium">Document Insights</h3>
+                {fileId && projectId && (
+                  <DocumentReAnalysisButton 
+                    fileId={fileId} 
+                    projectId={projectId}
+                    onAnalysisComplete={handleRefresh}
+                  />
+                )}
+                {onProcessDocument && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onProcessDocument}
+                    className="gap-1"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Re-analyze
+                  </Button>
+                )}
               </div>
               
               <div className="grid grid-cols-2 gap-3">

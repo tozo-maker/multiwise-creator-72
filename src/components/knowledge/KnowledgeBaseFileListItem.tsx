@@ -144,6 +144,8 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
       <Dialog open={insightDialogOpen} onOpenChange={setInsightDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DocumentInsights 
+            fileId={file.id}
+            projectId={projectId}
             insight={insight} 
             isLoading={isLoadingInsight || isProcessing} 
             fileName={file.name}

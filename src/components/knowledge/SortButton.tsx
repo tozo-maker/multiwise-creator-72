@@ -5,30 +5,42 @@ import { ArrowUpDown } from 'lucide-react';
 import { KBFile } from './KnowledgeBaseFileList';
 
 interface SortButtonProps {
-  field: keyof KBFile;
+  field?: keyof KBFile;
   label: string;
-  sortField: keyof KBFile;
-  sortDirection: 'asc' | 'desc';
-  onSort: (field: keyof KBFile) => void;
+  active: boolean;
+  direction: 'asc' | 'desc';
+  onClick: () => void;
+  sortField?: keyof KBFile;
+  onSort?: (field: keyof KBFile) => void;
 }
 
 export const SortButton: React.FC<SortButtonProps> = ({
   field,
   label,
+  active,
+  direction,
+  onClick,
   sortField,
-  sortDirection,
   onSort
 }) => {
+  const handleClick = () => {
+    if (field && onSort) {
+      onSort(field);
+    } else {
+      onClick();
+    }
+  };
+
   return (
     <Button 
       variant="ghost" 
       size="sm" 
       className="h-8 gap-1 font-medium" 
-      onClick={() => onSort(field)}
+      onClick={handleClick}
     >
       {label}
-      {sortField === field && (
-        <ArrowUpDown className={`h-3 w-3 ${sortDirection === 'asc' ? 'rotate-180' : ''}`} />
+      {active && (
+        <ArrowUpDown className={`h-3 w-3 ${direction === 'asc' ? 'rotate-180' : ''}`} />
       )}
     </Button>
   );
