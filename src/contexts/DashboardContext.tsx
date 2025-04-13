@@ -105,6 +105,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [dataLoadingError, setDataLoadingError] = useState<string | null>(null);
   const [realActivityData, setRealActivityData] = useState<ActivityData[]>([]);
   const [realContentGeneration, setRealContentGeneration] = useState<ContentGenerationData[]>([]);
   const [contentItemsCount, setContentItemsCount] = useState(0);
@@ -118,7 +119,6 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   
   const fetchProjects = async () => {
     if (!user) {
-      setIsLoading(false);
       return [];
     }
     
@@ -244,24 +244,62 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       
       toast({
         title: "Refresh Failed",
-        description: refreshError || "Unable to update dashboard data",
+        description: error.message || "Unable to update dashboard data",
         variant: "destructive"
       });
     }
   };
 
-  useEffect(() => {
+  const initializeDashboard = async () => {
+    setIsLoading(true);
+    setDataLoadingError(null);
+    
     if (user) {
-      console.log('User authenticated, fetching data');
-      fetchProjects();
-      fetchContentItemsCount();
-      fetchKnowledgeBaseFilesCount();
-      fetchAnalyticsData();
+      try {
+        console.log('User authenticated, fetching data');
+        
+        // Fetch projects
+        const projectsData = await fetchProjects();
+        setProjects(projectsData);
+        
+        // Fetch counts
+        const contentCount = await fetchContentItemsCount();
+        setContentItemsCount(contentCount);
+        
+        const filesCount = await fetchKnowledgeBaseFilesCount();
+        setKnowledgeBaseFilesCount(filesCount);
+        
+        // Fetch analytics data
+        await fetchAnalyticsData();
+        
+      } catch (error: any) {
+        console.error('Error initializing dashboard:', error);
+        setDataLoadingError(error.message || 'Failed to load dashboard data');
+        
+        toast({
+          title: "Dashboard Load Error",
+          description: "There was a problem loading your dashboard data. Please try refreshing.",
+          variant: "destructive"
+        });
+      } finally {
+        // Set loading to false after all data fetching attempts
+        setIsLoading(false);
+      }
     } else {
       // Reset loading state if no user
       setIsLoading(false);
       console.log('No user detected');
     }
+  };
+
+  useEffect(() => {
+    // Initialize dashboard when user changes
+    if (user) {
+      initializeDashboard();
+    } else {
+      setIsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
   
   useEffect(() => {

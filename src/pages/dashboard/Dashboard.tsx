@@ -12,7 +12,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
   return (
@@ -31,13 +32,14 @@ const Dashboard = () => {
 
 // Separated component to use hooks within the DashboardProvider context
 const DashboardContent = () => {
-  const { isFirstVisit, isLoading, filteredProjects, isDemo, refreshProjects } = useDashboard();
+  const { isFirstVisit, isLoading, filteredProjects, isDemo, refreshProjects, refreshError } = useDashboard();
   const { user } = useAuth();
   const { toast } = useToast();
   const [refreshState, setRefreshState] = useState({
     isRefreshing: false,
     lastRefreshed: null as Date | null
   });
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
   
   // Memoize the hasProjects value to prevent unnecessary rerenders
   const hasProjects = useMemo(() => filteredProjects.length > 0, [filteredProjects]);
@@ -56,6 +58,19 @@ const DashboardContent = () => {
     }
   }, [user, isLoading]);
 
+  // Set a timeout for loading
+  useEffect(() => {
+    if (isLoading) {
+      const timeout = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 10000);
+      
+      return () => clearTimeout(timeout);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [isLoading]);
+
   const handleRefreshDashboard = async () => {
     if (refreshState.isRefreshing) return;
     
@@ -71,7 +86,7 @@ const DashboardContent = () => {
       toast({
         title: "Dashboard refreshed",
         description: "Your dashboard data has been updated",
-        variant: "default", // Changed from "success" to "default"
+        variant: "default",
       });
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
@@ -85,8 +100,36 @@ const DashboardContent = () => {
     }
   };
 
+  // Function to handle manual refresh
+  const handleManualRefresh = () => {
+    handleRefreshDashboard();
+  };
+
   if (isLoading) {
     return <DashboardLoading />;
+  }
+
+  // Show error if there's a refresh error or loading timeout
+  if (refreshError || loadingTimeout) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 p-6">
+        <Alert variant="destructive" className="mb-6 w-full max-w-md">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          <AlertDescription>
+            {refreshError || "There was a problem loading your dashboard data."}
+          </AlertDescription>
+        </Alert>
+        
+        <Button 
+          onClick={handleManualRefresh} 
+          className="flex items-center gap-2"
+          variant="outline"
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span>Retry Loading</span>
+        </Button>
+      </div>
+    );
   }
 
   // Get default username for non-authenticated users
