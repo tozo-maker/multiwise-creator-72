@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -8,20 +7,9 @@ import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const MobileUserProfile = () => {
-  let user = null;
-  let profile = null;
-  let signOut = async () => { console.log('Default signOut'); };
+  const { user, profile, signOut } = useAuth();
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  
-  try {
-    const auth = useAuth();
-    user = auth.user;
-    profile = auth.profile;
-    signOut = auth.signOut;
-  } catch (error) {
-    console.error('Error accessing auth context:', error);
-  }
   
   const handleSignOut = async () => {
     try {

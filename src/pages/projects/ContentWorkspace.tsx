@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
@@ -9,8 +8,7 @@ import { ContentItemsCard } from '@/components/content/ContentItemsCard';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ContentItem } from '@/components/content/ContentItemsList';
-import { useAuth } from '@/contexts/UnifiedAuthContext'; // Updated import
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { toast } from '@/hooks/use-toast';
 import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
 import { ProjectService } from '@/services/ProjectService';

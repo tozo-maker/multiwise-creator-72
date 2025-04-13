@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ThemeRadioGroup } from '@/components/shared/ThemeRadioGroup';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/UnifiedAuthContext'; // Updated import
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 
 export const NotificationsTab = () => {
   const { toast } = useToast();
