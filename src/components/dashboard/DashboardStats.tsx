@@ -1,143 +1,87 @@
 
 import React from 'react';
-import { 
-  BookText, 
-  Activity, 
-  FileText,
-  Bookmark
-} from 'lucide-react';
 import { useDashboard } from '@/contexts/DashboardContext';
-import { Skeleton } from '@/components/ui/skeleton';
-import { motion } from 'framer-motion';
-import { StatCard } from './stats/StatCard';
-import { ContentGenerationChart } from './stats/ContentGenerationChart';
 import { ProjectActivityChart } from './stats/ProjectActivityChart';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ContentGenerationChart } from './stats/ContentGenerationChart';
+import { StatCard } from './stats/StatCard';
+import { Book, FileText, GitBranch, Users, BarChart3, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 
-// Memoized stats component for better performance
-export const DashboardStats: React.FC = React.memo(() => {
-  const { projectStats, activityData, contentGenerationData, isLoading, projects, isDemo } = useDashboard();
+interface DashboardStatsProps {
+  className?: string;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+}
 
-  // Check if we have any data to display
-  const hasNoData = projects.length === 0;
-
-  const statCards = [
-    {
-      title: 'Total Projects',
-      value: projectStats.totalProjects,
-      icon: <BookText className="h-5 w-5 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />,
-      trend: hasNoData && !isDemo ? 'No projects yet' : '+12% from last month',
-      trendUp: !(hasNoData && !isDemo),
-      backgroundColor: 'bg-indigo-50 dark:bg-indigo-950/30',
-      ariaLabel: 'Total projects count'
-    },
-    {
-      title: 'Active Projects',
-      value: projectStats.activeProjects,
-      icon: <Activity className="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />,
-      trend: hasNoData && !isDemo ? 'No active projects' : '+5% from last month',
-      trendUp: !(hasNoData && !isDemo),
-      backgroundColor: 'bg-green-50 dark:bg-green-950/30',
-      ariaLabel: 'Active projects count'
-    },
-    {
-      title: 'Content Created',
-      value: projectStats.contentCount,
-      icon: <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />,
-      trend: hasNoData && !isDemo ? 'No content yet' : '+25% from last month',
-      trendUp: !(hasNoData && !isDemo),
-      backgroundColor: 'bg-blue-50 dark:bg-blue-950/30',
-      ariaLabel: 'Content items count'
-    },
-    {
-      title: 'Knowledge Base Files',
-      value: projectStats.knowledgeBaseFiles,
-      icon: <Bookmark className="h-5 w-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />,
-      trend: hasNoData && !isDemo ? 'No files uploaded' : '+8% from last month',
-      trendUp: !(hasNoData && !isDemo),
-      backgroundColor: 'bg-amber-50 dark:bg-amber-950/30',
-      ariaLabel: 'Knowledge base files count'
-    }
-  ];
-
-  const containerAnimation = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6" aria-busy="true" aria-label="Loading dashboard statistics">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="dark:bg-slate-800 dark:border-slate-700">
-              <CardContent className="pt-6">
-                <Skeleton className="h-4 w-1/2 mb-4 dark:bg-slate-700" />
-                <Skeleton className="h-8 w-1/3 mb-4 dark:bg-slate-700" />
-                <Skeleton className="h-4 w-2/3 dark:bg-slate-700" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="col-span-1 dark:bg-slate-800 dark:border-slate-700">
-            <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-1/3 dark:bg-slate-700" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[240px] w-full dark:bg-slate-700" />
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-1 dark:bg-slate-800 dark:border-slate-700">
-            <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-1/3 dark:bg-slate-700" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[240px] w-full dark:bg-slate-700" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+export const DashboardStats = ({ className, onRefresh, isRefreshing = false }: DashboardStatsProps) => {
+  const { projectStats, activityData, contentGenerationData } = useDashboard();
 
   return (
-    <motion.div 
-      className="space-y-6"
-      variants={containerAnimation}
-      initial="hidden"
-      animate="show"
-      aria-label="Dashboard statistics"
-      role="region"
-    >
-      <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat, index) => (
-          <StatCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            icon={stat.icon}
-            trend={stat.trend}
-            trendUp={stat.trendUp}
-            backgroundColor={stat.backgroundColor}
-            ariaLabel={stat.ariaLabel}
-          />
-        ))}
-      </motion.div>
+    <div className={`space-y-6 ${className}`}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold tracking-tight">Dashboard Analytics</h2>
+        {onRefresh && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </Button>
+        )}
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard 
+          title="Total Projects"
+          value={projectStats.totalProjects}
+          icon={Book}
+          trend={projectStats.totalProjects > 0 ? "up" : "neutral"}
+          trendValue={projectStats.totalProjects > 0 ? "+1" : "0"}
+        />
+        <StatCard 
+          title="Active Projects"
+          value={projectStats.activeProjects}
+          icon={GitBranch}
+          trend={projectStats.activeProjects > 0 ? "up" : "neutral"}
+          trendValue={projectStats.activeProjects > 0 ? "+1" : "0"}
+        />
+        <StatCard 
+          title="Content Items"
+          value={projectStats.contentCount}
+          icon={FileText}
+          trend={projectStats.contentCount > 0 ? "up" : "neutral"}
+          trendValue={projectStats.contentCount > 0 ? "+1" : "0"}
+        />
+        <StatCard 
+          title="Reference Files"
+          value={projectStats.knowledgeBaseFiles}
+          icon={BarChart3}
+          trend={projectStats.knowledgeBaseFiles > 0 ? "up" : "neutral"}
+          trendValue={projectStats.knowledgeBaseFiles > 0 ? "+1" : "0"}
+        />
+      </div>
 
-      <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ContentGenerationChart data={contentGenerationData} />
-        <ProjectActivityChart data={activityData} />
-      </motion.div>
-    </motion.div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <ProjectActivityChart data={activityData} />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          <ContentGenerationChart data={contentGenerationData} />
+        </motion.div>
+      </div>
+    </div>
   );
-});
-
-DashboardStats.displayName = 'DashboardStats';
+};

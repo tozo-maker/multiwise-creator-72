@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { DashboardWelcome } from '@/components/dashboard/DashboardWelcome';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { InteractiveHelp } from '@/components/dashboard/InteractiveHelp';
@@ -8,8 +8,11 @@ import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const Dashboard = () => {
   return (
@@ -28,11 +31,59 @@ const Dashboard = () => {
 
 // Separated component to use hooks within the DashboardProvider context
 const DashboardContent = () => {
-  const { isFirstVisit, isLoading, filteredProjects, isDemo } = useDashboard();
+  const { isFirstVisit, isLoading, filteredProjects, isDemo, refreshProjects } = useDashboard();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [refreshState, setRefreshState] = useState({
+    isRefreshing: false,
+    lastRefreshed: null as Date | null
+  });
   
   // Memoize the hasProjects value to prevent unnecessary rerenders
   const hasProjects = useMemo(() => filteredProjects.length > 0, [filteredProjects]);
+
+  // Effect to handle initial data loading
+  useEffect(() => {
+    if (!isLoading && user) {
+      // Check if we should refresh data on mount
+      const lastRefresh = localStorage.getItem('dashboard_last_refresh');
+      const shouldRefresh = !lastRefresh || 
+        (Date.now() - new Date(lastRefresh).getTime()) > 5 * 60 * 1000; // 5 minutes
+      
+      if (shouldRefresh) {
+        handleRefreshDashboard();
+      }
+    }
+  }, [user, isLoading]);
+
+  const handleRefreshDashboard = async () => {
+    if (refreshState.isRefreshing) return;
+    
+    setRefreshState(prev => ({ ...prev, isRefreshing: true }));
+    try {
+      await refreshProjects();
+      
+      // Update last refresh time
+      const now = new Date();
+      localStorage.setItem('dashboard_last_refresh', now.toISOString());
+      setRefreshState({ isRefreshing: false, lastRefreshed: now });
+      
+      toast({
+        title: "Dashboard refreshed",
+        description: "Your dashboard data has been updated",
+        variant: "success",
+      });
+    } catch (error) {
+      console.error('Error refreshing dashboard:', error);
+      toast({
+        title: "Refresh failed",
+        description: "Failed to update dashboard data",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshState(prev => ({ ...prev, isRefreshing: false }));
+    }
+  };
 
   if (isLoading) {
     return <DashboardLoading />;
@@ -43,6 +94,26 @@ const DashboardContent = () => {
 
   return (
     <div className="space-y-8">
+      <AnimatePresence>
+        {isFirstVisit && (
+          <motion.div
+            key="welcome-alert"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-6"
+          >
+            <Alert variant="default" className="bg-brand-50 text-brand-800 border-brand-200">
+              <CheckCircle2 className="h-4 w-4 text-brand-500" />
+              <AlertDescription>
+                Welcome to MultiWise Creator! This platform helps you create educational content efficiently.
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -81,7 +152,7 @@ const DashboardContent = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <DashboardStats />
+        <DashboardStats onRefresh={handleRefreshDashboard} isRefreshing={refreshState.isRefreshing} />
       </motion.div>
       
       <DashboardGrid hasProjects={hasProjects} />

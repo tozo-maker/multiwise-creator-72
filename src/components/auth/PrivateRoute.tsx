@@ -1,23 +1,45 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const PrivateRoute = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
+  const [isReady, setIsReady] = useState(false);
   
-  // Allow access to dashboard without authentication
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (isLoading || !isReady) {
+    return (
+      <div className="flex items-center justify-center h-screen p-6">
+        <div className="w-full max-w-md space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   if (location.pathname === '/dashboard') {
     return <Outlet />;
   }
   
-  // For other protected routes, redirect to login if not authenticated
   if (!user) {
-    return <Navigate to="/auth/login" replace />;
+    const returnPath = location.pathname + location.search;
+    return <Navigate to={`/auth/login?returnTo=${encodeURIComponent(returnPath)}`} replace />;
   }
   
-  // Otherwise, render the protected route
   return <Outlet />;
 };
 

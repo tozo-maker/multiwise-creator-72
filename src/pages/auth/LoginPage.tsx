@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { BookText, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,14 +19,19 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, user } = useAuth();
+  
+  // Extract return path from URL if available
+  const searchParams = new URLSearchParams(location.search);
+  const returnTo = searchParams.get('returnTo') || '/dashboard';
   
   // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      navigate(returnTo, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, returnTo]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +45,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
         onLoginSuccess();
       }
       
-      navigate('/dashboard');
+      navigate(returnTo, { replace: true });
     } catch (error: any) {
       // Error is handled in the signIn function
       console.error("Login error:", error);
@@ -61,7 +66,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
         onLoginSuccess();
       }
       
-      navigate('/dashboard');
+      navigate(returnTo, { replace: true });
     } catch (error) {
       toast({
         variant: "destructive",
