@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BookText, ArrowLeft } from 'lucide-react';
+import { BookText, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface LoginPageProps {
   onLoginSuccess?: () => void;
@@ -17,6 +18,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,6 +38,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setLoginError(null);
     
     try {
       await signIn(email, password);
@@ -45,9 +48,18 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
         onLoginSuccess();
       }
       
-      navigate(returnTo, { replace: true });
+      toast({
+        title: "Login successful",
+        description: "Welcome back! Redirecting you now...",
+      });
+      
+      // Short delay to allow the toast to be seen
+      setTimeout(() => {
+        navigate(returnTo, { replace: true });
+      }, 800);
     } catch (error: any) {
-      // Error is handled in the signIn function
+      // Set the error message for display
+      setLoginError(error.message || "An unknown error occurred during login");
       console.error("Login error:", error);
     } finally {
       setIsLoading(false);
@@ -56,9 +68,10 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   
   const handleDemoLogin = async () => {
     setIsLoading(true);
+    setLoginError(null);
     
     try {
-      // Use demo account credentials - make sure these match what's expected in AuthContext
+      // Use demo account credentials
       await signIn('demo@example.com', 'password');
       
       // Call success callback if provided
@@ -66,8 +79,14 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
         onLoginSuccess();
       }
       
+      toast({
+        title: "Demo mode active",
+        description: "You're now using a demo account with limited features",
+      });
+      
       navigate(returnTo, { replace: true });
-    } catch (error) {
+    } catch (error: any) {
+      setLoginError("Demo login is currently unavailable. Please create an account or try again later.");
       toast({
         variant: "destructive",
         title: "Demo login unavailable",
@@ -79,25 +98,31 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <div className="container max-w-lg mx-auto flex-1 flex flex-col justify-center px-4 py-12">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
             <div className="h-8 w-8 rounded-md bg-brand-500 flex items-center justify-center">
               <BookText className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-slate-900">MultiGuide</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-slate-50">MultiGuide</span>
           </Link>
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Log in to your account</CardTitle>
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-semibold">Log in to your account</CardTitle>
             <CardDescription>
               Enter your email and password to access your account
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {loginError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{loginError}</AlertDescription>
+              </Alert>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -108,12 +133,14 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-white dark:bg-slate-800"
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link to="/auth/forgot-password" className="text-sm text-brand-600 hover:text-brand-700">
+                  <Link to="/auth/forgot-password" className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300">
                     Forgot password?
                   </Link>
                 </div>
@@ -124,6 +151,8 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="bg-white dark:bg-slate-800"
+                  disabled={isLoading}
                 />
               </div>
               <Button 
@@ -133,7 +162,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
               >
                 {isLoading ? (
                   <>
-                    <div className="h-4 w-4 rounded-full border-2 border-t-transparent border-white animate-spin mr-2"></div>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Logging in...
                   </>
                 ) : 'Log in'}
@@ -142,15 +171,15 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
+                <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-2 text-slate-500">Or continue with</span>
+                <span className="bg-white dark:bg-slate-900 px-2 text-slate-500 dark:text-slate-400">Or continue with</span>
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" type="button">
+              <Button variant="outline" type="button" disabled={isLoading} className="dark:bg-slate-800 dark:hover:bg-slate-700">
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -171,7 +200,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                 </svg>
                 Google
               </Button>
-              <Button variant="outline" type="button">
+              <Button variant="outline" type="button" disabled={isLoading} className="dark:bg-slate-800 dark:hover:bg-slate-700">
                 <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.287-1.82-2.323-4.63-2.323-7.28 0-4.28 2.797-6.55 5.552-6.55 1.448 0 2.675.95 3.6.95.865 0 2.222-1.01 3.902-1.01.613 0 2.886.06 4.374 2.19-.13.09-2.383 1.37-2.383 4.19 0 3.26 2.854 4.42 2.955 4.45z" />
                 </svg>
@@ -182,16 +211,17 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             <Button 
               variant="ghost" 
               type="button" 
-              className="w-full mt-4"
+              className="w-full mt-4 dark:hover:bg-slate-800"
               onClick={handleDemoLogin}
+              disabled={isLoading}
             >
               Try Demo Account
             </Button>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <div className="text-sm text-slate-600">
+            <div className="text-sm text-slate-600 dark:text-slate-400">
               Don't have an account?{' '}
-              <Link to="/auth/register" className="font-medium text-brand-600 hover:text-brand-700">
+              <Link to="/auth/register" className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300">
                 Sign up
               </Link>
             </div>
@@ -199,7 +229,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
         </Card>
         
         <div className="mt-6 text-center">
-          <Link to="/" className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center">
+          <Link to="/" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to home
           </Link>

@@ -9,19 +9,34 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
-import { User, LogOut, UserCircle, Settings } from 'lucide-react';
+import { User, LogOut, UserCircle, Settings, Bell, HelpCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useToast } from '@/hooks/use-toast';
 
 export const UserMenu = () => {
   const { user, profile, signOut } = useAuth();
   const { isDark } = useTheme();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account"
+      });
+      navigate('/');
+    } catch (error) {
+      console.error("Sign out error:", error);
+      toast({
+        variant: "destructive",
+        title: "Sign out failed",
+        description: "There was a problem signing you out. Please try again."
+      });
+    }
   };
   
   if (!user) {
@@ -47,7 +62,7 @@ export const UserMenu = () => {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="relative h-8 rounded-full overflow-hidden flex items-center gap-2"
+          className="relative h-8 rounded-full overflow-hidden flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden">
             {profile?.avatar_url ? (
@@ -63,7 +78,7 @@ export const UserMenu = () => {
             )}
           </div>
           <span className="text-sm hidden md:inline-block truncate max-w-[100px]">
-            {profile?.username || user.email?.split('@')[0]}
+            {profile?.name || profile?.username || user.email?.split('@')[0]}
           </span>
         </Button>
       </DropdownMenuTrigger>
@@ -71,7 +86,7 @@ export const UserMenu = () => {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {profile?.username || user.email?.split('@')[0]}
+              {profile?.name || profile?.username || user.email?.split('@')[0]}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
@@ -89,6 +104,18 @@ export const UserMenu = () => {
           <DropdownMenuItem className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
+          </DropdownMenuItem>
+        </Link>
+        <Link to="/notifications">
+          <DropdownMenuItem className="cursor-pointer">
+            <Bell className="mr-2 h-4 w-4" />
+            <span>Notifications</span>
+          </DropdownMenuItem>
+        </Link>
+        <Link to="/help">
+          <DropdownMenuItem className="cursor-pointer">
+            <HelpCircle className="mr-2 h-4 w-4" />
+            <span>Help & Support</span>
           </DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
