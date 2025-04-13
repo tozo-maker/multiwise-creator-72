@@ -37,45 +37,45 @@ export const FileListTable: React.FC<FileListTableProps> = ({
               <SortButton 
                 label="Name" 
                 field="name" 
-                currentField={sortField} 
-                direction={sortDirection} 
-                onChange={onSortChange} 
+                sortField={sortField || "name"} 
+                sortDirection={sortDirection || "asc"} 
+                onSort={onSortChange || (() => {})} 
               />
             </th>
             <th className="py-3 px-4 text-left font-medium hidden md:table-cell">
               <SortButton 
                 label="Category" 
                 field="category" 
-                currentField={sortField} 
-                direction={sortDirection} 
-                onChange={onSortChange} 
+                sortField={sortField || "name"} 
+                sortDirection={sortDirection || "asc"} 
+                onSort={onSortChange || (() => {})} 
               />
             </th>
             <th className="py-3 px-4 text-left font-medium hidden md:table-cell">
               <SortButton 
                 label="Type" 
                 field="fileType" 
-                currentField={sortField} 
-                direction={sortDirection} 
-                onChange={onSortChange} 
+                sortField={sortField || "name"} 
+                sortDirection={sortDirection || "asc"} 
+                onSort={onSortChange || (() => {})} 
               />
             </th>
             <th className="py-3 px-4 text-left font-medium hidden md:table-cell">
               <SortButton 
                 label="Size" 
                 field="size" 
-                currentField={sortField} 
-                direction={sortDirection} 
-                onChange={onSortChange} 
+                sortField={sortField || "name"} 
+                sortDirection={sortDirection || "asc"} 
+                onSort={onSortChange || (() => {})} 
               />
             </th>
             <th className="py-3 px-4 text-left font-medium hidden md:table-cell">
               <SortButton 
                 label="Upload Date" 
                 field="uploadDate" 
-                currentField={sortField} 
-                direction={sortDirection} 
-                onChange={onSortChange} 
+                sortField={sortField || "name"} 
+                sortDirection={sortDirection || "asc"} 
+                onSort={onSortChange || (() => {})} 
               />
             </th>
             <th className="py-3 px-4 text-right font-medium">Actions</th>
