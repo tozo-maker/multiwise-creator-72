@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, FileText, BookOpen, LayoutGrid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Accordion,
@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { SheetClose } from '@/components/ui/sheet';
+import { OutlineNavigation } from '@/components/outline/OutlineNavigation';
 
 export const MobileProjectNavigation: React.FC = () => {
   const location = useLocation();
@@ -19,9 +20,9 @@ export const MobileProjectNavigation: React.FC = () => {
   if (!projectId) return null;
   
   const projectNavItems = [
-    { text: "Overview", to: `/projects/${projectId}` },
-    { text: "Knowledge Base", to: `/projects/${projectId}/knowledge-base` },
-    { text: "Content", to: `/projects/${projectId}/content` },
+    { text: "Overview", to: `/projects/${projectId}`, icon: LayoutGrid },
+    { text: "Knowledge Base", to: `/projects/${projectId}/knowledge-base`, icon: BookOpen },
+    { text: "Content", to: `/projects/${projectId}/content`, icon: FileText },
     { text: "Analysis", to: `/projects/${projectId}/analysis` },
     { text: "Enhancements", to: `/projects/${projectId}/enhancements` },
     { text: "Configuration", to: `/projects/${projectId}/configuration` },
@@ -29,7 +30,7 @@ export const MobileProjectNavigation: React.FC = () => {
   ];
 
   return (
-    <Accordion type="single" collapsible className="px-2 mt-4">
+    <Accordion type="multiple" className="px-2 mt-4">
       <AccordionItem value="project-navigation" className="border-b-0">
         <AccordionTrigger className="py-2 px-3 hover:no-underline">
           <span className="text-sm font-medium">Current Project</span>
@@ -47,6 +48,7 @@ export const MobileProjectNavigation: React.FC = () => {
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                   )}
                 >
+                  {item.icon && <item.icon className="w-4 h-4" />}
                   <span>{item.text}</span>
                   {location.pathname === item.to && (
                     <ChevronRight className="h-4 w-4 ml-auto text-brand-600" />
@@ -55,6 +57,20 @@ export const MobileProjectNavigation: React.FC = () => {
               </SheetClose>
             ))}
           </nav>
+        </AccordionContent>
+      </AccordionItem>
+      
+      <AccordionItem value="outline" className="border-b-0">
+        <AccordionTrigger className="py-2 px-3 hover:no-underline">
+          <span className="text-sm font-medium">Project Outline</span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="px-2">
+            <OutlineNavigation 
+              projectId={projectId} 
+              displayMode="compact" 
+            />
+          </div>
         </AccordionContent>
       </AccordionItem>
     </Accordion>

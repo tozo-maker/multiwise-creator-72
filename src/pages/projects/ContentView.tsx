@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -17,7 +18,12 @@ import { ContentService, ContentItem } from '@/services/ContentService';
 import { ApprovalService, ApprovalStep } from '@/services/ApprovalService';
 import { ApprovalWorkflow } from '@/components/content/ApprovalWorkflow';
 import { ContentVersionHistory } from '@/components/content/ContentVersionHistory';
-import { ArrowLeft, Clock, Edit2, Eye, FileText, Save } from 'lucide-react';
+import { ContentExport } from '@/components/content/ContentExport';
+import { OutlineNavigation } from '@/components/outline/OutlineNavigation';
+import { ArrowLeft, Clock, Download, Edit2, Eye, FileText, Save, Tag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { VersionService } from '@/services/VersionService';
+import { OutlineService } from '@/services/OutlineService';
 
 const ContentView = () => {
   const { projectId, contentId } = useParams<{ projectId: string; contentId: string }>();
@@ -37,6 +43,7 @@ const ContentView = () => {
   const [contentItem, setContentItem] = useState<ContentItem | null>(null);
   const [status, setStatus] = useState<'draft' | 'published' | 'archived' | 'in-review'>('draft');
   const [approvalSteps, setApprovalSteps] = useState<ApprovalStep[]>([]);
+  const [relatedOutlineItem, setRelatedOutlineItem] = useState<any>(null);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +68,28 @@ const ContentView = () => {
         if (contentData) {
           setContentItem(contentData);
           setStatus(contentData.status);
+          
+          // Check if this content is related to an outline item
+          const outlineItemId = contentData.metadata?.custom?.outlineItemId;
+          if (outlineItemId) {
+            // Fetch outline to find the related item
+            const outlineData = await OutlineService.getOutlineByProject(projectId);
+            if (outlineData) {
+              const sections = await OutlineService.getSectionsByOutline(outlineData.id);
+              
+              // Find the related outline item
+              for (const section of sections) {
+                const item = section.items.find(i => i.id === outlineItemId);
+                if (item) {
+                  setRelatedOutlineItem({
+                    ...item,
+                    sectionTitle: section.title
+                  });
+                  break;
+                }
+              }
+            }
+          }
           
           // If content has approval workflow in metadata, load it
           if (contentData.metadata?.approvalWorkflow) {
@@ -159,11 +188,21 @@ const ContentView = () => {
     try {
       setIsSaving(true);
       
-      // In a real app, this would restore content from a specific version
-      toast({
-        title: 'Version Restored',
-        description: `Restored to version ${version.version}`
-      });
+      // Restore content from a specific version
+      const success = await VersionService.restoreVersion(version.id);
+      
+      if (success) {
+        // Refresh content data
+        const refreshedContent = await ContentService.getById(contentId!);
+        if (refreshedContent) {
+          setContentItem(refreshedContent);
+        }
+        
+        toast({
+          title: 'Version Restored',
+          description: `Restored to version ${version.version}`
+        });
+      }
     } catch (error: any) {
       console.error('Error restoring version:', error);
       toast({
@@ -174,6 +213,18 @@ const ContentView = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+  
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
   
   if (isLoading) {
@@ -217,7 +268,7 @@ const ContentView = () => {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Last modified: {contentItem?.updated_at}
+                Last modified: {formatDate(contentItem?.updated_at || '')}
               </span>
             </div>
             
@@ -244,45 +295,14 @@ const ContentView = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <div className="xl:col-span-2 space-y-6">
-            <Card className={isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200 shadow-sm"}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className={`w-5 h-5 ${
-                    isDark ? 'text-slate-400' : 'text-slate-600'
-                  }`} />
-                  <span className={`text-sm font-medium uppercase ${
-                    isDark ? 'text-slate-400' : 'text-slate-600'
-                  }`}>
-                    {contentItem?.type}
-                  </span>
-                </div>
-                <CardTitle className={`text-2xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-                  {contentItem?.title}
-                </CardTitle>
-                <div className="flex items-center mt-2">
-                  <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    Version: {contentItem?.version || 1}
-                  </div>
-                </div>
-              </CardHeader>
-              <Separator className={isDark ? 'bg-slate-700' : 'bg-slate-200'} />
-              <CardContent className="pt-6">
-                <div className={`prose max-w-none ${
-                  isDark ? 'prose-invert text-slate-300' : 'text-slate-700'
-                }`}>
-                  {contentItem?.content.split('\n').map((line, i) => (
-                    <p key={i} className={!line ? 'mb-4' : ''}>
-                      {line || <br />}
-                    </p>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          <div className="xl:col-span-1 space-y-6">
+            <OutlineNavigation 
+              projectId={projectId!}
+              activeItemId={relatedOutlineItem?.id}
+              displayMode="sidebar"
+            />
+            
             <ApprovalWorkflow
               contentId={contentItem?.id || ''}
               currentStatus={status}
@@ -297,6 +317,76 @@ const ContentView = () => {
               currentVersion={contentItem?.version || 1}
               onRestoreVersion={handleRestoreVersion}
             />
+            
+            {contentItem && (
+              <ContentExport
+                content={contentItem.content}
+                title={contentItem.title}
+                tags={contentItem.metadata?.tags || []}
+                metadata={contentItem.metadata}
+              />
+            )}
+          </div>
+          
+          <div className="xl:col-span-3 space-y-6">
+            <Card className={isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200 shadow-sm"}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className={`w-5 h-5 ${
+                    isDark ? 'text-slate-400' : 'text-slate-600'
+                  }`} />
+                  <span className={`text-sm font-medium uppercase ${
+                    isDark ? 'text-slate-400' : 'text-slate-600'
+                  }`}>
+                    {contentItem?.content_type}
+                  </span>
+                </div>
+                <CardTitle className={`text-2xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+                  {contentItem?.title}
+                </CardTitle>
+                
+                {contentItem?.metadata?.tags && contentItem.metadata.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <Tag className="w-4 h-4 text-muted-foreground" />
+                    {contentItem.metadata.tags.map((tag: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="px-2 py-0">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex items-center mt-2">
+                  <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Version: {contentItem?.version || 1}
+                    {contentItem?.metadata?.wordCount && (
+                      <span> • {contentItem.metadata.wordCount} words</span>
+                    )}
+                    {contentItem?.metadata?.category && (
+                      <span> • Category: {contentItem.metadata.category}</span>
+                    )}
+                  </div>
+                </div>
+                
+                {relatedOutlineItem && (
+                  <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'} mt-2`}>
+                    From outline: <strong>{relatedOutlineItem.sectionTitle}</strong> &gt; {relatedOutlineItem.title}
+                  </div>
+                )}
+              </CardHeader>
+              <Separator className={isDark ? 'bg-slate-700' : 'bg-slate-200'} />
+              <CardContent className="pt-6">
+                <div className={`prose max-w-none ${
+                  isDark ? 'prose-invert text-slate-300' : 'text-slate-700'
+                }`}>
+                  {contentItem?.content.split('\n').map((line, i) => (
+                    <p key={i} className={!line ? 'mb-4' : ''}>
+                      {line || <br />}
+                    </p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
