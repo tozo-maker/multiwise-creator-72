@@ -3,7 +3,6 @@ import React from 'react';
 import { ModernTopBar } from './ModernTopBar';
 import { ModernSidebar } from './ModernSidebar';
 import { cn } from '@/lib/utils';
-import { DashboardProvider } from '@/contexts/DashboardContext';
 import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -60,25 +59,23 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
       )}>
         <ModernSidebar />
         
-        <DashboardProvider>
-          <SidebarInset className="flex flex-col w-full">
-            <ModernTopBar />
-            <main 
-              id={mainId}
-              className={cn(
-                "flex-1 overflow-y-auto p-3 md:p-6 w-full",
-                isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
-              )}
-              role="main"
-              aria-label={ariaLabel}
-              tabIndex={-1}
-            >
-              <div className={cn("mx-auto transition-all px-4 md:px-6", getMaxWidthClass())}>
-                {children}
-              </div>
-            </main>
-          </SidebarInset>
-        </DashboardProvider>
+        <SidebarInset className="flex flex-col w-full">
+          <ModernTopBar />
+          <main 
+            id={mainId}
+            className={cn(
+              "flex-1 overflow-y-auto p-3 md:p-6 w-full",
+              isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
+            )}
+            role="main"
+            aria-label={ariaLabel}
+            tabIndex={-1}
+          >
+            <div className={cn("mx-auto transition-all px-4 md:px-6", getMaxWidthClass())}>
+              {children}
+            </div>
+          </main>
+        </SidebarInset>
       </div>
     </SidebarProvider>
   );
