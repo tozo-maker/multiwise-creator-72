@@ -25,7 +25,7 @@ interface FormValues {
   contentType: string;
   prompt: string;
   complexity: string;
-  audience: string;
+  audience: 'elementary' | 'middle_school' | 'high_school' | 'undergraduate' | 'graduate' | 'adult_learning';
 }
 
 interface ContextFile {
