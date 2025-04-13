@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -11,6 +10,10 @@ export interface ApprovalStep {
   completedBy?: string;
   completedAt?: Date;
   comments?: string;
+  metadata?: {
+    deadline?: string;
+    [key: string]: any;
+  };
 }
 
 export interface ApprovalWorkflow {

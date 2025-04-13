@@ -8,13 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, Check, Clock, PlusCircle, Activity, Settings, Users, Calendar } from 'lucide-react';
+import { CalendarIcon, Check, Clock, PlusCircle, Activity, Settings, Users, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ApprovalService, ApprovalStep, ApprovalWorkflow, ApprovalWorkflowTemplate } from '@/services/ApprovalService';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 
 interface WorkflowManagerProps {
@@ -207,7 +207,13 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     // In a real app, this would update the database
     // For now, we'll just update the local state
     setCurrentWorkflow(currentWorkflow.map(step => 
-      step.id === selectedStepId ? { ...step, metadata: { ...step.metadata, deadline: date.toISOString() } } : step
+      step.id === selectedStepId ? { 
+        ...step, 
+        metadata: { 
+          ...(step.metadata || {}), 
+          deadline: date.toISOString() 
+        } 
+      } : step
     ));
     
     setDeadlineSetting(false);
@@ -570,7 +576,7 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
                   >
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-full bg-slate-100 dark:bg-slate-700">
-                        <Calendar className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        <CalendarIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                       </div>
                       <div>
                         <h4 className="font-medium">{step.name}</h4>
@@ -620,7 +626,7 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
-                          <Calendar
+                          <CalendarComponent
                             mode="single"
                             selected={date}
                             onSelect={setDate}
@@ -640,7 +646,7 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
               </div>
             ) : (
               <div className="text-center py-8">
-                <Calendar size={40} className="mx-auto mb-2 text-slate-400" />
+                <CalendarIcon size={40} className="mx-auto mb-2 text-slate-400" />
                 <h3 className="text-lg font-medium mb-1">No Workflow Added</h3>
                 <p className="text-slate-500 dark:text-slate-400 mb-4">
                   Add a workflow to manage deadlines
