@@ -11,6 +11,7 @@ export interface ContentItem {
   project_id: string;
   created_at?: string;
   updated_at?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface ContentCreateInput {
@@ -19,6 +20,7 @@ export interface ContentCreateInput {
   content: string;
   project_id: string;
   status?: 'draft' | 'in-review' | 'completed';
+  metadata?: Record<string, any>;
 }
 
 export interface ContentUpdateInput {
@@ -26,6 +28,7 @@ export interface ContentUpdateInput {
   type?: string;
   content?: string;
   status?: 'draft' | 'in-review' | 'completed';
+  metadata?: Record<string, any>;
 }
 
 export const ContentService = {
@@ -100,7 +103,8 @@ export const ContentService = {
         type: input.type,
         content: input.content,
         project_id: input.project_id,
-        status: input.status || 'draft'
+        status: input.status || 'draft',
+        metadata: input.metadata
       })
       .select()
       .single();
@@ -119,6 +123,7 @@ export const ContentService = {
       content: data.content || '',
       status: data.status,
       project_id: data.project_id,
+      metadata: data.metadata,
       created_at: new Date(data.created_at).toLocaleString(),
       updated_at: new Date(data.updated_at).toLocaleString()
     };
@@ -132,6 +137,7 @@ export const ContentService = {
     if (input.type !== undefined) updateData.type = input.type;
     if (input.content !== undefined) updateData.content = input.content;
     if (input.status !== undefined) updateData.status = input.status;
+    if (input.metadata !== undefined) updateData.metadata = input.metadata;
     
     const { data, error } = await supabase
       .from('content_items')
@@ -154,6 +160,7 @@ export const ContentService = {
       content: data.content || '',
       status: data.status,
       project_id: data.project_id,
+      metadata: data.metadata,
       created_at: new Date(data.created_at).toLocaleString(),
       updated_at: new Date(data.updated_at).toLocaleString()
     };

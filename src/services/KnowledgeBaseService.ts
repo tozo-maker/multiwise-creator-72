@@ -27,6 +27,33 @@ export class KnowledgeBaseService {
     return true;
   }
   
+  static async getFilesByProject(projectId: string): Promise<KBFile[]> {
+    console.log('Fetching knowledge base files for project:', projectId);
+    
+    const { data, error } = await supabase
+      .from('knowledge_base_files')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching knowledge base files:', error);
+      throw error;
+    }
+    
+    // Transform data to match KBFile interface
+    return data?.map(file => ({
+      id: file.id,
+      name: file.name,
+      description: file.description || '',
+      fileType: file.file_type,
+      size: file.size || 'Unknown',
+      uploadDate: new Date(file.created_at).toLocaleDateString(),
+      category: file.category || 'Other',
+      url: file.url || ''
+    })) || [];
+  }
+  
   static async uploadFiles(userId: string, newFiles: { file: File, description: string }[]) {
     console.log('Uploading files for user:', userId, 'File count:', newFiles.length);
     const uploadPromises = newFiles.map(async (newFile) => {
