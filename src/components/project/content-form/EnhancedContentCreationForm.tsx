@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -130,7 +131,7 @@ export const EnhancedContentCreationForm = () => {
         status: 'draft',
         metadata: {
           audience: values.audience,
-          complexityLevel: values.complexity,
+          difficultyLevel: values.complexity,
           outlineItemId: selectedOutlineItem?.id,
           knowledgeBaseIds: selectedFiles,
           generatedDate: new Date().toISOString()
