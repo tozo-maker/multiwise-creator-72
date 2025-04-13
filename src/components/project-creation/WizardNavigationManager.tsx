@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { ProjectData } from './hooks/useProjectWizard';
+import { EnhancedProjectData } from './types/project-wizard-types';
 import { useToast } from '@/hooks/use-toast';
 
 interface WizardNavigationManagerProps {
   currentStep: number;
-  formData: ProjectData;
+  formData: EnhancedProjectData;
   goToStep: (step: number) => void;
   children: (navigateToNext: () => void) => React.ReactNode;
 }
@@ -29,7 +29,7 @@ export const WizardNavigationManager: React.FC<WizardNavigationManagerProps> = (
     }
     
     if (currentStep === 1 && formData.quickStart !== 'custom' && formData.quickStart !== '') {
-      goToStep(5);
+      goToStep(5); // Skip to Knowledge Base step if using a template
       return;
     }
     

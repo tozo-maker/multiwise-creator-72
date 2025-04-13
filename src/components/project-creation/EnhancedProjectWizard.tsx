@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Wizard } from '@/components/shared/wizard/Wizard';
 import { WizardStep } from '@/contexts/WizardContext';
@@ -172,17 +171,10 @@ export function EnhancedProjectWizard({ onComplete }: EnhancedProjectWizardProps
       saveKey="enhanced-project-wizard"
       onComplete={handleEnhancedProjectCreate}
       renderStep={renderStep}
-      navigateLogic={(currentStep, formData, goToStep) => (
-        <WizardNavigationManager 
-          currentStep={currentStep}
-          formData={formData}
-          goToStep={goToStep}
-        >
-          {(navigateToNext) => {
-            return <span onClick={navigateToNext} style={{ display: 'none' }}></span>;
-          }}
-        </WizardNavigationManager>
-      )}
+      navigateLogic={(currentStep, formData, goToStep) => {
+        // Handle navigation directly here instead of using WizardNavigationManager
+        return null;
+      }}
       showStepIndicator={true}
       title="Create New Project"
       description="Configure your educational content project by following these steps."
