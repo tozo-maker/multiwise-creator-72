@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { projectStats as mockProjectStats, activityData as mockActivityData, contentGenerationData as mockContentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
@@ -136,7 +137,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   };
 
   const fetchContentItemsCount = async () => {
-    if (!user) return;
+    if (!user) return 0;
     
     try {
       const { count, error } = await supabase
@@ -146,15 +147,15 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       if (error) throw error;
       
       console.log('Content items count:', count);
-      setContentItemsCount(count || 0);
+      return count || 0;
     } catch (error) {
       console.error('Error fetching content items count:', error);
-      setContentItemsCount(0);
+      return 0;
     }
   };
   
   const fetchKnowledgeBaseFilesCount = async () => {
-    if (!user) return;
+    if (!user) return 0;
     
     try {
       const { count, error } = await supabase
@@ -164,10 +165,10 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       if (error) throw error;
       
       console.log('Knowledge base files count:', count);
-      setKnowledgeBaseFilesCount(count || 0);
+      return count || 0;
     } catch (error) {
       console.error('Error fetching knowledge base files count:', error);
-      setKnowledgeBaseFilesCount(0);
+      return 0;
     }
   };
 
@@ -206,19 +207,31 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const refreshProjects = async () => {
     setRefreshError(null);
     try {
-      const [projectsData, contentCount, knowledgeBaseCount, activityData, contentGenData] = await Promise.all([
-        fetchProjects(),
-        fetchContentItemsCount(),
-        fetchKnowledgeBaseFilesCount(),
-        ProjectService.getActivityData(),
-        ProjectService.getContentGenerationData()
-      ]);
-
+      const projectsData = await fetchProjects();
+      const contentCount = await fetchContentItemsCount();
+      const knowledgeBaseCount = await fetchKnowledgeBaseFilesCount();
+      
       setProjects(projectsData);
       setContentItemsCount(contentCount);
       setKnowledgeBaseFilesCount(knowledgeBaseCount);
-      setRealActivityData(activityData.length > 0 ? activityData : emptyActivityData);
-      setRealContentGeneration(contentGenData.length > 0 ? contentGenData : emptyContentGenerationData);
+      
+      // Fetch activity data
+      try {
+        const activityData = await ProjectService.getActivityData();
+        setRealActivityData(activityData.length > 0 ? activityData : emptyActivityData);
+      } catch (error) {
+        console.error('Error fetching activity data:', error);
+        setRealActivityData(emptyActivityData);
+      }
+      
+      // Fetch content generation data
+      try {
+        const contentGenData = await ProjectService.getContentGenerationData();
+        setRealContentGeneration(contentGenData.length > 0 ? contentGenData : emptyContentGenerationData);
+      } catch (error) {
+        console.error('Error fetching content generation data:', error);
+        setRealContentGeneration(emptyContentGenerationData);
+      }
 
       toast({
         title: "Dashboard Refreshed",
