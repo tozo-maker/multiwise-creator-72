@@ -44,6 +44,11 @@ export interface EnhancedProjectData {
   
   // Other settings
   deadline?: string;
+  
+  // Adding the missing properties to match ProjectData
+  type: string;
+  language: string;
+  targetAudience: string;
 }
 
 export interface SystemConfigOption {

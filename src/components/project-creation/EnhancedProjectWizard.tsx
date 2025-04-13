@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Wizard } from '@/components/shared/wizard/Wizard';
 import { WizardStep } from '@/contexts/WizardContext';
@@ -121,6 +122,11 @@ export function EnhancedProjectWizard({ onComplete }: EnhancedProjectWizardProps
     
     // Other settings
     deadline: '',
+    
+    // Adding the missing properties to match ProjectData
+    type: 'Textbook',      // Default to match projectType
+    language: 'English',   // Default to match targetLanguage
+    targetAudience: 'Secondary', // Default to match first item in levels
   };
   
   const renderStep = (stepId: number, formData: EnhancedProjectData, updateData: (data: Partial<EnhancedProjectData>) => void) => {
@@ -144,12 +150,27 @@ export function EnhancedProjectWizard({ onComplete }: EnhancedProjectWizardProps
     }
   };
   
+  // Create a handler that converts EnhancedProjectData to ProjectData
+  const handleEnhancedProjectCreate = (data: EnhancedProjectData) => {
+    // Make sure the required fields are synchronized
+    const updatedData = {
+      ...data,
+      // Ensure these fields are synchronized with their enhanced equivalents
+      type: data.projectType || data.type,
+      language: data.targetLanguage || data.language,
+      targetAudience: data.levels.length > 0 ? data.levels[0] : data.targetAudience
+    };
+    
+    // Call the original handler with the updated data
+    handleProjectCreate(updatedData);
+  };
+  
   return (
     <Wizard
       steps={steps}
       initialData={initialData}
       saveKey="enhanced-project-wizard"
-      onComplete={handleProjectCreate}
+      onComplete={handleEnhancedProjectCreate}
       renderStep={renderStep}
       navigateLogic={(currentStep, formData, goToStep) => (
         <WizardNavigationManager 
