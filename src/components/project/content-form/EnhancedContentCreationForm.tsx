@@ -38,13 +38,14 @@ export const EnhancedContentCreationForm = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  
   const form = useForm<FormValues>({
     defaultValues: {
       title: '',
       contentType: 'lesson',
       prompt: '',
       complexity: 'intermediate',
-      audience: 'students',
+      audience: 'elementary',
     }
   });
   
