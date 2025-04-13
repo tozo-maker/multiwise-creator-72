@@ -6,12 +6,16 @@ import './index.css';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UnifiedAuthProvider } from './contexts/UnifiedAuthContext';
 import { AuthProfileProvider } from './contexts/AuthProfileContext';
+import { Toaster } from '@/components/ui/toaster';
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <UnifiedAuthProvider>
       <AuthProfileProvider>
-        <App />
+        <ThemeProvider>
+          <App />
+          <Toaster />
+        </ThemeProvider>
       </AuthProfileProvider>
     </UnifiedAuthProvider>
   </BrowserRouter>

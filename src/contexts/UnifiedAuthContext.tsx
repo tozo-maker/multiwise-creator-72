@@ -2,8 +2,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { getValidSession, setupSessionRefresh } from '@/utils/sessionUtils';
+import { toast as showToast } from '@/hooks/use-toast';
 
 interface Profile {
   username?: string;
@@ -40,7 +40,6 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -104,7 +103,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
 
     // Set up session refresh
     const cleanupRefresh = setupSessionRefresh(() => {
-      toast({
+      showToast({
         title: "Session Expired",
         description: "Your session has expired. Please sign in again.",
         variant: "destructive"
@@ -119,7 +118,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       subscription.unsubscribe();
       cleanupRefresh();
     };
-  }, [toast]);
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -129,7 +128,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       });
       
       if (!error) {
-        toast({
+        showToast({
           title: "Signed in successfully",
           description: "Welcome back!",
         });
@@ -162,13 +161,13 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      toast({
+      showToast({
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
     } catch (error) {
       console.error('Error signing out:', error);
-      toast({
+      showToast({
         title: "Error",
         description: "An error occurred while signing out.",
         variant: "destructive"
@@ -183,7 +182,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       });
       
       if (!error) {
-        toast({
+        showToast({
           title: "Password reset email sent",
           description: "Please check your email for instructions to reset your password.",
         });
@@ -211,12 +210,12 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       // Update local state
       setProfile(prev => prev ? { ...prev, ...data } : data);
       
-      toast({
+      showToast({
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
       });
     } catch (error: any) {
-      toast({
+      showToast({
         variant: "destructive",
         title: "Profile update failed",
         description: error.message || "An error occurred while updating your profile.",
