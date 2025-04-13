@@ -5,11 +5,14 @@ import App from './App.tsx';
 import './index.css';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UnifiedAuthProvider } from './contexts/UnifiedAuthContext';
+import { AuthProfileProvider } from './contexts/AuthProfileContext';
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <UnifiedAuthProvider>
-      <App />
+      <AuthProfileProvider>
+        <App />
+      </AuthProfileProvider>
     </UnifiedAuthProvider>
   </BrowserRouter>
 );

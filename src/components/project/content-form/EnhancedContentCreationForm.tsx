@@ -55,7 +55,8 @@ export const EnhancedContentCreationForm = () => {
   const [contextFiles, setContextFiles] = useState<ContextFile[]>([]);
   const [outline, setOutline] = useState<ProjectOutline | null>(null);
   const [selectedOutlineItem, setSelectedOutlineItem] = useState<OutlineItem | null>(null);
-  
+  const [selectedAudience, setSelectedAudience] = useState<'elementary' | 'middle_school' | 'high_school' | 'undergraduate' | 'graduate' | 'adult_learning' | ''>('');
+
   useEffect(() => {
     const fetchOutline = async () => {
       if (!projectId) return;
