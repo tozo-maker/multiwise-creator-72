@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { KnowledgeBaseFile } from '@/types/supabase-custom';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 
 interface ProjectResourcesProps {
   projectId: string;
@@ -15,11 +15,14 @@ interface ProjectResourcesProps {
 export const ProjectResources: React.FC<ProjectResourcesProps> = ({ projectId }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { user } = useAuth();
   const [resources, setResources] = useState<KnowledgeBaseFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     const fetchResources = async () => {
+      if (!user) return;
+      
       try {
         setIsLoading(true);
         console.log('Fetching resources for project:', projectId);
@@ -58,9 +61,8 @@ export const ProjectResources: React.FC<ProjectResourcesProps> = ({ projectId })
     };
     
     fetchResources();
-  }, [projectId]);
+  }, [projectId, user]);
   
-  // Define icon components based on file type
   const getIconForResource = (fileType: string) => {
     const type = fileType.toLowerCase();
     if (type === 'pdf' || type === 'docx' || type === 'doc' || type === 'txt') {

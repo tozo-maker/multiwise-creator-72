@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { KnowledgeBaseTabs } from '@/components/knowledge/KnowledgeBaseTabs';
@@ -11,10 +10,12 @@ import { KnowledgeBaseTabContent } from '@/components/knowledge/KnowledgeBaseTab
 import { ThemeCard } from '@/components/shared/ThemeCard';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useKnowledgeBaseStats } from '@/hooks/useKnowledgeBaseStats';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 
 const KnowledgeBasePage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const { user } = useAuth();
   
   const { 
     files, 

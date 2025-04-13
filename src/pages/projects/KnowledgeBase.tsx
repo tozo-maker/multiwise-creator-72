@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -8,7 +7,7 @@ import { KnowledgeBaseHeader } from '@/components/knowledge/KnowledgeBaseHeader'
 import { KnowledgeBaseContent } from '@/components/knowledge/KnowledgeBaseContent';
 import { KnowledgeBaseDescription } from '@/components/knowledge/KnowledgeBaseDescription';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 
 export const KnowledgeBase = () => {
   const { projectId } = useParams<{ projectId: string }>();
