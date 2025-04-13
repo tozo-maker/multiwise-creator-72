@@ -17,7 +17,20 @@ export const ModernTopBar = React.memo(function ModernTopBar() {
   const { toast } = useToast();
   const { isDark } = useTheme();
   const navigate = useNavigate();
-  const dashboard = useDashboard();
+
+  // Get dashboard context if it's available, otherwise use default values
+  let searchTerm = '';
+  let setSearchTerm = (_: string) => {}; // No-op function as fallback
+  
+  try {
+    // This will throw an error if not in a DashboardProvider
+    const dashboard = useDashboard();
+    searchTerm = dashboard.searchTerm;
+    setSearchTerm = dashboard.setSearchTerm;
+  } catch (error) {
+    // Dashboard context not available, using default values
+    console.log('Dashboard context not available in ModernTopBar');
+  }
 
   const handleHelpClick = React.useCallback(() => {
     navigate('/help');
@@ -43,8 +56,8 @@ export const ModernTopBar = React.memo(function ModernTopBar() {
       
       <div className="flex-1 pl-4 pr-4 max-w-2xl mx-auto">
         <SearchBar 
-          searchTerm={dashboard.searchTerm} 
-          setSearchTerm={dashboard.setSearchTerm} 
+          searchTerm={searchTerm} 
+          setSearchTerm={setSearchTerm} 
         />
       </div>
       

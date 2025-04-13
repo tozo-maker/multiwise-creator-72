@@ -1,4 +1,3 @@
-
 import React, { useMemo, useEffect, useState } from 'react';
 import { DashboardWelcome } from '@/components/dashboard/DashboardWelcome';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
@@ -17,16 +16,16 @@ import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
   return (
-    <DashboardLayout 
-      contentWidth="wide" 
-      pageTitle="Dashboard" 
-      pageDescription="Welcome to your MultiGuide Dashboard"
-      mainId="dashboard-main"
-    >
-      <DashboardProvider>
+    <DashboardProvider>
+      <DashboardLayout 
+        contentWidth="wide" 
+        pageTitle="Dashboard" 
+        pageDescription="Welcome to your MultiGuide Dashboard"
+        mainId="dashboard-main"
+      >
         <DashboardContent />
-      </DashboardProvider>
-    </DashboardLayout>
+      </DashboardLayout>
+    </DashboardProvider>
   );
 };
 

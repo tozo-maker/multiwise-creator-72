@@ -6,11 +6,11 @@ import { AnalyticsMainContent } from './components/AnalyticsMainContent';
 
 export const Analytics = () => {
   return (
-    <ModernLayout contentWidth="wide">
-      <DashboardProvider>
+    <DashboardProvider>
+      <ModernLayout contentWidth="wide">
         <AnalyticsMainContent />
-      </DashboardProvider>
-    </ModernLayout>
+      </ModernLayout>
+    </DashboardProvider>
   );
 };
 

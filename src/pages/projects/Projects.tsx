@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
@@ -132,11 +131,11 @@ const ProjectsContent = () => {
 
 export const Projects = () => {
   return (
-    <ModernLayout contentWidth="wide">
-      <DashboardProvider>
+    <DashboardProvider>
+      <ModernLayout contentWidth="wide">
         <ProjectsContent />
-      </DashboardProvider>
-    </ModernLayout>
+      </ModernLayout>
+    </DashboardProvider>
   );
 };
 
