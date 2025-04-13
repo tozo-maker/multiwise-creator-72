@@ -6,7 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 interface BreadcrumbItem {
   label: string;
-  path: string;
+  path?: string; // Make path optional
 }
 
 interface PageBreadcrumbsProps {
@@ -30,7 +30,7 @@ export const PageBreadcrumbs: React.FC<PageBreadcrumbsProps> = ({ items }) => {
           return (
             <React.Fragment key={index}>
               <li>
-                {isLast ? (
+                {isLast || !item.path ? (
                   <span
                     className={`font-medium ${
                       isDark ? 'text-white' : 'text-slate-900'

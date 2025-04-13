@@ -16,7 +16,7 @@ export const ConfigurationWizardHeader: React.FC<ConfigurationWizardHeaderProps>
       <PageBreadcrumbs 
         items={[
           { label: 'Projects', path: '/projects' },
-          { label: 'Create New Project' }
+          { label: 'Create New Project' } // This is fine now since path is optional
         ]}
       />
       
