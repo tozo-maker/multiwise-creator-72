@@ -10,6 +10,7 @@ interface Profile {
   avatar_url?: string;
   name?: string;
   theme?: string;
+  bio?: string;
   email_notifications?: boolean;
 }
 
