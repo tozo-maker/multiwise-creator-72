@@ -132,9 +132,9 @@ export const EnhancedContentCreationForm = () => {
           audience: values.audience,
           difficultyLevel: values.complexity,
           custom: {
-            outlineItemId: selectedOutlineItem?.id
+            outlineItemId: selectedOutlineItem?.id,
+            knowledgeBaseIds: selectedFiles
           },
-          knowledgeBaseIds: selectedFiles,
           generatedDate: new Date().toISOString()
         }
       });
