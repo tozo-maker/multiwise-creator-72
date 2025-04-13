@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export interface DocumentInsight {
   id: string;
@@ -16,6 +16,13 @@ export interface DocumentInsight {
   updated_at?: string;
   analysis_type?: string;
   status?: string;
+  related_files?: string[];
+}
+
+export interface ProcessDocumentOptions {
+  analysisType?: string;
+  forceReAnalysis?: boolean;
+  relatedFileIds?: string[];
 }
 
 export const DocumentInsightService = {
@@ -36,11 +43,6 @@ export const DocumentInsightService = {
       return data;
     } catch (error) {
       console.error('Error fetching document insight:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load document insight',
-        variant: 'destructive',
-      });
       return null;
     }
   },
@@ -61,19 +63,39 @@ export const DocumentInsightService = {
       return data || [];
     } catch (error) {
       console.error('Error fetching document insights for project:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load document insights',
-        variant: 'destructive',
-      });
       return [];
     }
   },
   
-  async processDocument(fileId: string, projectId: string, options?: {
-    analysisType?: string;
-    forceReAnalysis?: boolean;
-  }): Promise<DocumentInsight> {
+  async getRelatedInsights(fileId: string): Promise<DocumentInsight[]> {
+    try {
+      // First get the current file's insights to find related files
+      const mainInsight = await this.getByFileId(fileId);
+      
+      if (!mainInsight || !mainInsight.related_files || mainInsight.related_files.length === 0) {
+        return [];
+      }
+      
+      // Fetch insights for related files
+      const { data, error } = await supabase
+        .from('document_insights')
+        .select('*')
+        .in('file_id', mainInsight.related_files)
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error('Error fetching related document insights:', error);
+        throw error;
+      }
+      
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching related document insights:', error);
+      return [];
+    }
+  },
+  
+  async processDocument(fileId: string, projectId: string, options?: ProcessDocumentOptions): Promise<DocumentInsight> {
     try {
       // Check if we already have an insight and if it's recent (within last 24h)
       if (!options?.forceReAnalysis) {
@@ -111,7 +133,8 @@ export const DocumentInsightService = {
           project_id: projectId, 
           title: fileData.name,
           status: 'pending',
-          analysis_type: options?.analysisType || 'standard'
+          analysis_type: options?.analysisType || 'standard',
+          related_files: options?.relatedFileIds || []
         })
         .select()
         .single();
@@ -128,7 +151,8 @@ export const DocumentInsightService = {
           projectId,
           fileUrl: fileData.url,
           fileName: fileData.name,
-          analysisType: options?.analysisType || 'standard'
+          analysisType: options?.analysisType || 'standard',
+          relatedFileIds: options?.relatedFileIds || []
         }
       });
       
@@ -159,11 +183,31 @@ export const DocumentInsightService = {
       return finalInsight;
     } catch (error) {
       console.error('Error processing document:', error);
-      toast({
-        title: 'Analysis Failed',
-        description: 'Failed to process the document',
-        variant: 'destructive',
-      });
+      throw error;
+    }
+  },
+  
+  async updateRelationships(fileId: string, relatedFileIds: string[]): Promise<void> {
+    try {
+      const insight = await this.getByFileId(fileId);
+      
+      if (!insight) {
+        throw new Error('No insight found for this file');
+      }
+      
+      // Update the related_files field
+      const { error } = await supabase
+        .from('document_insights')
+        .update({ 
+          related_files: relatedFileIds
+        })
+        .eq('id', insight.id);
+        
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error updating document relationships:', error);
       throw error;
     }
   },
@@ -172,10 +216,10 @@ export const DocumentInsightService = {
     // This would be expanded with actual analysis types
     return [
       'standard',
-      'in-depth',
-      'educational',
       'terminology',
-      'sentiment'
+      'educational',
+      'sentiment',
+      'comprehensive'
     ];
   }
 };

@@ -1,72 +1,84 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { RefreshCw } from 'lucide-react';
 import { DocumentInsightService } from '@/services/DocumentInsightService';
+import { useToast } from '@/hooks/use-toast';
 
 interface DocumentReAnalysisButtonProps {
   fileId: string;
   projectId: string;
-  onAnalysisComplete: () => void;
+  onAnalysisComplete?: (data?: any) => void;
+  variant?: 'default' | 'outline' | 'icon';
+  size?: 'default' | 'sm';
+  className?: string;
 }
 
 export const DocumentReAnalysisButton: React.FC<DocumentReAnalysisButtonProps> = ({
   fileId,
   projectId,
-  onAnalysisComplete
+  onAnalysisComplete,
+  variant = 'outline',
+  size = 'sm',
+  className = ''
 }) => {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   const handleReAnalyze = async () => {
+    setIsProcessing(true);
+    
     try {
-      setIsAnalyzing(true);
-      
-      toast({
-        title: "Analysis started",
-        description: "The document is being analyzed. This may take a moment.",
+      const result = await DocumentInsightService.processDocument(fileId, projectId, {
+        forceReAnalysis: true
       });
       
-      await DocumentInsightService.processDocument(fileId, projectId);
-      
       toast({
-        title: "Analysis complete",
-        description: "The document has been successfully analyzed.",
+        title: "Analysis Complete",
+        description: "Document has been successfully re-analyzed"
       });
       
-      onAnalysisComplete();
+      if (onAnalysisComplete) {
+        onAnalysisComplete(result);
+      }
     } catch (error) {
-      console.error('Error re-analyzing document:', error);
+      console.error("Error re-analyzing document:", error);
+      
       toast({
-        title: "Analysis failed",
-        description: "Unable to analyze the document. Please try again later.",
-        variant: "destructive",
+        title: "Analysis Failed",
+        description: "Failed to re-analyze the document",
+        variant: "destructive"
       });
     } finally {
-      setIsAnalyzing(false);
+      setIsProcessing(false);
     }
   };
 
+  if (variant === 'icon') {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleReAnalyze}
+        disabled={isProcessing}
+        title="Re-analyze document"
+        className={`h-7 w-7 ${className}`}
+      >
+        <RefreshCw className={`h-3.5 w-3.5 ${isProcessing ? 'animate-spin' : ''}`} />
+      </Button>
+    );
+  }
+
   return (
-    <Button 
-      variant="outline" 
-      size="sm"
-      disabled={isAnalyzing}
+    <Button
+      variant={variant}
+      size={size}
       onClick={handleReAnalyze}
-      className="gap-2"
+      disabled={isProcessing}
+      className={`gap-2 ${className}`}
     >
-      {isAnalyzing ? (
-        <>
-          <RefreshCw className="h-4 w-4 animate-spin" />
-          Analyzing...
-        </>
-      ) : (
-        <>
-          <RefreshCw className="h-4 w-4" />
-          Re-analyze
-        </>
-      )}
+      <RefreshCw className={`h-4 w-4 ${isProcessing ? 'animate-spin' : ''}`} />
+      {isProcessing ? 'Analyzing...' : 'Re-analyze Document'}
     </Button>
   );
 };

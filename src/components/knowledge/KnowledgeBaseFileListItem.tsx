@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { EyeIcon, PencilIcon, TrashIcon, DownloadIcon, BrainIcon } from 'lucide-react';
+import { EyeIcon, PencilIcon, TrashIcon, DownloadIcon, BrainIcon, Link } from 'lucide-react';
 import { FileTypeIcon } from './FileTypeIcon';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { DocumentInsights } from './DocumentInsights';
 import { useDocumentProcessor } from '@/hooks/useDocumentProcessor';
 import { DocumentInsightService } from '@/services/DocumentInsightService';
+import { DocumentRelationshipManager } from './DocumentRelationshipManager';
+import { KBFile } from './KnowledgeBaseFileList';
 
 interface KnowledgeBaseFileListItemProps {
   file: {
@@ -24,6 +26,7 @@ interface KnowledgeBaseFileListItemProps {
   onPreview: (id: string) => void;
   onDownload: (id: string) => void;
   projectId?: string;
+  projectFiles?: KBFile[];
 }
 
 export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps> = ({
@@ -32,7 +35,8 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
   onDelete,
   onPreview,
   onDownload,
-  projectId
+  projectId,
+  projectFiles = []
 }) => {
   const [insightDialogOpen, setInsightDialogOpen] = useState(false);
   const [insight, setInsight] = useState<any>(null);
@@ -74,6 +78,13 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
       console.error("Error processing document:", error);
     }
   };
+  
+  const handleRelationshipsUpdated = () => {
+    // Refresh insights if needed
+    if (insightDialogOpen) {
+      handleViewInsights();
+    }
+  };
 
   return (
     <>
@@ -102,6 +113,14 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
               >
                 <BrainIcon className="h-4 w-4" />
               </Button>
+            )}
+            {projectId && projectFiles.length > 0 && (
+              <DocumentRelationshipManager 
+                currentFileId={file.id}
+                projectId={projectId}
+                projectFiles={projectFiles}
+                onRelationshipsUpdated={handleRelationshipsUpdated}
+              />
             )}
             <Button
               variant="ghost" 

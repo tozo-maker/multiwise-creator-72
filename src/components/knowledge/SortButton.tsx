@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
 import { KBFile } from './KnowledgeBaseFileList';
 
-interface SortButtonProps {
+export interface SortButtonProps {
   field?: keyof KBFile;
   label: string;
-  active: boolean;
+  active: boolean;  // This was missing
   direction: 'asc' | 'desc';
   onClick: () => void;
   sortField?: keyof KBFile;
