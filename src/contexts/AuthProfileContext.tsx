@@ -36,7 +36,7 @@ export const AuthProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (profile) {
       const hasUsername = !!profile.username;
       const hasAvatar = !!profile.avatar_url;
-      const hasPreferences = !!(profile.theme && profile.notification_frequency);
+      const hasPreferences = !!(profile.theme && profile.email_notifications);
       
       const completedFields = [hasUsername, hasAvatar, hasPreferences].filter(Boolean).length;
       const completionPercentage = Math.round((completedFields / 3) * 100);

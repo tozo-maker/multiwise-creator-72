@@ -27,7 +27,7 @@ import {
 import { SidebarNavItems } from '@/components/layout/sidebar/SidebarMenu';
 import { SidebarAccountMenu } from '@/components/layout/sidebar/SidebarAccountMenu';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 
 export const ModernSidebar = () => {
   const { state, setOpen } = useSidebar();
