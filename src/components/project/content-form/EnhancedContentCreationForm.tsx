@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -58,7 +57,6 @@ export const EnhancedContentCreationForm = () => {
   const [selectedOutlineItem, setSelectedOutlineItem] = useState<OutlineItem | null>(null);
   
   useEffect(() => {
-    // Fetch project outline
     const fetchOutline = async () => {
       if (!projectId) return;
       
@@ -129,7 +127,8 @@ export const EnhancedContentCreationForm = () => {
         project_id: projectId,
         status: 'draft',
         metadata: {
-          audienceLevel: values.audience,
+          audience: values.audience,
+          complexityLevel: values.complexity,
           outlineItemId: selectedOutlineItem?.id,
           knowledgeBaseIds: selectedFiles,
           generatedDate: new Date().toISOString()
@@ -137,21 +136,18 @@ export const EnhancedContentCreationForm = () => {
       });
       
       if (contentItem && selectedOutlineItem) {
-        // Update the outline item to link to this content
         const updatedItem = {
           ...selectedOutlineItem,
           contentId: contentItem.id,
           status: 'in_progress'
         };
         
-        // Find the section this item belongs to
         if (outline) {
           const section = outline.sections.find(s => 
             s.items.some(item => item.id === selectedOutlineItem.id)
           );
           
           if (section) {
-            // Update the item in the section
             const updatedSection = {
               ...section,
               items: section.items.map(item => 
@@ -159,7 +155,6 @@ export const EnhancedContentCreationForm = () => {
               )
             };
             
-            // Update the section in the outline
             await OutlineService.updateOutlineSections(outline);
           }
         }
@@ -182,7 +177,6 @@ export const EnhancedContentCreationForm = () => {
   const handleSelectOutlineItem = (item: OutlineItem | null) => {
     setSelectedOutlineItem(item);
     if (item) {
-      // Update form with outline item details
       form.setValue('title', item.title);
       if (item.description) {
         const currentPrompt = form.getValues('prompt');
@@ -194,7 +188,6 @@ export const EnhancedContentCreationForm = () => {
   };
 
   const openKnowledgeBaseDialog = () => {
-    // This function would be implemented to open a dialog for knowledge base selection
     console.log("Open knowledge base dialog");
   };
 
@@ -366,7 +359,7 @@ export const EnhancedContentCreationForm = () => {
                 contextFiles={contextFiles}
                 setContextFiles={setContextFiles}
                 openKnowledgeBaseDialog={openKnowledgeBaseDialog}
-                projectId={projectId}
+                projectId={projectId || ''}
                 selectedFiles={selectedFiles}
                 onSelectedFilesChange={setSelectedFiles}
               />
@@ -398,7 +391,6 @@ export const EnhancedContentCreationForm = () => {
           {generatedContent ? (
             <ContentPreview 
               content={generatedContent} 
-              setContent={setGeneratedContent}
               contentType={form.getValues('contentType')} 
             />
           ) : (

@@ -9,9 +9,7 @@ import { UnifiedAuthProvider } from './contexts/UnifiedAuthContext';
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <UnifiedAuthProvider>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
+      <App />
     </UnifiedAuthProvider>
   </BrowserRouter>
 );
