@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { projectStats as mockProjectStats, activityData as mockActivityData, contentGenerationData as mockContentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
@@ -266,8 +267,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
           activityData
         ] = await Promise.allSettled([
           ProjectService.getAll(),
-          ProjectService.fetchContentItemsCount(),
-          ProjectService.fetchKnowledgeBaseFilesCount(),
+          fetchContentItemsCount(),  // Using local method instead of ProjectService
+          fetchKnowledgeBaseFilesCount(),  // Using local method instead of ProjectService
           ProjectService.getActivityData()
         ]);
 
