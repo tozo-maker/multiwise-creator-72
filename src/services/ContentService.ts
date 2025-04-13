@@ -72,6 +72,7 @@ export interface ContentCreateParams {
 export interface ContentUpdateParams {
   title?: string;
   type?: string;
+  content_type?: string;  // Added this field to match usage in ContentEditor.tsx
   content?: string;
   status?: 'draft' | 'published' | 'archived' | 'in-review';
   metadata?: ContentMetadata;
