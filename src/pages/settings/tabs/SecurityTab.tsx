@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { ThemeInput } from '@/components/shared/ThemeInput';
 import { ThemeSelect } from '@/components/shared/ThemeSelect';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/UnifiedAuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext'; // Updated import
 import { supabase } from '@/integrations/supabase/client';
 
 export const SecurityTab = () => {
