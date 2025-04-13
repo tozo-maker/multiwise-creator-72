@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { projectStats as mockProjectStats, activityData as mockActivityData, contentGenerationData as mockContentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
@@ -251,44 +250,66 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   };
 
   const initializeDashboard = async () => {
+    console.log('Initializing Dashboard for user:', user?.email);
     setIsLoading(true);
     setDataLoadingError(null);
     
     if (user) {
       try {
-        console.log('User authenticated, fetching data');
+        console.log('Fetching projects for user:', user.id);
         
-        // Fetch projects
-        const projectsData = await fetchProjects();
-        setProjects(projectsData);
-        
-        // Fetch counts
-        const contentCount = await fetchContentItemsCount();
-        setContentItemsCount(contentCount);
-        
-        const filesCount = await fetchKnowledgeBaseFilesCount();
-        setKnowledgeBaseFilesCount(filesCount);
-        
-        // Fetch analytics data
-        await fetchAnalyticsData();
-        
+        // Parallel data fetching with error tracking
+        const [
+          projectsData, 
+          contentCount, 
+          filesCount, 
+          activityData
+        ] = await Promise.allSettled([
+          ProjectService.getAll(),
+          ProjectService.fetchContentItemsCount(),
+          ProjectService.fetchKnowledgeBaseFilesCount(),
+          ProjectService.getActivityData()
+        ]);
+
+        // Handle each promise result
+        if (projectsData.status === 'fulfilled') {
+          setProjects(projectsData.value);
+        } else {
+          console.error('Failed to fetch projects:', projectsData.reason);
+          toast({
+            title: "Project Fetch Error",
+            description: "Could not load projects",
+            variant: "destructive"
+          });
+        }
+
+        if (contentCount.status === 'fulfilled') {
+          setContentItemsCount(contentCount.value);
+        }
+
+        if (filesCount.status === 'fulfilled') {
+          setKnowledgeBaseFilesCount(filesCount.value);
+        }
+
+        if (activityData.status === 'fulfilled') {
+          setRealActivityData(
+            activityData.value.length > 0 ? activityData.value : emptyActivityData
+          );
+        }
       } catch (error: any) {
-        console.error('Error initializing dashboard:', error);
-        setDataLoadingError(error.message || 'Failed to load dashboard data');
-        
+        console.error('Dashboard initialization error:', error);
+        setDataLoadingError(error.message || 'Failed to initialize dashboard');
         toast({
           title: "Dashboard Load Error",
-          description: "There was a problem loading your dashboard data. Please try refreshing.",
+          description: error.message || "Unable to load dashboard data",
           variant: "destructive"
         });
       } finally {
-        // Set loading to false after all data fetching attempts
         setIsLoading(false);
       }
     } else {
-      // Reset loading state if no user
+      console.log('No authenticated user, stopping dashboard loading');
       setIsLoading(false);
-      console.log('No user detected');
     }
   };
 
