@@ -71,7 +71,7 @@ const DashboardContent = () => {
       toast({
         title: "Dashboard refreshed",
         description: "Your dashboard data has been updated",
-        variant: "success",
+        variant: "default", // Changed from "success" to "default"
       });
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
