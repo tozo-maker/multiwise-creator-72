@@ -1,82 +1,66 @@
 
 import React from 'react';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
 
-interface BreadcrumbItemType {
+interface BreadcrumbItem {
   label: string;
-  path?: string;
+  path: string;
 }
 
 interface PageBreadcrumbsProps {
-  items: BreadcrumbItemType[];
-  className?: string;
-  'aria-label'?: string;
+  items: BreadcrumbItem[];
 }
 
-export const PageBreadcrumbs = ({ 
-  items,
-  className = '',
-  'aria-label': ariaLabel = 'Breadcrumb navigation'
-}: PageBreadcrumbsProps) => {
-  const { isDark } = useTheme();
-  
+export const PageBreadcrumbs: React.FC<PageBreadcrumbsProps> = ({ items }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   if (!items || items.length === 0) {
     return null;
   }
 
   return (
-    <div 
-      className={cn(
-        "mb-6", 
-        className
-      )}
-    >
-      <Breadcrumb className={cn(
-        isDark ? "text-slate-300" : "text-slate-600"
-      )} aria-label={ariaLabel}>
-        <BreadcrumbList>
-          {items.map((item, index) => (
-            <React.Fragment key={`breadcrumb-${index}`}>
-              <BreadcrumbItem>
-                {item.path ? (
-                  <BreadcrumbLink 
-                    asChild
-                    className={cn(
-                      "text-sm font-medium hover:underline",
-                      isDark 
-                        ? "text-slate-400 hover:text-slate-200" 
-                        : "text-slate-600 hover:text-slate-900"
-                    )}
-                  >
-                    <Link to={item.path}>{item.label}</Link>
-                  </BreadcrumbLink>
-                ) : (
-                  <span 
-                    className={cn(
-                      "text-sm font-semibold",
-                      isDark ? "text-slate-100" : "text-slate-900"
-                    )}
-                    aria-current="page"
+    <nav className="flex" aria-label="Breadcrumbs">
+      <ol className="flex items-center space-x-2">
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+          
+          return (
+            <React.Fragment key={index}>
+              <li>
+                {isLast ? (
+                  <span
+                    className={`font-medium ${
+                      isDark ? 'text-white' : 'text-slate-900'
+                    }`}
                   >
                     {item.label}
                   </span>
+                ) : (
+                  <Link
+                    to={item.path}
+                    className={
+                      isDark
+                        ? 'text-slate-400 hover:text-white'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }
+                  >
+                    {item.label}
+                  </Link>
                 )}
-              </BreadcrumbItem>
-              {index < items.length - 1 && (
-                <BreadcrumbSeparator>
-                  <ChevronRight className="h-4 w-4" />
-                </BreadcrumbSeparator>
+              </li>
+              
+              {!isLast && (
+                <li className="text-slate-400">
+                  <ChevronRight size={16} />
+                </li>
               )}
             </React.Fragment>
-          ))}
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
+          );
+        })}
+      </ol>
+    </nav>
   );
 };
-
-export default PageBreadcrumbs;
