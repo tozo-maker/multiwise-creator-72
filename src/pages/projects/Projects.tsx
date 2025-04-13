@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { ProjectList } from '@/components/projects/ProjectList';
@@ -5,7 +6,7 @@ import { DashboardProvider } from '@/contexts/DashboardContext';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Project } from '@/types/supabase-custom';
 import { useNavigate } from 'react-router-dom';

@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { projectStats as mockProjectStats, activityData as mockActivityData, contentGenerationData as mockContentGenerationData } from '@/data/mockData';
 import { Project } from '@/types/supabase-custom';
 import { ProjectService } from '@/services/ProjectService';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 

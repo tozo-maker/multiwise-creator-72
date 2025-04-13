@@ -7,7 +7,7 @@ import { DashboardGrid } from '@/components/dashboard/DashboardGrid';
 import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
 import { useToast } from '@/hooks/use-toast';
