@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, UsersIcon, BookIcon, LanguageIcon } from 'lucide-react';
+import { CalendarIcon, UsersIcon, BookIcon, LanguagesIcon } from 'lucide-react';
 import { ProjectQuickActions } from './list/ProjectQuickActions';
 import { useNavigate } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
@@ -106,7 +105,7 @@ export const EnhancedProjectCard: React.FC<EnhancedProjectCardProps> = ({
           </div>
           
           <div className="flex items-center">
-            <LanguageIcon className="h-4 w-4 mr-2 text-slate-400" />
+            <LanguagesIcon className="h-4 w-4 mr-2 text-slate-400" />
             <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{targetLanguage}</span>
           </div>
           
