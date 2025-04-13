@@ -33,6 +33,8 @@ export interface ContentMetadata {
   difficultyLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   estimatedDuration?: number;
   
+  audience?: 'elementary' | 'middle_school' | 'high_school' | 'undergraduate' | 'graduate' | 'adult_learning';
+  
   publishDate?: string;
   expirationDate?: string;
   revisionDate?: string;
@@ -47,7 +49,6 @@ export interface ContentMetadata {
   fileSize?: number;
   lastRendered?: string;
   
-  // Add missing properties that are being referenced
   templateId?: string;
   parameters?: Record<string, any>;
   approvalWorkflow?: any[];
