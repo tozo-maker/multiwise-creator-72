@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -15,6 +14,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectService } from '@/services/ProjectService';
 import { ContentService, ContentItem } from '@/services/ContentService';
+import { ApprovalService, ApprovalStep } from '@/services/ApprovalService';
+import { ApprovalWorkflow } from '@/components/content/ApprovalWorkflow';
+import { ContentVersionHistory } from '@/components/content/ContentVersionHistory';
 import { ArrowLeft, Clock, Edit2, Eye, FileText, Save } from 'lucide-react';
 
 const ContentView = () => {
@@ -33,7 +35,8 @@ const ContentView = () => {
     targetLanguage: 'Loading...'
   });
   const [contentItem, setContentItem] = useState<ContentItem | null>(null);
-  const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
+  const [status, setStatus] = useState<'draft' | 'published' | 'archived' | 'in-review'>('draft');
+  const [approvalSteps, setApprovalSteps] = useState<ApprovalStep[]>([]);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -58,6 +61,15 @@ const ContentView = () => {
         if (contentData) {
           setContentItem(contentData);
           setStatus(contentData.status);
+          
+          // If content has approval workflow in metadata, load it
+          if (contentData.metadata?.approvalWorkflow) {
+            setApprovalSteps(contentData.metadata.approvalWorkflow);
+          } else {
+            // Otherwise create a default workflow
+            const defaultWorkflow = await ApprovalService.createWorkflow(contentId);
+            setApprovalSteps(defaultWorkflow);
+          }
         } else {
           toast({
             title: 'Not Found',
@@ -88,10 +100,10 @@ const ContentView = () => {
       setIsSaving(true);
       
       await ContentService.update(contentItem.id, {
-        status: newStatus as 'draft' | 'published' | 'archived'
+        status: newStatus as 'draft' | 'published' | 'archived' | 'in-review'
       });
       
-      setStatus(newStatus as 'draft' | 'published' | 'archived');
+      setStatus(newStatus as 'draft' | 'published' | 'archived' | 'in-review');
       
       toast({
         title: 'Status Updated',
@@ -108,13 +120,61 @@ const ContentView = () => {
       setIsSaving(false);
     }
   };
-  
-  const breadcrumbItems = [
-    { label: 'Projects', path: '/projects' },
-    { label: project.name, path: `/projects/${projectId}` },
-    { label: 'Content', path: `/projects/${projectId}/content` },
-    { label: contentItem?.title || 'Loading...' }
-  ];
+
+  const handleApprovalUpdate = async (steps: ApprovalStep[]) => {
+    if (!contentItem) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Update content item with approval workflow in metadata
+      await ContentService.update(contentItem.id, {
+        metadata: {
+          ...(contentItem.metadata || {}),
+          approvalWorkflow: steps
+        }
+      });
+      
+      setApprovalSteps(steps);
+      
+      toast({
+        title: 'Workflow Updated',
+        description: 'Approval workflow has been updated.'
+      });
+    } catch (error: any) {
+      console.error('Error updating workflow:', error);
+      toast({
+        title: 'Update Failed',
+        description: error.message || 'Failed to update approval workflow.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleRestoreVersion = async (version: any) => {
+    if (!contentItem) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // In a real app, this would restore content from a specific version
+      toast({
+        title: 'Version Restored',
+        description: `Restored to version ${version.version}`
+      });
+    } catch (error: any) {
+      console.error('Error restoring version:', error);
+      toast({
+        title: 'Restore Failed',
+        description: error.message || 'Failed to restore version.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
   
   if (isLoading) {
     return (
@@ -167,6 +227,7 @@ const ContentView = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="in-review">In Review</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
@@ -183,35 +244,61 @@ const ContentView = () => {
           </div>
         </div>
         
-        <Card className={isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200 shadow-sm"}>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className={`w-5 h-5 ${
-                isDark ? 'text-slate-400' : 'text-slate-600'
-              }`} />
-              <span className={`text-sm font-medium uppercase ${
-                isDark ? 'text-slate-400' : 'text-slate-600'
-              }`}>
-                {contentItem?.type}
-              </span>
-            </div>
-            <CardTitle className={`text-2xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-              {contentItem?.title}
-            </CardTitle>
-          </CardHeader>
-          <Separator className={isDark ? 'bg-slate-700' : 'bg-slate-200'} />
-          <CardContent className="pt-6">
-            <div className={`prose max-w-none ${
-              isDark ? 'prose-invert text-slate-300' : 'text-slate-700'
-            }`}>
-              {contentItem?.content.split('\n').map((line, i) => (
-                <p key={i} className={!line ? 'mb-4' : ''}>
-                  {line || <br />}
-                </p>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2 space-y-6">
+            <Card className={isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200 shadow-sm"}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className={`w-5 h-5 ${
+                    isDark ? 'text-slate-400' : 'text-slate-600'
+                  }`} />
+                  <span className={`text-sm font-medium uppercase ${
+                    isDark ? 'text-slate-400' : 'text-slate-600'
+                  }`}>
+                    {contentItem?.type}
+                  </span>
+                </div>
+                <CardTitle className={`text-2xl font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+                  {contentItem?.title}
+                </CardTitle>
+                <div className="flex items-center mt-2">
+                  <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Version: {contentItem?.version || 1}
+                  </div>
+                </div>
+              </CardHeader>
+              <Separator className={isDark ? 'bg-slate-700' : 'bg-slate-200'} />
+              <CardContent className="pt-6">
+                <div className={`prose max-w-none ${
+                  isDark ? 'prose-invert text-slate-300' : 'text-slate-700'
+                }`}>
+                  {contentItem?.content.split('\n').map((line, i) => (
+                    <p key={i} className={!line ? 'mb-4' : ''}>
+                      {line || <br />}
+                    </p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="space-y-6">
+            <ApprovalWorkflow
+              contentId={contentItem?.id || ''}
+              currentStatus={status}
+              approvalSteps={approvalSteps}
+              onStatusChange={handleStatusChange}
+              onApprovalUpdate={handleApprovalUpdate}
+              isEditable={true}
+            />
+            
+            <ContentVersionHistory
+              contentId={contentItem?.id || ''}
+              currentVersion={contentItem?.version || 1}
+              onRestoreVersion={handleRestoreVersion}
+            />
+          </div>
+        </div>
       </div>
     </ModernLayout>
   );

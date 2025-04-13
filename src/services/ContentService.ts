@@ -1,5 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { User } from '@supabase/supabase-js';
 
 export interface ContentItem {
   id: string;
@@ -7,144 +9,259 @@ export interface ContentItem {
   type: string;
   content: string;
   project_id: string;
-  created_at: string;
-  updated_at: string;
-  status: 'draft' | 'published' | 'archived';
-  author_id?: string;
+  status: 'draft' | 'published' | 'archived' | 'in-review';
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
   metadata?: Record<string, any>;
-  tags?: string[];
+  version?: number;
+  approval_workflow?: any[];
 }
 
-export interface ContentCreateInput {
+export interface ContentCreateParams {
   title: string;
   type: string;
   content: string;
   project_id: string;
-  status?: 'draft' | 'published' | 'archived';
-  author_id?: string;
+  status: 'draft' | 'published' | 'archived' | 'in-review';
   metadata?: Record<string, any>;
-  tags?: string[];
 }
 
-export interface ContentUpdateInput {
+export interface ContentUpdateParams {
   title?: string;
   type?: string;
   content?: string;
-  status?: 'draft' | 'published' | 'archived';
-  author_id?: string;
+  status?: 'draft' | 'published' | 'archived' | 'in-review';
   metadata?: Record<string, any>;
-  tags?: string[];
+  version?: number;
+  approval_workflow?: any[];
 }
 
-export class ContentService {
-  static async getByProject(projectId: string): Promise<ContentItem[]> {
+export const ContentService = {
+  /**
+   * Get all content items for a project
+   */
+  async getByProject(projectId: string): Promise<ContentItem[]> {
     try {
       const { data, error } = await supabase
-        .from('content')
+        .from('content_items')
         .select('*')
         .eq('project_id', projectId)
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
       return data || [];
-    } catch (error) {
-      console.error('Error fetching content:', error);
-      throw error;
+    } catch (error: any) {
+      console.error('Error fetching content items:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load content items',
+        variant: 'destructive',
+      });
+      return [];
     }
-  }
+  },
   
-  static async getById(id: string): Promise<ContentItem | null> {
+  /**
+   * Get a specific content item by ID
+   */
+  async getById(contentId: string): Promise<ContentItem | null> {
     try {
       const { data, error } = await supabase
-        .from('content')
+        .from('content_items')
         .select('*')
-        .eq('id', id)
+        .eq('id', contentId)
         .single();
         
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
       return data;
-    } catch (error) {
-      console.error('Error fetching content by ID:', error);
-      throw error;
+    } catch (error: any) {
+      console.error('Error fetching content item:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load content item',
+        variant: 'destructive',
+      });
+      return null;
     }
-  }
+  },
   
-  static async create(content: ContentCreateInput): Promise<string> {
+  /**
+   * Create a new content item
+   */
+  async create(params: ContentCreateParams): Promise<ContentItem | null> {
     try {
+      const user = supabase.auth.getUser();
+      
       const { data, error } = await supabase
-        .from('content')
+        .from('content_items')
         .insert([
           {
-            title: content.title,
-            type: content.type,
-            content: content.content,
-            project_id: content.project_id,
-            status: content.status || 'draft',
-            author_id: content.author_id,
-            metadata: content.metadata || {},
-            tags: content.tags || []
+            title: params.title,
+            type: params.type,
+            content: params.content,
+            project_id: params.project_id,
+            status: params.status || 'draft',
+            metadata: params.metadata || {},
+            version: 1
           }
         ])
-        .select('id')
+        .select()
         .single();
         
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
-      return data.id;
-    } catch (error) {
-      console.error('Error creating content:', error);
-      throw error;
+      return data;
+    } catch (error: any) {
+      console.error('Error creating content item:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create content item',
+        variant: 'destructive',
+      });
+      return null;
     }
-  }
+  },
   
-  static async update(id: string, updates: ContentUpdateInput): Promise<void> {
+  /**
+   * Update an existing content item
+   */
+  async update(contentId: string, params: ContentUpdateParams): Promise<ContentItem | null> {
     try {
-      const { error } = await supabase
-        .from('content')
+      // If updating content or important fields, increment version
+      let versionIncrease = params.content || params.title ? 1 : 0;
+      
+      if (params.version) {
+        // If version is explicitly provided, use it
+        versionIncrease = 0;
+      }
+      
+      const { data, error } = await supabase
+        .from('content_items')
         .update({
-          ...updates,
+          ...params,
+          version: versionIncrease > 0 ? supabase.raw('version + 1') : params.version,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', contentId)
+        .select()
+        .single();
         
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error updating content:', error);
-      throw error;
+      if (error) {
+        throw error;
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('Error updating content item:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update content item',
+        variant: 'destructive',
+      });
+      return null;
     }
-  }
+  },
   
-  static async delete(id: string): Promise<void> {
+  /**
+   * Delete a content item
+   */
+  async delete(contentId: string): Promise<boolean> {
     try {
       const { error } = await supabase
-        .from('content')
+        .from('content_items')
         .delete()
-        .eq('id', id);
+        .eq('id', contentId);
         
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting content:', error);
-      throw error;
-    }
-  }
-  
-  static async getRecentByUser(userId: string, limit: number = 5): Promise<ContentItem[]> {
-    try {
-      const { data, error } = await supabase
-        .from('content')
-        .select('*')
-        .eq('author_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-        
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching recent content:', error);
-      throw error;
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting content item:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete content item',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  },
+  
+  /**
+   * Get content item versions history
+   */
+  async getVersionHistory(contentId: string): Promise<any[]> {
+    try {
+      // In a real implementation, we would fetch from a content_versions table
+      // For now, return a simulated version history
+      return [
+        {
+          id: '1',
+          content_id: contentId,
+          version: 1,
+          changes: 'Initial version',
+          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          user_id: 'user1'
+        }
+      ];
+    } catch (error: any) {
+      console.error('Error fetching content versions:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load version history',
+        variant: 'destructive',
+      });
+      return [];
+    }
+  },
+  
+  /**
+   * Create a new version of content
+   */
+  async createVersion(contentId: string, content: string): Promise<any | null> {
+    try {
+      // Get current content to increment version
+      const currentContent = await this.getById(contentId);
+      
+      if (!currentContent) {
+        throw new Error('Content not found');
+      }
+      
+      const newVersion = (currentContent.version || 1) + 1;
+      
+      // Update content with new version
+      await this.update(contentId, {
+        content,
+        version: newVersion
+      });
+      
+      // In a real implementation, we would also create a record in content_versions
+      
+      return {
+        id: `${contentId}-v${newVersion}`,
+        content_id: contentId,
+        version: newVersion,
+        content: content,
+        created_at: new Date().toISOString()
+      };
+    } catch (error: any) {
+      console.error('Error creating content version:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create new version',
+        variant: 'destructive',
+      });
+      return null;
     }
   }
-}
+};
