@@ -1,10 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle } from 'lucide-react';
+import { getValidSession } from '@/utils/sessionUtils';
 
 export const PrivateRoute = () => {
   const { user, isLoading: authLoading } = useAuth();
@@ -13,6 +14,30 @@ export const PrivateRoute = () => {
   const [isReady, setIsReady] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [criticalTimeout, setCriticalTimeout] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
+  
+  useEffect(() => {
+    // Validate session on mount
+    const validateSession = async () => {
+      try {
+        const session = await getValidSession();
+        setSessionChecked(true);
+        
+        if (!session && !location.pathname.startsWith('/auth')) {
+          toast({
+            title: "Authentication Required",
+            description: "Please sign in to access this page",
+            variant: "default"
+          });
+        }
+      } catch (error) {
+        console.error("Error validating session:", error);
+        setSessionChecked(true);
+      }
+    };
+    
+    validateSession();
+  }, [location.pathname, toast]);
   
   useEffect(() => {
     // Small delay to prevent flash of loading state for fast connections
@@ -47,7 +72,8 @@ export const PrivateRoute = () => {
     };
   }, [toast]);
   
-  if (authLoading || !isReady) {
+  // Show loading state
+  if ((authLoading || !sessionChecked) && !isReady) {
     return (
       <div className="flex items-center justify-center h-screen p-6">
         <div className="w-full max-w-md space-y-6">
@@ -81,8 +107,8 @@ export const PrivateRoute = () => {
   // Handle dashboard and other protected routes
   if (!user) {
     // Save the current path to redirect back after login
-    const returnPath = location.pathname + location.search;
-    return <Navigate to={`/auth/login?returnTo=${encodeURIComponent(returnPath)}`} replace />;
+    const returnPath = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/auth/login?returnTo=${returnPath}`} replace />;
   }
   
   // User is authenticated and trying to access a protected route

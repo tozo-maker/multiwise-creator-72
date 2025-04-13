@@ -15,6 +15,36 @@ const handleCorsRequest = () => {
   });
 };
 
+// Extract text content from different file types
+const extractTextFromFile = async (url: string, fileType: string): Promise<string> => {
+  console.log(`Extracting text from ${fileType} file: ${url}`);
+  
+  // In a production environment, you would implement actual text extraction
+  // based on file type, possibly using libraries or services like Tika, PDF.js, etc.
+  
+  // For now, we'll simulate text extraction
+  return `This is simulated text extracted from a ${fileType} file at ${url}`;
+};
+
+// Analyze text using NLP techniques
+const analyzeText = (text: string): any => {
+  // In a production environment, you would:
+  // 1. Use Anthropic API or another NLP service to analyze the text
+  // 2. Extract key concepts, sentiment, complexity, etc.
+  
+  // Generate mock insights for now
+  const keyWords = ['education', 'learning', 'knowledge', 'curriculum'];
+  const randomScore = () => parseFloat((0.5 + Math.random() * 0.5).toFixed(2));
+  
+  return {
+    summary: `This document discusses educational concepts and methodologies. ${text.substring(0, 100)}...`,
+    key_concepts: keyWords.map(concept => ({ concept, relevance: randomScore() })),
+    sentiment_score: randomScore(),
+    complexity_level: ["Basic", "Intermediate", "Advanced"][Math.floor(Math.random() * 3)],
+    language_detected: "English"
+  };
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -62,20 +92,11 @@ serve(async (req) => {
 
     console.log("File data retrieved:", fileData.name);
 
-    // TODO: Implement Anthropic API integration for document analysis
-    // For now, generate mock insights
-    const mockInsights = {
-      title: fileData.name,
-      summary: `This is an automatically generated summary for ${fileData.name}`,
-      key_concepts: [
-        { concept: "Education", relevance: 0.85 },
-        { concept: "Learning", relevance: 0.78 },
-        { concept: "Knowledge", relevance: 0.72 }
-      ],
-      sentiment_score: 0.65,
-      complexity_level: "Intermediate",
-      language_detected: "English"
-    };
+    // Extract text from file (in a real implementation, this would use the file's URL)
+    const extractedText = await extractTextFromFile(fileData.url, fileData.file_type);
+    
+    // Analyze the extracted text
+    const analysis = analyzeText(extractedText);
 
     // Store insights in the database
     const { data: insightData, error: insightError } = await supabase
@@ -84,12 +105,12 @@ serve(async (req) => {
         project_id: projectId,
         user_id: userId,
         file_id: fileId,
-        title: mockInsights.title,
-        summary: mockInsights.summary,
-        key_concepts: mockInsights.key_concepts,
-        sentiment_score: mockInsights.sentiment_score,
-        complexity_level: mockInsights.complexity_level,
-        language_detected: mockInsights.language_detected
+        title: fileData.name,
+        summary: analysis.summary,
+        key_concepts: analysis.key_concepts,
+        sentiment_score: analysis.sentiment_score,
+        complexity_level: analysis.complexity_level,
+        language_detected: analysis.language_detected
       })
       .select()
       .single();

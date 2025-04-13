@@ -62,3 +62,32 @@ export const getValidSession = async (): Promise<Session | null> => {
   
   return storedSession;
 };
+
+/**
+ * Handles session timeout and auto-refresh
+ * @param onSessionTimeout Callback function to execute when session times out completely
+ * @returns Cleanup function
+ */
+export const setupSessionRefresh = (onSessionTimeout: () => void): () => void => {
+  // Check session every minute
+  const intervalId = setInterval(async () => {
+    const session = await getValidSession();
+    if (!session) {
+      onSessionTimeout();
+      clearInterval(intervalId);
+    }
+  }, 60000);
+  
+  return () => clearInterval(intervalId);
+};
+
+/**
+ * Clears the stored session data
+ */
+export const clearSessionStorage = (): void => {
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch (err) {
+    console.error('Error clearing session storage:', err);
+  }
+};

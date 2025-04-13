@@ -20,11 +20,35 @@ export interface AnthropicResponse {
     input_tokens: number;
     output_tokens: number;
   };
+  metadata?: {
+    contentType: string;
+    language?: string;
+    audience?: string;
+    complexity?: string;
+    timestamp: string;
+    projectId: string;
+  };
+}
+
+export interface DocumentProcessingResult {
+  success: boolean;
+  message: string;
+  insights: {
+    id: string;
+    title: string;
+    summary: string;
+    key_concepts: Array<{concept: string, relevance: number}>;
+    sentiment_score: number;
+    complexity_level: string;
+    language_detected: string;
+  };
 }
 
 export const AnthropicService = {
   async generateContent(options: AnthropicGenerationOptions): Promise<AnthropicResponse> {
     try {
+      console.log('Generating content with options:', options);
+      
       const { data, error } = await supabase.functions.invoke('ai-content-generation', {
         body: options
       });
@@ -41,13 +65,15 @@ export const AnthropicService = {
     }
   },
 
-  async processDocument(fileId: string, projectId: string): Promise<any> {
+  async processDocument(fileId: string, projectId: string): Promise<DocumentProcessingResult> {
     try {
       const { data: user } = await supabase.auth.getUser();
       
       if (!user.user) {
         throw new Error('Authentication required');
       }
+
+      console.log(`Processing document: fileId=${fileId}, projectId=${projectId}, userId=${user.user.id}`);
 
       const { data, error } = await supabase.functions.invoke('process-document', {
         body: {
@@ -62,7 +88,7 @@ export const AnthropicService = {
         throw new Error(error.message);
       }
 
-      return data;
+      return data as DocumentProcessingResult;
     } catch (error) {
       console.error('Error in document processing:', error);
       throw error;
@@ -74,6 +100,7 @@ export const AnthropicService = {
     title: string, 
     content: string, 
     type: string,
+    metadata?: any,
     status: 'draft' | 'completed' | 'in-review' = 'draft'
   ) {
     try {
@@ -91,7 +118,8 @@ export const AnthropicService = {
           title,
           type,
           content,
-          status
+          status,
+          metadata
         })
         .select()
         .single();
@@ -104,6 +132,26 @@ export const AnthropicService = {
       return data;
     } catch (error) {
       console.error('Error saving content:', error);
+      throw error;
+    }
+  },
+  
+  async getGeneratedContent(projectId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('content_items')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error('Error fetching content items:', error);
+        throw error;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error retrieving content:', error);
       throw error;
     }
   }
