@@ -145,7 +145,8 @@ export function useProjectConfiguration({ projectId }: UseProjectConfigurationPr
               interactionMode: configData.interactionMode || 'Guided',
               outputDetail: configData.outputDetail || 'Detailed',
               systemBehavior: configData.systemBehavior || 'Balanced',
-              lastModified: configData.updated_at || new Date().toISOString()
+              // Fix here: use lastModified instead of updated_at
+              lastModified: configData.lastModified || new Date().toISOString()
             }));
           } else {
             console.log('No existing configuration found, using project defaults');
