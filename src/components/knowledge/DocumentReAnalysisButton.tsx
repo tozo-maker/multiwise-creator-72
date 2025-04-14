@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
-import { DocumentInsightService } from '@/services/DocumentInsightService';
+import { DocumentInsightService } from '@/services/document-insights';
 import { useToast } from '@/hooks/use-toast';
 
 interface DocumentReAnalysisButtonProps {

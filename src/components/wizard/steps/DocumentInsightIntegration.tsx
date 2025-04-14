@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -6,7 +5,7 @@ import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ConfigData } from '../types';
-import { DocumentInsightService } from '@/services/DocumentInsightService';
+import { DocumentInsightService } from '@/services/document-insights';
 
 interface DocumentInsightIntegrationProps {
   data: ConfigData;

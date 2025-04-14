@@ -1,11 +1,11 @@
 
 import { useToast } from '@/hooks/use-toast';
-import { DocumentInsight, ProcessDocumentOptions } from './types';
 import { DocumentInsightCache } from './cache';
 import { DocumentInsightQuery } from './query';
 import { DocumentProcessor } from './processor';
 
-export { DocumentInsight, ProcessDocumentOptions };
+// Re-export types with the 'export type' syntax to fix the TS1205 error
+export type { DocumentInsight, ProcessDocumentOptions } from './types';
 
 // Main service that integrates all document insight functionality
 export const DocumentInsightService = {

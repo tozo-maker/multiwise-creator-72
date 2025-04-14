@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useTheme } from '@/contexts/ThemeContext';
 import { AnthropicService } from '@/services/AnthropicService';
 import { OutlineService } from '@/services/OutlineService';
-import { DocumentInsightService } from '@/services/DocumentInsightService';
+import { DocumentInsightService } from '@/services/document-insights';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

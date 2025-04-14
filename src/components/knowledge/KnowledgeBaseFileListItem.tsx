@@ -6,7 +6,7 @@ import { FileTypeIcon } from './FileTypeIcon';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { DocumentInsights } from './DocumentInsights';
 import { useDocumentProcessor } from '@/hooks/useDocumentProcessor';
-import { DocumentInsightService } from '@/services/DocumentInsightService';
+import { DocumentInsightService } from '@/services/document-insights';
 import { DocumentRelationshipManager } from './DocumentRelationshipManager';
 import { KBFile } from './KnowledgeBaseFileList';
 
