@@ -123,6 +123,7 @@ const OutlineWorkspace = () => {
   
   const handleSaveOutline = async (updatedOutline: ProjectOutline) => {
     try {
+      console.log('Saving outline:', updatedOutline);
       const savedOutline = await OutlineService.updateOutline(updatedOutline);
       if (savedOutline) {
         // Refresh outline data with sections
@@ -136,6 +137,8 @@ const OutlineWorkspace = () => {
           title: 'Success',
           description: 'Outline saved successfully',
         });
+      } else {
+        throw new Error('Failed to save outline');
       }
     } catch (error: any) {
       console.error('Error saving outline:', error);
@@ -144,18 +147,20 @@ const OutlineWorkspace = () => {
         description: `Failed to save outline: ${error.message}`,
         variant: 'destructive'
       });
+      throw error; // Rethrow to handle in the component
     }
   };
   
   const handleGenerateOutline = async () => {
     try {
+      console.log('Starting AI outline generation');
       if (!project.id) {
         toast({
           title: 'Missing project ID',
           description: 'Project ID is required to generate an outline',
           variant: 'destructive'
         });
-        return;
+        throw new Error('Missing project ID');
       }
       
       // Fetch project_config separately for AI outline generation
@@ -172,7 +177,7 @@ const OutlineWorkspace = () => {
           description: 'Failed to load project configuration for AI generation',
           variant: 'destructive'
         });
-        return;
+        throw configError;
       }
       
       if (!configData) {
@@ -181,20 +186,32 @@ const OutlineWorkspace = () => {
           description: 'Project configuration is required to generate an outline. Please configure your project first.',
           variant: 'destructive'
         });
+        
+        // Navigate to the configuration page
+        navigate(`/projects/${project.id}/configuration`);
         return;
       }
       
+      console.log('Generating outline with config:', configData);
       const generatedOutline = await OutlineService.generateOutlineWithAI(
         project.id, 
         configData
       );
       
       if (generatedOutline) {
-        setOutline(generatedOutline);
+        // Fetch sections for the new outline
+        const sections = await OutlineService.getSectionsByOutline(generatedOutline.id);
+        setOutline({
+          ...generatedOutline,
+          sections
+        });
+        
         toast({
           title: 'Success',
           description: 'AI outline generated successfully',
         });
+      } else {
+        throw new Error('Failed to generate outline');
       }
     } catch (error: any) {
       console.error('Error generating outline:', error);
@@ -203,6 +220,7 @@ const OutlineWorkspace = () => {
         description: `Failed to generate outline with AI: ${error.message}`,
         variant: 'destructive'
       });
+      throw error; // Rethrow to handle in the component
     }
   };
   

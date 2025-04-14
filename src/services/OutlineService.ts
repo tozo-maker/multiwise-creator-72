@@ -1,8 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ProjectOutline, OutlineSection, OutlineItem, OutlineVersion } from '@/types/outline';
 import { AnthropicService } from './AnthropicService';
 import { ConfigData } from '@/components/wizard/types';
+
+const { toast } = useToast();
 
 export const OutlineService = {
   async getOutlineByProject(projectId: string): Promise<ProjectOutline | null> {
@@ -245,11 +247,6 @@ export const OutlineService = {
       return true;
     } catch (error: any) {
       console.error('Error deleting section:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete section',
-        variant: 'destructive',
-      });
       return false;
     }
   },
@@ -268,11 +265,6 @@ export const OutlineService = {
       return true;
     } catch (error: any) {
       console.error('Error deleting item:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete item',
-        variant: 'destructive',
-      });
       return false;
     }
   },
@@ -381,25 +373,20 @@ export const OutlineService = {
         throw updateError;
       }
       
-      toast({
-        title: 'Version restored',
-        description: `Restored to version ${versionData.version}`,
-      });
+      console.log('Version restored successfully');
       
       return this.mapDbOutlineToProjectOutline(updatedOutline);
     } catch (error: any) {
       console.error('Error restoring outline version:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to restore version',
-        variant: 'destructive',
-      });
       return null;
     }
   },
   
   async generateOutlineWithAI(projectId: string, projectConfig: ConfigData): Promise<ProjectOutline | null> {
     try {
+      console.log('Generating outline with AI for project:', projectId);
+      console.log('Using project config:', projectConfig);
+      
       const newOutline = await this.createOutline(
         projectId,
         `${projectConfig.name} Outline`,
@@ -466,12 +453,7 @@ export const OutlineService = {
       return this.getOutlineByProject(projectId);
     } catch (error: any) {
       console.error('Error generating AI outline:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to generate AI outline',
-        variant: 'destructive',
-      });
-      return null;
+      throw error;
     }
   },
   

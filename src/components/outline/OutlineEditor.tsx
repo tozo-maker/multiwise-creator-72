@@ -3,8 +3,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProjectOutline, OutlineSection, OutlineItem } from '@/types/outline';
 import { OutlineService } from '@/services/OutlineService';
-import { toast } from '@/hooks/use-toast';
-import { PlusCircle, Save, FileDown, FileUp, Sparkles, FileBarChart2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { PlusCircle, Save, FileDown, FileUp, Sparkles, FileBarChart2, Loader2 } from 'lucide-react';
 import { OutlineSection as OutlineSectionComponent } from './OutlineSection';
 import { EmptyOutline } from './EmptyOutline';
 import { OutlineExport } from './OutlineExport';
@@ -27,11 +27,14 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { toast } = useToast();
   
   const [workingOutline, setWorkingOutline] = useState<ProjectOutline | null>(outline);
   const [isCreatingOutline, setIsCreatingOutline] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   useEffect(() => {
     setWorkingOutline(outline);
@@ -40,6 +43,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   const createNewOutline = async () => {
     setIsCreatingOutline(true);
     try {
+      console.log('Creating new outline for project:', projectId);
       const newOutline = await OutlineService.createOutline(
         projectId,
         'Project Outline',
@@ -47,6 +51,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
       );
       
       if (newOutline) {
+        console.log('New outline created successfully:', newOutline);
         setWorkingOutline({
           ...newOutline,
           sections: []
@@ -55,16 +60,35 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
           title: 'New outline created',
           description: 'Start adding sections and items to build your outline'
         });
+      } else {
+        throw new Error('Failed to create outline');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating outline:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to create new outline',
+        title: 'Error creating outline',
+        description: error.message || 'An unexpected error occurred',
         variant: 'destructive'
       });
     } finally {
       setIsCreatingOutline(false);
+    }
+  };
+  
+  const handleGenerateWithAI = async () => {
+    setIsGenerating(true);
+    try {
+      console.log('Generating outline with AI');
+      await onGenerateOutline();
+    } catch (error: any) {
+      console.error('Error generating outline with AI:', error);
+      toast({
+        title: 'Error generating outline',
+        description: error.message || 'An unexpected error occurred',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
   
@@ -104,7 +128,6 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   const handleDeleteSection = async (sectionId: string) => {
     if (!workingOutline) return;
     
-    // If it's a new section (not saved to DB yet), just remove it from state
     if (sectionId.startsWith('new-')) {
       const updatedSections = workingOutline.sections.filter(section => section.id !== sectionId);
       setWorkingOutline({
@@ -114,7 +137,6 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
       return;
     }
     
-    // Otherwise, delete from DB
     const success = await OutlineService.deleteSection(sectionId);
     if (success) {
       const updatedSections = workingOutline.sections.filter(section => section.id !== sectionId);
@@ -138,21 +160,17 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
     const newSections = [...workingOutline.sections];
     
     if (direction === 'up' && sectionIndex > 0) {
-      // Swap with previous section
       const temp = newSections[sectionIndex];
       newSections[sectionIndex] = newSections[sectionIndex - 1];
       newSections[sectionIndex - 1] = temp;
       
-      // Update order values
       newSections[sectionIndex].order = sectionIndex;
       newSections[sectionIndex - 1].order = sectionIndex - 1;
     } else if (direction === 'down' && sectionIndex < newSections.length - 1) {
-      // Swap with next section
       const temp = newSections[sectionIndex];
       newSections[sectionIndex] = newSections[sectionIndex + 1];
       newSections[sectionIndex + 1] = temp;
       
-      // Update order values
       newSections[sectionIndex].order = sectionIndex;
       newSections[sectionIndex + 1].order = sectionIndex + 1;
     }
@@ -166,10 +184,22 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   const handleSaveOutline = async () => {
     if (!workingOutline) return;
     
+    setIsSaving(true);
     try {
       await onSave(workingOutline);
-    } catch (error) {
+      toast({
+        title: 'Success',
+        description: 'Outline saved successfully',
+      });
+    } catch (error: any) {
       console.error('Error saving outline:', error);
+      toast({
+        title: 'Error saving outline',
+        description: error.message || 'An unexpected error occurred',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -177,7 +207,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
     return (
       <EmptyOutline 
         onCreateOutline={createNewOutline} 
-        onGenerateAIOutline={onGenerateOutline}
+        onGenerateAIOutline={handleGenerateWithAI}
         isCreating={isCreatingOutline}
       />
     );

@@ -1,13 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Sparkles, FileUp } from 'lucide-react';
+import { PlusCircle, Sparkles, FileUp, Loader2 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface EmptyOutlineProps {
-  onCreateOutline: () => void;
-  onGenerateAIOutline: () => void;
+  onCreateOutline: () => Promise<void>;
+  onGenerateAIOutline: () => Promise<void>;
   isCreating: boolean;
 }
 
@@ -18,6 +19,41 @@ export const EmptyOutline: React.FC<EmptyOutlineProps> = ({
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isCreatingManually, setIsCreatingManually] = useState(false);
+  
+  const handleCreateManually = async () => {
+    try {
+      setIsCreatingManually(true);
+      await onCreateOutline();
+    } catch (error: any) {
+      console.error('Error creating outline manually:', error);
+      toast({
+        title: 'Error creating outline',
+        description: error.message || 'An unexpected error occurred',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsCreatingManually(false);
+    }
+  };
+  
+  const handleGenerateWithAI = async () => {
+    try {
+      setIsGenerating(true);
+      await onGenerateAIOutline();
+    } catch (error: any) {
+      console.error('Error generating AI outline:', error);
+      toast({
+        title: 'Error generating outline',
+        description: error.message || 'An unexpected error occurred',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
   
   return (
     <Card className={isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'}>
@@ -34,20 +70,20 @@ export const EmptyOutline: React.FC<EmptyOutlineProps> = ({
         <div className="flex gap-4">
           <Button
             variant="outline"
-            onClick={onCreateOutline}
-            disabled={isCreating}
+            onClick={handleCreateManually}
+            disabled={isCreatingManually || isGenerating || isCreating}
             className="gap-2"
           >
-            <PlusCircle size={16} />
+            {isCreatingManually ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle size={16} />}
             Create Manually
           </Button>
           <Button
             variant="default"
-            onClick={onGenerateAIOutline}
-            disabled={isCreating}
+            onClick={handleGenerateWithAI}
+            disabled={isCreatingManually || isGenerating || isCreating}
             className="gap-2"
           >
-            <Sparkles size={16} />
+            {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles size={16} />}
             Generate with AI
           </Button>
         </div>
