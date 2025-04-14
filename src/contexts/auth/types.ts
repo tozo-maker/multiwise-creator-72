@@ -1,6 +1,8 @@
 
 import { Session, User } from '@supabase/supabase-js';
 
+export type AuthChangeEvent = 'INITIAL_SESSION' | 'PASSWORD_RECOVERY' | 'SIGNED_IN' | 'SIGNED_OUT' | 'TOKEN_REFRESHED' | 'USER_UPDATED' | 'USER_DELETED' | 'MFA_CHALLENGE_VERIFIED';
+
 export interface Profile {
   id?: string;
   username?: string;

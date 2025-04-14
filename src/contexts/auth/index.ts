@@ -1,3 +1,3 @@
 
-export { UnifiedAuthProvider, useAuth } from './UnifiedAuthProvider';
-export type { Profile, AuthContextType } from './types';
+export { UnifiedAuthProvider, useAuth } from './auth-provider';
+export type { Profile, AuthContextType, AuthChangeEvent } from './types';
