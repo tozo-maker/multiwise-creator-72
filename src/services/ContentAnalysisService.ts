@@ -4,6 +4,19 @@ import { AIService } from './AIService';
 import { AnthropicService } from './AnthropicService';
 import { toast } from '@/hooks/use-toast';
 
+// Define the interface that comes from AnthropicService
+interface ContentQualityAssessment {
+  readabilityScore: number;
+  accessibilityScore: number;
+  engagementScore: number;
+  alignmentScore: number;
+  overallScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  // The improvements property might not exist in the response from AnthropicService
+  improvements?: string[];
+}
+
 export interface ContentQualityMetrics {
   readabilityScore: number;
   accessibilityScore: number;
@@ -71,12 +84,19 @@ export const ContentAnalysisService = {
         projectId
       );
       
-      // Make sure the result has the improvements property
-      if (!results.improvements) {
-        results.improvements = [];
-      }
+      // Convert the AnthropicService response to ContentQualityMetrics
+      const metrics: ContentQualityMetrics = {
+        readabilityScore: results.readabilityScore,
+        accessibilityScore: results.accessibilityScore,
+        engagementScore: results.engagementScore,
+        alignmentScore: results.alignmentScore,
+        overallScore: results.overallScore,
+        strengths: results.strengths,
+        weaknesses: results.weaknesses,
+        improvements: results.improvements || [] // Ensure this property exists
+      };
       
-      return results;
+      return metrics;
     } catch (error) {
       console.error('Error analyzing content quality:', error);
       toast({
