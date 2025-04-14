@@ -1,189 +1,103 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileListEmptyState } from './FileListEmptyState';
-import { FileListTable } from './FileListTable';
-import { FileListFilter } from './FileListFilter';
-import { KnowledgeBaseTagManager } from './KnowledgeBaseTagManager';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { PlusIcon, FolderIcon } from 'lucide-react';
+import { KnowledgeBaseFileListItem } from './KnowledgeBaseFileListItem';
 
 export interface KBFile {
   id: string;
   name: string;
   description: string;
-  fileType: string;
+  fileType: string; // This is the correct property name
   size: string;
   uploadDate: string;
   category?: string;
-  tags?: string[];
   url: string;
-  project_id?: string;
 }
 
 interface KnowledgeBaseFileListProps {
   files: KBFile[];
-  onDelete: (id: string) => void;
   onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   onPreview: (id: string) => void;
   onDownload: (id: string) => void;
-  onTagsUpdated?: (file: KBFile, tags: string[]) => void;
-  categories?: string[];
+  onUpload: () => void;
+  isLoading?: boolean;
   projectId?: string;
+  projectFiles?: KBFile[];
 }
 
 export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
   files,
-  onDelete,
   onEdit,
+  onDelete,
   onPreview,
   onDownload,
-  onTagsUpdated,
-  categories = [],
-  projectId
+  onUpload,
+  isLoading = false,
+  projectId,
+  projectFiles = []
 }) => {
-  const { toast } = useToast();
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [tagFilter, setTagFilter] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<keyof KBFile>('uploadDate');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [tagDialogOpen, setTagDialogOpen] = useState(false);
-  const [currentFile, setCurrentFile] = useState<KBFile | null>(null);
-
-  if (files.length === 0) {
-    return <FileListEmptyState />;
-  }
-
-  const toggleSort = (field: keyof KBFile) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  // Get all unique tags from all files
-  const allTags = Array.from(
-    new Set(files.flatMap(file => file.tags || []))
-  ).sort();
-
-  const sortedFiles = [...files].sort((a, b) => {
-    const aValue = a[sortField];
-    const bValue = b[sortField];
-    if (aValue === bValue) return 0;
-    const comparison = aValue < bValue ? -1 : 1;
-    return sortDirection === 'asc' ? comparison : -comparison;
-  });
-
-  // Filter by category and tag
-  const filteredFiles = sortedFiles.filter(file => {
-    const matchesCategory = categoryFilter 
-      ? file.category === categoryFilter 
-      : true;
-      
-    const matchesTag = tagFilter
-      ? file.tags?.includes(tagFilter)
-      : true;
-      
-    return matchesCategory && matchesTag;
-  });
-
-  const handleManageTags = (file: KBFile) => {
-    setCurrentFile(file);
-    setTagDialogOpen(true);
-  };
-
-  const handleTagsUpdated = async (file: KBFile, tags: string[]) => {
-    try {
-      // Update tags in Supabase
-      if (file.id) {
-        const { error } = await supabase
-          .from('knowledge_base_files')
-          .update({ tags })
-          .eq('id', file.id);
-          
-        if (error) throw error;
-      }
-      
-      // Update the UI
-      if (onTagsUpdated) {
-        onTagsUpdated(file, tags);
-      }
-      
-      toast({
-        title: 'Tags updated',
-        description: `Updated tags for ${file.name}`,
-      });
-    } catch (error) {
-      console.error('Error updating tags:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update tags',
-        variant: 'destructive'
-      });
-    }
-  };
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
 
   return (
-    <div className="space-y-6">
-      <FileListFilter
-        categories={categories}
-        categoryFilter={categoryFilter}
-        onCategoryFilterChange={setCategoryFilter}
-        tags={allTags}
-        tagFilter={tagFilter}
-        onTagFilterChange={setTagFilter}
-      />
-
-      <FileListTable
-        files={filteredFiles}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        onPreview={onPreview}
-        onDownload={onDownload}
-        onManageTags={handleManageTags}
-        categories={categories}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSortChange={toggleSort}
-        projectId={projectId}
-      />
-      
-      <div className="flex justify-between items-center text-sm text-slate-500 mt-4">
-        <div>
-          Showing {filteredFiles.length} of {files.length} files
-        </div>
-        <div className="flex space-x-2">
-          {categoryFilter && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setCategoryFilter(null)} 
-              className="h-8 text-xs"
-            >
-              Clear Category
-            </Button>
-          )}
-          {tagFilter && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setTagFilter(null)} 
-              className="h-8 text-xs"
-            >
-              Clear Tag
-            </Button>
-          )}
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Knowledge Base Files</h2>
+        <Button onClick={onUpload}>
+          <PlusIcon className="mr-2 h-4 w-4" />
+          Upload File
+        </Button>
       </div>
       
-      <KnowledgeBaseTagManager 
-        file={currentFile}
-        isOpen={tagDialogOpen}
-        onOpenChange={setTagDialogOpen}
-        onTagsUpdated={handleTagsUpdated}
-      />
+      {isLoading ? (
+        <div className="text-slate-500 dark:text-slate-400">Loading files...</div>
+      ) : files.length === 0 ? (
+        <div className="text-slate-500 dark:text-slate-400">
+          <FolderIcon className="mr-2 inline-block h-5 w-5" />
+          No files in knowledge base yet.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-800">
+              <tr>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200">
+                  File Name
+                </th>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
+                  Category
+                </th>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
+                  Type
+                </th>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
+                  Size
+                </th>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
+                  Upload Date
+                </th>
+                <th className="py-3.5 px-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-200">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
+              {files.map((file) => (
+                <KnowledgeBaseFileListItem
+                  key={file.id}
+                  file={file}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onPreview={onPreview}
+                  onDownload={onDownload}
+                  projectId={projectId}
+                  projectFiles={projectFiles}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

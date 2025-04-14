@@ -1,27 +1,26 @@
 
-/**
- * Document Insight interface representing the analysis results
- */
 export interface DocumentInsight {
   id: string;
   file_id: string;
   project_id: string;
-  title: string;
-  summary?: string;
-  key_concepts?: Array<string | { concept: string; relevance: number }>;
-  sentiment_score?: number;
-  complexity_level?: string;
-  language_detected?: string;
-  related_files?: string[];
+  content_summary?: string;
+  key_concepts?: string[];
+  language?: string;
+  relationships?: Record<string, string[]>;
+  metadata?: Record<string, any>;
   created_at?: string;
   updated_at?: string;
-  [key: string]: any; // Allow for additional properties from comprehensive analysis
 }
 
-/**
- * Options for document processing
- */
 export interface ProcessDocumentOptions {
-  forceReAnalysis?: boolean;
-  analysisType?: string | string[];
+  forceReprocess?: boolean;
+  analysisType?: string;
+}
+
+export interface DocumentRelationship {
+  source_file_id: string;
+  target_file_id: string;
+  relationship_type?: string;
+  strength?: number;
+  metadata?: Record<string, any>;
 }

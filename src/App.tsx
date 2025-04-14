@@ -34,12 +34,7 @@ function App() {
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/projects" element={<Projects />} />
       <Route path="/projects/new" element={<CreateProject />} />
-      <Route path="/projects/create" element={
-        <ProjectCreationWizard 
-          templateId="default" 
-          onComplete={handleProjectCreationComplete} 
-        />
-      } />
+      <Route path="/projects/create" element={<CreateProject />} />
       <Route path="/projects/wizard" element={
         <EnhancedProjectWizard 
           onComplete={handleProjectCreationComplete} 
