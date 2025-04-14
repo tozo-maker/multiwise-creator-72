@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -79,31 +80,25 @@ const OutlineWorkspace = () => {
           });
 
           try {
-            const { error: tableCheckError } = await supabase
-              .from('project_config')
-              .select('count(*)', { count: 'exact', head: true });
-              
-            if (tableCheckError) {
-              console.error('Error checking if table exists:', tableCheckError);
-              if (tableCheckError.message.includes('does not exist') || 
-                  tableCheckError.message.includes('relation') ||
-                  tableCheckError.code === '42P01') {
-                
-                console.log('The project_config table doesnt exist yet');
-                setConfigMissing(true);
-                setIsLoading(false);
-                return;
-              }
-            }
-            
+            // Try to fetch config directly, simplifying the check
             const { data: configData, error: configError } = await supabase
               .from('project_config')
               .select('*')
               .eq('project_id', projectData.id)
               .maybeSingle();
 
-            if (configError && !configError.message.includes('does not exist')) {
+            if (configError) {
               console.error('Error fetching project config:', configError);
+              // If table doesn't exist or other error
+              if (configError.message.includes('does not exist') || 
+                  configError.message.includes('relation') ||
+                  configError.code === '42P01') {
+                
+                console.log('Project configuration table issue');
+                setConfigMissing(true);
+                setIsLoading(false);
+                return;
+              }
               throw configError;
             }
             
@@ -285,24 +280,14 @@ const OutlineWorkspace = () => {
         .eq('project_id', project.id)
         .maybeSingle();
         
-      if (configError) {
-        if (configError.message.includes('does not exist')) {
-          toast({
-            title: 'Configuration Required',
-            description: 'Please set up your project configuration first before generating content.',
-            variant: 'destructive'
-          });
-          navigate(`/projects/${project.id}/configuration`);
-          return;
-        } else {
-          console.error('Error fetching project config:', configError);
-          toast({
-            title: 'Error',
-            description: 'Failed to load project configuration for AI generation',
-            variant: 'destructive'
-          });
-          throw configError;
-        }
+      if (configError && !configError.message.includes('does not exist')) {
+        console.error('Error fetching project config:', configError);
+        toast({
+          title: 'Error',
+          description: 'Failed to load project configuration for AI generation',
+          variant: 'destructive'
+        });
+        throw configError;
       }
       
       if (!configData) {
@@ -415,7 +400,6 @@ const OutlineWorkspace = () => {
             <AlertTitle className="text-amber-800">Configuration Required</AlertTitle>
             <AlertDescription className="text-amber-700">
               Please set up your project configuration first before creating an outline.
-              The project_config table may not exist yet. Please run the database migration or go to configuration page.
             </AlertDescription>
           </Alert>
           
@@ -463,7 +447,6 @@ const OutlineWorkspace = () => {
               <AlertTitle className="text-amber-800">Configuration Required</AlertTitle>
               <AlertDescription className="text-amber-700">
                 Please set up your project configuration first before creating an outline.
-                The project_config table may not exist yet. Please run the database migration or go to configuration page.
               </AlertDescription>
             </Alert>
             

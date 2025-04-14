@@ -202,6 +202,62 @@ export type Database = {
         }
         Relationships: []
       }
+      project_config: {
+        Row: {
+          complexity: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          levels: string[] | null
+          name: string | null
+          pedagogy: string | null
+          project_id: string
+          projectType: string | null
+          subjects: string[] | null
+          targetLanguage: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          complexity?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          levels?: string[] | null
+          name?: string | null
+          pedagogy?: string | null
+          project_id: string
+          projectType?: string | null
+          subjects?: string[] | null
+          targetLanguage?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          complexity?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          levels?: string[] | null
+          name?: string | null
+          pedagogy?: string | null
+          project_id?: string
+          projectType?: string | null
+          subjects?: string[] | null
+          targetLanguage?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
