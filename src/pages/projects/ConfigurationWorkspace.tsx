@@ -14,11 +14,15 @@ import { SaveConfigurationButton } from '@/components/configuration/SaveConfigur
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export const ConfigurationWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { theme } = useTheme();
+  const { toast } = useToast();
   const isDark = theme === 'dark';
+  const [isLoading, setIsLoading] = useState(true);
   
   const [project, setProject] = useState({
     id: projectId || '',
@@ -26,35 +30,6 @@ export const ConfigurationWorkspace = () => {
     type: 'Loading...',
     targetLanguage: 'Loading...'
   });
-  
-  useEffect(() => {
-    const fetchProject = async () => {
-      if (!projectId) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', projectId)
-          .single();
-          
-        if (error) throw error;
-        
-        if (data) {
-          setProject({
-            id: data.id,
-            name: data.name,
-            type: data.type,
-            targetLanguage: data.target_language
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching project:', error);
-      }
-    };
-    
-    fetchProject();
-  }, [projectId]);
   
   const [configData, setConfigData] = useState<ConfigData>({
     name: project.name,
@@ -95,29 +70,114 @@ export const ConfigurationWorkspace = () => {
     lastModified: new Date().toISOString()
   });
 
-  // Update configData when project data is fetched
   useEffect(() => {
-    if (project.name !== 'Loading...') {
-      setConfigData(prevData => ({
-        ...prevData,
-        name: project.name,
-        projectType: project.type,
-        targetLanguage: project.targetLanguage
-      }));
-    }
-  }, [project]);
+    const fetchProjectAndConfig = async () => {
+      if (!projectId) return;
+      
+      setIsLoading(true);
+      try {
+        // Fetch project data
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+          
+        if (projectError) throw projectError;
+        
+        if (projectData) {
+          setProject({
+            id: projectData.id,
+            name: projectData.name,
+            type: projectData.type,
+            targetLanguage: projectData.target_language
+          });
+          
+          // Try to fetch existing configuration
+          try {
+            const { data: configData, error: configError } = await supabase
+              .from('project_config')
+              .select('*')
+              .eq('project_id', projectId)
+              .maybeSingle();
+              
+            if (configError && !configError.message.includes('does not exist')) {
+              throw configError;
+            }
+            
+            if (configData) {
+              // Update state with existing configuration
+              setConfigData(prevData => ({
+                ...prevData,
+                name: projectData.name,
+                projectType: configData.projectType || projectData.type,
+                targetLanguage: configData.targetLanguage || projectData.target_language,
+                subjects: configData.subjects || [],
+                levels: configData.levels || ['Secondary', 'High School'],
+                pedagogy: configData.pedagogy || 'Standard',
+                complexity: configData.complexity || 'Intermediate',
+                lastModified: configData.updated_at || new Date().toISOString()
+              }));
+              
+              console.log('Loaded existing project configuration:', configData);
+            } else {
+              // Just set basic project info
+              setConfigData(prevData => ({
+                ...prevData,
+                name: projectData.name,
+                projectType: projectData.type,
+                targetLanguage: projectData.target_language
+              }));
+              
+              console.log('No existing configuration found, using project defaults');
+            }
+          } catch (configError) {
+            console.error('Error loading configuration:', configError);
+            // Still set basic project info even if config fails
+            setConfigData(prevData => ({
+              ...prevData,
+              name: projectData.name,
+              projectType: projectData.type,
+              targetLanguage: projectData.target_language
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading project:', error);
+        toast({
+          title: 'Error loading project',
+          description: 'Failed to load project data',
+          variant: 'destructive'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProjectAndConfig();
+  }, [projectId, toast]);
 
   const updateConfigData = (data: Partial<ConfigData>) => {
     setConfigData({ ...configData, ...data });
   };
 
   const handleSaveChanges = () => {
-    // Here you would typically save the configuration to the backend
+    // Updates are now handled in SaveConfigurationButton
     setConfigData({
       ...configData,
       lastModified: new Date().toISOString()
     });
   };
+
+  if (isLoading) {
+    return (
+      <ModernLayout contentWidth="wide">
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </ModernLayout>
+    );
+  }
 
   return (
     <ModernLayout contentWidth="wide">
@@ -195,7 +255,11 @@ export const ConfigurationWorkspace = () => {
             </Tabs>
             
             <div className="mt-8 flex justify-end">
-              <SaveConfigurationButton onSave={handleSaveChanges} />
+              <SaveConfigurationButton 
+                onSave={handleSaveChanges} 
+                projectId={project.id}
+                configData={configData}
+              />
             </div>
           </CardContent>
         </Card>
