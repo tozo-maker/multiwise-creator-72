@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -24,6 +23,7 @@ import { ArrowLeft, Clock, Download, Edit2, Eye, FileText, Save, Tag } from 'luc
 import { Badge } from '@/components/ui/badge';
 import { VersionService } from '@/services/VersionService';
 import { OutlineService } from '@/services/OutlineService';
+import { ContentWorkflowPanel } from '@/components/content/ContentWorkflowPanel';
 
 const ContentView = () => {
   const { projectId, contentId } = useParams<{ projectId: string; contentId: string }>();
@@ -303,13 +303,15 @@ const ContentView = () => {
               displayMode="sidebar"
             />
             
-            <ApprovalWorkflow
+            <ContentWorkflowPanel
               contentId={contentItem?.id || ''}
+              projectId={projectId || ''}
               currentStatus={status}
               approvalSteps={approvalSteps}
               onStatusChange={handleStatusChange}
               onApprovalUpdate={handleApprovalUpdate}
               isEditable={true}
+              useEnhanced={true}
             />
             
             <ContentVersionHistory

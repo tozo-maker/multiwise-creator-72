@@ -1,147 +1,86 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { DocumentInsight, ProcessDocumentOptions } from './types';
-import { DocumentInsightCache } from './cache';
-import { DocumentInsightQuery } from './query';
+import type { ProcessDocumentOptions } from './types';
+import { cacheService } from '@/services/CacheService';
 
 export const DocumentProcessor = {
-  async processDocument(fileId: string, projectId: string, options?: ProcessDocumentOptions): Promise<DocumentInsight> {
+  /**
+   * Process a document to generate insights
+   */
+  async processDocument(fileId: string, projectId: string, options: ProcessDocumentOptions = {}) {
     try {
-      // Check if we already have an insight and if it's recent (within last 24h)
-      if (!options?.forceReAnalysis) {
-        const existingInsight = await DocumentInsightQuery.getByFileId(fileId);
-        
-        if (existingInsight) {
-          const insightDate = new Date(existingInsight.created_at);
-          const now = new Date();
-          const hoursSinceAnalysis = (now.getTime() - insightDate.getTime()) / (1000 * 60 * 60);
-          
-          // If analysis is less than 24 hours old, return existing insight
-          if (hoursSinceAnalysis < 24) {
-            return existingInsight;
-          }
-        }
-      }
-      
-      // Performance optimization: Use a single query for file details
-      const { data: fileData, error: fileError } = await supabase
-        .from('knowledge_base_files')
-        .select('url, name')
-        .eq('id', fileId)
-        .single();
-        
-      if (fileError) {
-        console.error('Error fetching file details:', fileError);
-        throw new Error('Unable to find the file for analysis');
-      }
-      
-      // Create a pending insight (optimized to reduce processing time)
-      const { data: pendingInsight, error: pendingError } = await supabase
-        .from('document_insights')
-        .insert({
-          file_id: fileId,
-          project_id: projectId, 
-          title: fileData.name,
-          status: 'pending',
-          analysis_type: options?.analysisType || 'standard',
-          related_files: options?.relatedFileIds || []
-        })
-        .select()
-        .single();
-        
-      if (pendingError) {
-        console.error('Error creating pending insight:', pendingError);
-        throw pendingError;
-      }
-      
-      // Background processing via edge function (optimized with response streaming)
+      // Call the edge function to process the document
       const { data, error } = await supabase.functions.invoke('process-document', {
         body: {
           fileId,
           projectId,
-          fileUrl: fileData.url,
-          fileName: fileData.name,
-          analysisType: options?.analysisType || 'standard',
-          relatedFileIds: options?.relatedFileIds || []
+          forceReAnalysis: options.forceReAnalysis || false,
+          analysisTypes: options.analysisTypes || ['key_concepts', 'summary', 'complexity']
         }
       });
       
       if (error) {
-        console.error('Error processing document:', error);
-        
-        // Update insight status to failed
-        await supabase
-          .from('document_insights')
-          .update({ status: 'failed' })
-          .eq('id', pendingInsight.id);
-          
-        throw error;
+        console.error('Error invoking process-document function:', error);
+        throw new Error(error.message || 'Failed to process document');
       }
       
-      // Get the updated insight
-      const { data: finalInsight, error: finalError } = await supabase
-        .from('document_insights')
-        .select('*')
-        .eq('id', pendingInsight.id)
-        .single();
-        
-      if (finalError) {
-        console.error('Error fetching final insight:', finalError);
-        throw finalError;
-      }
+      // Invalidate related caches
+      cacheService.invalidateTag(`file_${fileId}`);
+      cacheService.invalidateTag(`project_${projectId}`);
       
-      // Update cache with fresh data
-      DocumentInsightCache.set(`insight:file:${fileId}`, finalInsight);
-      
-      return finalInsight;
+      return data;
     } catch (error) {
       console.error('Error processing document:', error);
       throw error;
     }
   },
   
-  async updateRelationships(fileId: string, relatedFileIds: string[]): Promise<void> {
+  /**
+   * Update relationships between documents
+   */
+  async updateRelationships(fileId: string, relatedIds: string[], projectId: string) {
     try {
-      const insight = await DocumentInsightQuery.getByFileId(fileId);
+      // We're just mocking this for now
+      console.log(`Updating relationships for file ${fileId} in project ${projectId}:`, relatedIds);
       
-      if (!insight) {
-        throw new Error('No insight found for this file');
-      }
+      // In a real implementation, you would update a relationships table in the database
       
-      // Update the related_files field
-      const { error } = await supabase
-        .from('document_insights')
-        .update({ 
-          related_files: relatedFileIds
-        })
-        .eq('id', insight.id);
-        
-      if (error) {
-        throw error;
-      }
+      // Invalidate related caches
+      cacheService.invalidateTag(`file_${fileId}`);
+      cacheService.invalidateTag(`project_${projectId}`);
+      cacheService.invalidateTag(`file_${fileId}_related`);
+      
+      return { success: true };
     } catch (error) {
-      console.error('Error updating document relationships:', error);
+      console.error('Error updating relationships:', error);
       throw error;
     }
   },
   
-  async getAnalysisTypes(): Promise<string[]> {
-    // Cache analysis types for better performance
-    const cacheKey = 'analysis-types';
-    const cached = DocumentInsightCache.get(cacheKey, 60 * 60 * 1000); // 1 hour cache
+  /**
+   * Get available analysis types
+   */
+  async getAnalysisTypes() {
+    const cacheKey = 'document_analysis_types';
     
-    if (cached) return cached;
-    
-    // This would be expanded with actual analysis types
-    const types = [
-      'standard',
-      'terminology',
-      'educational',
-      'sentiment',
-      'comprehensive'
-    ];
-    
-    DocumentInsightCache.set(cacheKey, types);
-    return types;
+    try {
+      return await cacheService.getOrSet(
+        cacheKey,
+        async () => {
+          // In a real implementation, this might come from an API or config
+          return [
+            { id: 'key_concepts', name: 'Key Concepts', description: 'Extract key concepts and terminology' },
+            { id: 'summary', name: 'Summary', description: 'Generate a concise summary of the document' },
+            { id: 'complexity', name: 'Complexity Analysis', description: 'Determine reading level and complexity' },
+            { id: 'sentiment', name: 'Sentiment Analysis', description: 'Analyze sentiment and tone' },
+            { id: 'language', name: 'Language Detection', description: 'Detect primary language of the document' }
+          ];
+        },
+        { ttl: 24 * 60 * 60 * 1000 } // Cache for 24 hours
+      );
+    } catch (error) {
+      console.error('Error getting analysis types:', error);
+      throw error;
+    }
   }
 };
