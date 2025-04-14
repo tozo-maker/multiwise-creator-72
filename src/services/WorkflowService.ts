@@ -1,170 +1,245 @@
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { ApprovalStep, ApprovalWorkflow, ApprovalWorkflowTemplate, ApprovalService } from '@/services/ApprovalService';
 
-interface WorkflowAssignment {
+import { supabase } from '@/integrations/supabase/client';
+import { cacheService } from '@/services/CacheService';
+
+export interface WorkflowStep {
   id: string;
   contentId: string;
-  workflowId: string;
-  assignedTo: string;
-  deadline: Date | null;
-  status: 'active' | 'completed' | 'canceled';
-  createdAt: Date;
-  updatedAt: Date;
+  name: string;
+  description?: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  assignedToId?: string;
+  dueDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-interface WorkflowDeadline {
+export interface WorkflowComment {
+  id: string;
   stepId: string;
-  deadline: Date;
-  reminderSent: boolean;
+  contentId: string;
+  userId: string;
+  userName: string;
+  text: string;
+  createdAt: string;
 }
 
-// Service for enhanced workflow management
+export interface WorkflowAssignment {
+  stepId: string;
+  userId: string;
+  userEmail?: string;
+  userName?: string;
+  assignedAt: string;
+}
+
 export const WorkflowService = {
   /**
-   * Get all workflows assigned to a user
+   * Get workflow steps for a content item
    */
-  async getWorkflowsByUser(userId: string): Promise<WorkflowAssignment[]> {
+  async getWorkflowSteps(contentId: string): Promise<WorkflowStep[]> {
+    const cacheKey = `workflow_steps_${contentId}`;
+    
     try {
-      // In a real implementation, we would fetch from the database
-      // For now, we'll return mock data
+      return await cacheService.getOrSet(
+        cacheKey,
+        async () => {
+          // In a real implementation, we would fetch from the database
+          // For now, we'll return hardcoded steps
+          return [
+            {
+              id: 'step1',
+              contentId,
+              name: 'Initial Review',
+              description: 'Review content for quality and compliance',
+              status: 'pending',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            {
+              id: 'step2',
+              contentId,
+              name: 'Subject Matter Review',
+              description: 'Technical review by subject matter experts',
+              status: 'pending',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            {
+              id: 'step3',
+              contentId,
+              name: 'Editorial Review',
+              description: 'Check grammar, style, and formatting',
+              status: 'pending',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            {
+              id: 'step4',
+              contentId,
+              name: 'Final Approval',
+              description: 'Final approval before publishing',
+              status: 'pending',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          ];
+        },
+        { ttl: 60 * 60 * 1000 } // Cache for 1 hour
+      );
+    } catch (error) {
+      console.error('Error getting workflow steps:', error);
       return [];
-    } catch (error: any) {
-      console.error('Error fetching workflows for user:', error);
-      throw error;
     }
   },
   
   /**
-   * Get workflows by content ID
+   * Update a workflow step
    */
-  async getWorkflowByContent(contentId: string): Promise<ApprovalWorkflow | null> {
+  async updateStep(stepId: string, data: Partial<WorkflowStep>): Promise<void> {
     try {
-      // In a real implementation, we would fetch from the database
-      // For now, we'll check the contentId and return null
-      if (!contentId) return null;
+      // In a real implementation, update the step in the database
+      // For now, we'll just log the update
+      console.log(`Updating step ${stepId} with data:`, data);
       
-      // Fetch from ApprovalService for now
-      const steps = await ApprovalService.createWorkflow(contentId);
-      
-      if (!steps || steps.length === 0) return null;
-      
-      return {
-        id: `workflow-${contentId}`,
-        name: 'Content Review Process',
-        description: 'Standard content review workflow',
-        contentId,
-        steps,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-    } catch (error: any) {
-      console.error('Error fetching workflow for content:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Set deadlines for workflow steps
-   */
-  async setStepDeadlines(
-    contentId: string, 
-    stepDeadlines: { stepId: string; deadline: Date }[]
-  ): Promise<boolean> {
-    try {
-      if (!contentId || !stepDeadlines.length) {
-        return false;
+      // Invalidate relevant caches
+      if (data.contentId) {
+        cacheService.invalidateTag(`workflow_steps_${data.contentId}`);
       }
-      
-      // In a real implementation, we would update the database
-      console.log(`Setting deadlines for content ${contentId}:`, stepDeadlines);
-      
-      // For now, just return true to indicate success
-      return true;
-    } catch (error: any) {
-      console.error('Error setting step deadlines:', error);
+    } catch (error) {
+      console.error('Error updating workflow step:', error);
       throw error;
     }
   },
   
   /**
-   * Check if a workflow has overdue steps
+   * Mark a step as completed
    */
-  async getOverdueSteps(workflowId: string): Promise<string[]> {
+  async completeStep(contentId: string, stepId: string): Promise<void> {
     try {
-      // In a real implementation, we would query the database
-      // for steps with deadlines in the past
+      // In a real implementation, update the step in the database
+      console.log(`Marking step ${stepId} for content ${contentId} as completed`);
+      
+      // Invalidate relevant caches
+      cacheService.invalidateTag(`workflow_steps_${contentId}`);
+    } catch (error) {
+      console.error('Error completing workflow step:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Mark a step as rejected
+   */
+  async rejectStep(contentId: string, stepId: string): Promise<void> {
+    try {
+      // In a real implementation, update the step in the database
+      console.log(`Marking step ${stepId} for content ${contentId} as rejected`);
+      
+      // Invalidate relevant caches
+      cacheService.invalidateTag(`workflow_steps_${contentId}`);
+    } catch (error) {
+      console.error('Error rejecting workflow step:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Assign a user to a workflow step
+   */
+  async assignUser(stepId: string, userId: string, contentId: string): Promise<void> {
+    try {
+      // In a real implementation, update the assignment in the database
+      console.log(`Assigning user ${userId} to step ${stepId} for content ${contentId}`);
+      
+      // Invalidate relevant caches
+      cacheService.invalidateTag(`workflow_steps_${contentId}`);
+      cacheService.invalidateTag(`workflow_assignments_${contentId}`);
+    } catch (error) {
+      console.error('Error assigning user to workflow step:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get workflow comments for a content item
+   */
+  async getComments(contentId: string): Promise<WorkflowComment[]> {
+    const cacheKey = `workflow_comments_${contentId}`;
+    
+    try {
+      return await cacheService.getOrSet(
+        cacheKey,
+        async () => {
+          // In a real implementation, fetch from the database
+          return [];
+        },
+        { ttl: 60 * 60 * 1000 } // Cache for 1 hour
+      );
+    } catch (error) {
+      console.error('Error getting workflow comments:', error);
       return [];
-    } catch (error: any) {
-      console.error('Error checking for overdue steps:', error);
+    }
+  },
+  
+  /**
+   * Add a comment to a workflow
+   */
+  async addComment(contentId: string, stepId: string, userId: string, text: string): Promise<void> {
+    try {
+      // In a real implementation, add the comment to the database
+      console.log(`Adding comment to step ${stepId} for content ${contentId} by user ${userId}: ${text}`);
+      
+      // Invalidate relevant caches
+      cacheService.invalidateTag(`workflow_comments_${contentId}`);
+    } catch (error) {
+      console.error('Error adding workflow comment:', error);
       throw error;
     }
   },
   
   /**
-   * Send deadline notifications for pending steps
+   * Set a deadline for a workflow step
    */
-  async sendDeadlineNotifications(): Promise<number> {
+  async setDeadline(stepId: string, contentId: string, deadline: Date): Promise<void> {
     try {
-      // In a real implementation, this would check for upcoming deadlines
-      // and send notifications to users
-      return 0;
-    } catch (error: any) {
-      console.error('Error sending deadline notifications:', error);
+      // In a real implementation, update the deadline in the database
+      console.log(`Setting deadline for step ${stepId} to ${deadline.toISOString()}`);
+      
+      // Invalidate relevant caches
+      cacheService.invalidateTag(`workflow_steps_${contentId}`);
+    } catch (error) {
+      console.error('Error setting workflow deadline:', error);
       throw error;
     }
   },
   
   /**
-   * Create a new workflow with deadline tracking
+   * Get workflow metrics for a project
    */
-  async createEnhancedWorkflow(
-    contentId: string,
-    templateId: string,
-    assignees: { stepId: string; userId: string }[] = [],
-    deadlines: { stepId: string; deadline: Date }[] = []
-  ): Promise<ApprovalWorkflow | null> {
+  async getProjectMetrics(projectId: string) {
+    const cacheKey = `workflow_metrics_${projectId}`;
+    
     try {
-      // Get workflow steps from the ApprovalService
-      const steps = await ApprovalService.createWorkflow(contentId, templateId);
-      
-      if (!steps || steps.length === 0) {
-        return null;
-      }
-      
-      // In a real implementation, we would also store the assignees and deadlines
-      console.log(`Created workflow for content ${contentId} with:`, {
-        templateId,
-        assignees,
-        deadlines
-      });
-      
-      return {
-        id: `workflow-${contentId}`,
-        name: 'Content Review Process',
-        description: 'Standard content review workflow',
-        contentId,
-        steps,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-    } catch (error: any) {
-      console.error('Error creating enhanced workflow:', error);
-      throw error;
-    }
-  },
-  
-  /**
-   * Get upcoming deadlines for the next n days
-   */
-  async getUpcomingDeadlines(userId: string, days: number = 7): Promise<any[]> {
-    try {
-      // In a real implementation, we would query the database
-      // for upcoming deadlines
-      return [];
-    } catch (error: any) {
-      console.error('Error fetching upcoming deadlines:', error);
-      throw error;
+      return await cacheService.getOrSet(
+        cacheKey,
+        async () => {
+          // In a real implementation, calculate metrics from the database
+          // For now, return mock metrics
+          return {
+            totalItems: 25,
+            completed: 12,
+            inProgress: 8,
+            pending: 5,
+            overdue: 3,
+            averageCompletionTime: '4.5 days',
+            stakeholders: 7
+          };
+        },
+        { ttl: 60 * 60 * 1000 } // Cache for 1 hour
+      );
+    } catch (error) {
+      console.error('Error getting workflow metrics:', error);
+      return null;
     }
   }
 };

@@ -1,373 +1,386 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Activity, CalendarIcon, Settings, Users } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { DialogFooter } from '@/ui/DialogFooter';
+import { Badge } from '@/components/ui/badge';
+import { Check, Plus, Users, CalendarDays, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useTheme } from '@/contexts/ThemeContext';
-import { ApprovalService, ApprovalStep } from '@/services/ApprovalService';
-import { WorkflowService } from '@/services/WorkflowService';
 import { DeadlineManager } from './DeadlineManager';
 import { WorkflowAssignment } from './WorkflowAssignment';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, X } from 'lucide-react';
+import { WorkflowService } from '@/services/WorkflowService';
+
+interface WorkflowStep {
+  id: string;
+  name: string;
+  description?: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  assignedTo?: string;
+  dueDate?: Date;
+}
+
+interface Comment {
+  id: string;
+  userId: string;
+  userName: string;
+  text: string;
+  createdAt: Date;
+  stepId: string;
+}
 
 interface EnhancedWorkflowManagerProps {
   contentId: string;
   projectId: string;
 }
 
-export const EnhancedWorkflowManager: React.FC<EnhancedWorkflowManagerProps> = ({ 
-  contentId, 
-  projectId 
+export const EnhancedWorkflowManager: React.FC<EnhancedWorkflowManagerProps> = ({
+  contentId,
+  projectId
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const [steps, setSteps] = useState<WorkflowStep[]>([
+    {
+      id: 'step1',
+      name: 'Initial Review',
+      description: 'Review content for basic quality and compliance',
+      status: 'pending'
+    },
+    {
+      id: 'step2',
+      name: 'Subject Matter Expert Review',
+      description: 'Verify accuracy of content by subject matter experts',
+      status: 'pending'
+    },
+    {
+      id: 'step3',
+      name: 'Editorial Review',
+      description: 'Check grammar, style, and formatting',
+      status: 'pending'
+    },
+    {
+      id: 'step4',
+      name: 'Final Approval',
+      description: 'Final approval by project manager',
+      status: 'pending'
+    }
+  ]);
+  
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newStep, setNewStep] = useState({ name: '', description: '' });
+  const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   
-  const [activeTab, setActiveTab] = useState('current');
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [currentWorkflow, setCurrentWorkflow] = useState<ApprovalStep[]>([]);
-  
-  const [isAddingWorkflow, setIsAddingWorkflow] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
-
-  const [isCreatingTemplate, setIsCreatingTemplate] = useState(false);
-  const [newTemplateName, setNewTemplateName] = useState('');
-  const [newTemplateDescription, setNewTemplateDescription] = useState('');
-  const [newTemplateSteps, setNewTemplateSteps] = useState<string[]>(['']);
-  
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        const templatesData = await ApprovalService.getWorkflowTemplates();
-        setTemplates(templatesData);
-        if (templatesData.length > 0) {
-          setSelectedTemplateId(templatesData[0].id);
-        }
-      } catch (error) {
-        console.error('Error loading workflow templates:', error);
-      }
-    };
-    
-    loadTemplates();
-  }, []);
-  
-  useEffect(() => {
-    const loadCurrentWorkflow = async () => {
-      try {
-        if (contentId) {
-          const workflow = await ApprovalService.createWorkflow(contentId);
-          setCurrentWorkflow(workflow);
-        }
-      } catch (error) {
-        console.error('Error loading current workflow:', error);
-      }
-    };
-    
-    if (contentId) {
-      loadCurrentWorkflow();
-    }
-  }, [contentId]);
-  
-  const handleAddWorkflow = async () => {
-    if (!selectedTemplateId) {
-      toast({
-        title: 'Selection Required',
-        description: 'Please select a workflow template',
-        variant: 'destructive'
-      });
-      return;
-    }
-    
+  const handleStepStatusChange = async (stepId: string, newStatus: 'pending' | 'in_progress' | 'completed' | 'rejected') => {
+    setIsUpdating(true);
     try {
-      const workflow = await WorkflowService.createEnhancedWorkflow(contentId, selectedTemplateId);
+      // A real implementation would call an API to update the status
+      setSteps(prev => 
+        prev.map(step => 
+          step.id === stepId ? { ...step, status: newStatus } : step
+        )
+      );
       
-      if (workflow) {
-        setCurrentWorkflow(workflow.steps);
+      if (newStatus === 'completed') {
+        await WorkflowService.completeStep(contentId, stepId);
+      } else if (newStatus === 'rejected') {
+        await WorkflowService.rejectStep(contentId, stepId);
       }
       
-      setIsAddingWorkflow(false);
-      
       toast({
-        title: 'Workflow Created',
-        description: 'Approval workflow has been added to this content',
+        title: "Status updated",
+        description: `Workflow step status updated to ${newStatus.replace('_', ' ')}`
       });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Could not create workflow',
-        variant: 'destructive'
-      });
-    }
-  };
-  
-  const handleDeadlinesUpdated = () => {
-    // Refresh workflow data
-    loadCurrentWorkflow();
-  };
-  
-  const handleAssignmentsUpdated = () => {
-    // Refresh workflow data
-    loadCurrentWorkflow();
-  };
-  
-  const loadCurrentWorkflow = async () => {
-    try {
-      if (contentId) {
-        const workflow = await WorkflowService.getWorkflowByContent(contentId);
-        if (workflow) {
-          setCurrentWorkflow(workflow.steps);
-        }
-      }
     } catch (error) {
-      console.error('Error refreshing workflow:', error);
+      console.error('Error updating step status:', error);
+      toast({
+        title: "Error updating status",
+        description: "There was an error updating the workflow status",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
-
-  const handleCreateTemplate = () => {
-    if (!newTemplateName) {
-      toast({
-        title: 'Name Required',
-        description: 'Please provide a name for the template',
-        variant: 'destructive'
-      });
-      return;
-    }
+  
+  const handleDeadlineChange = (stepId: string, date: Date | null) => {
+    setSteps(prev => 
+      prev.map(step => 
+        step.id === stepId ? { ...step, dueDate: date || undefined } : step
+      )
+    );
+  };
+  
+  const handleAssignmentChange = (stepId: string, userId: string) => {
+    setSteps(prev => 
+      prev.map(step => 
+        step.id === stepId ? { ...step, assignedTo: userId } : step
+      )
+    );
+  };
+  
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
     
-    if (newTemplateSteps.some(step => !step.trim())) {
-      toast({
-        title: 'Invalid Steps',
-        description: 'Please provide a name for each step',
-        variant: 'destructive'
-      });
-      return;
-    }
-    
-    const newTemplate: any = {
-      id: `custom-${Date.now()}`,
-      name: newTemplateName,
-      description: newTemplateDescription,
-      steps: newTemplateSteps.map((name, index) => ({
-        id: `step-${Date.now()}-${index}`,
-        name,
-        description: `Custom step: ${name}`,
-        order: index
-      }))
+    const comment: Comment = {
+      id: `comment-${Date.now()}`,
+      userId: 'current-user-id', // In a real app, this would be the actual user ID
+      userName: 'Current User', // In a real app, this would be the actual user name
+      text: newComment,
+      createdAt: new Date(),
+      stepId: 'all' // Comments can be general or specific to a step
     };
     
-    setTemplates([...templates, newTemplate]);
-    setSelectedTemplateId(newTemplate.id);
-    setIsCreatingTemplate(false);
-    
-    setNewTemplateName('');
-    setNewTemplateDescription('');
-    setNewTemplateSteps(['']);
+    setComments(prev => [...prev, comment]);
+    setNewComment('');
     
     toast({
-      title: 'Template Created',
-      description: 'Your custom workflow template has been created',
+      title: "Comment added",
+      description: "Your comment has been added to the workflow"
     });
   };
   
-  const addTemplateStep = () => {
-    setNewTemplateSteps([...newTemplateSteps, '']);
+  const handleAddStep = () => {
+    if (!newStep.name.trim()) {
+      toast({
+        title: "Validation error",
+        description: "Step name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const step: WorkflowStep = {
+      id: `step-${Date.now()}`,
+      name: newStep.name,
+      description: newStep.description,
+      status: 'pending'
+    };
+    
+    setSteps(prev => [...prev, step]);
+    setNewStep({ name: '', description: '' });
+    setIsDialogOpen(false);
+    
+    toast({
+      title: "Step added",
+      description: "New workflow step has been added"
+    });
   };
   
-  const updateTemplateStep = (index: number, value: string) => {
-    const updatedSteps = [...newTemplateSteps];
-    updatedSteps[index] = value;
-    setNewTemplateSteps(updatedSteps);
-  };
-  
-  const removeTemplateStep = (index: number) => {
-    if (newTemplateSteps.length <= 1) return;
-    const updatedSteps = newTemplateSteps.filter((_, i) => i !== index);
-    setNewTemplateSteps(updatedSteps);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-500 text-white';
+      case 'in_progress':
+        return 'bg-blue-500 text-white';
+      case 'rejected':
+        return 'bg-red-500 text-white';
+      default:
+        return 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200';
+    }
   };
   
   return (
-    <Card className="border border-slate-200 dark:border-slate-700">
-      <CardHeader>
-        <CardTitle>Enhanced Workflow Management</CardTitle>
-        <CardDescription>Manage approval processes, deadlines, and assignments</CardDescription>
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-xl">Content Workflow</CardTitle>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="flex gap-1 items-center">
+              <Plus className="h-4 w-4" />
+              <span>Add Step</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Workflow Step</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="stepName">Step Name</Label>
+                <Input
+                  id="stepName"
+                  value={newStep.name}
+                  onChange={(e) => setNewStep(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter step name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stepDescription">Description</Label>
+                <Textarea
+                  id="stepDescription"
+                  value={newStep.description}
+                  onChange={(e) => setNewStep(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Enter step description (optional)"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleAddStep}>Add Step</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
-      
-      <CardContent className="p-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 m-4">
-            <TabsTrigger value="current" className="flex items-center gap-1">
-              <Activity size={15} />
-              <span>Current Workflow</span>
+      <CardContent className="space-y-6">
+        <Tabs defaultValue="steps">
+          <TabsList>
+            <TabsTrigger value="steps" className="flex gap-2 items-center">
+              <Check className="h-4 w-4" />
+              <span>Steps</span>
             </TabsTrigger>
-            <TabsTrigger value="deadlines" className="flex items-center gap-1">
-              <CalendarIcon size={15} />
+            <TabsTrigger value="assignments" className="flex gap-2 items-center">
+              <Users className="h-4 w-4" />
+              <span>Assignments</span>
+            </TabsTrigger>
+            <TabsTrigger value="deadlines" className="flex gap-2 items-center">
+              <CalendarDays className="h-4 w-4" />
               <span>Deadlines</span>
             </TabsTrigger>
-            <TabsTrigger value="assignments" className="flex items-center gap-1">
-              <Users size={15} />
-              <span>Assignments</span>
+            <TabsTrigger value="comments" className="flex gap-2 items-center">
+              <MessageSquare className="h-4 w-4" />
+              <span>Comments</span>
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="current" className="p-4 pt-0">
-            {currentWorkflow.length > 0 ? (
-              <div className="space-y-4">
-                <h3 className="font-medium text-sm">Current Approval Process</h3>
-                
-                {/* Render the current workflow steps */}
-                {currentWorkflow.map((step, index) => (
-                  <div 
-                    key={step.id} 
-                    className={`p-3 rounded-md border ${isDark ? 'border-slate-700' : 'border-slate-200'} ${
-                      step.status === 'completed' 
-                        ? 'bg-green-50 dark:bg-green-900/20' 
-                        : step.status === 'rejected'
-                        ? 'bg-red-50 dark:bg-red-900/20'
-                        : 'bg-white dark:bg-slate-800'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="flex items-center justify-center h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-medium">
-                            {index + 1}
-                          </span>
-                          <h4 className="font-medium">{step.name}</h4>
-                        </div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                          {step.description}
-                        </p>
-                        
-                        {/* Display deadline if set */}
-                        {step.metadata?.deadline && (
-                          <div className="mt-2 flex items-center gap-1">
-                            <CalendarIcon className="h-3.5 w-3.5 text-slate-500" />
-                            <span className="text-xs text-slate-500">
-                              Due: {new Date(step.metadata.deadline).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Activity size={40} className="mx-auto mb-2 text-slate-400" />
-                <h3 className="text-lg font-medium mb-1">No Active Workflow</h3>
-                <p className="text-slate-500 dark:text-slate-400 mb-4">
-                  Add an approval workflow to manage the review process
-                </p>
-                <Button onClick={() => setIsAddingWorkflow(true)}>
-                  Add Workflow
-                </Button>
-              </div>
-            )}
-            
-            {/* Dialog for adding workflow */}
-            <Dialog open={isAddingWorkflow} onOpenChange={setIsAddingWorkflow}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Approval Workflow</DialogTitle>
-                  <DialogDescription>
-                    Select a workflow template to apply to this content
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4 py-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Template</label>
-                    <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select workflow template" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {templates.map(template => (
-                          <SelectItem key={template.id} value={template.id}>
-                            {template.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    {selectedTemplateId && (
-                      <div className="mt-4">
-                        <h4 className="font-medium mb-2">Template Preview</h4>
-                        <div className="border rounded-md p-2 bg-slate-50 dark:bg-slate-800">
-                          {templates.find(t => t.id === selectedTemplateId)?.steps.map((step, index) => (
-                            <div key={step.id} className="py-1.5 border-b last:border-0">
-                              <div className="flex items-center gap-2">
-                                <span className="flex items-center justify-center h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-medium">
-                                  {index + 1}
-                                </span>
-                                <span>{step.name}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+          <TabsContent value="steps" className="space-y-4 mt-4">
+            {steps.map((step, index) => (
+              <div
+                key={step.id}
+                className="p-4 border rounded-md shadow-sm bg-card"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-medium">{index + 1}. {step.name}</h3>
+                    {step.description && (
+                      <p className="text-sm text-muted-foreground">{step.description}</p>
                     )}
                   </div>
+                  <Badge className={getStatusColor(step.status)}>
+                    {step.status.charAt(0).toUpperCase() + step.status.slice(1).replace('_', ' ')}
+                  </Badge>
                 </div>
-                
-                <DialogFooter className="flex justify-between">
-                  <Button variant="outline" onClick={() => setIsCreatingTemplate(true)}>
-                    Create Custom Template
-                  </Button>
-                  <Button onClick={handleAddWorkflow}>
-                    Add Workflow
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                <div className="flex gap-2 mt-3">
+                  {step.status !== 'completed' && step.status !== 'in_progress' && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleStepStatusChange(step.id, 'in_progress')}
+                      disabled={isUpdating}
+                    >
+                      Start
+                    </Button>
+                  )}
+                  {step.status !== 'completed' && step.status === 'in_progress' && (
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={() => handleStepStatusChange(step.id, 'completed')}
+                      disabled={isUpdating}
+                    >
+                      Complete
+                    </Button>
+                  )}
+                  {step.status !== 'rejected' && step.status === 'in_progress' && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => handleStepStatusChange(step.id, 'rejected')}
+                      disabled={isUpdating}
+                    >
+                      Reject
+                    </Button>
+                  )}
+                  {(step.status === 'completed' || step.status === 'rejected') && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleStepStatusChange(step.id, 'pending')}
+                      disabled={isUpdating}
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
           </TabsContent>
           
-          <TabsContent value="deadlines" className="p-4 pt-0">
-            {currentWorkflow.length > 0 ? (
-              <DeadlineManager 
-                contentId={contentId}
-                steps={currentWorkflow}
-                onDeadlinesUpdated={handleDeadlinesUpdated}
-              />
-            ) : (
-              <div className="text-center py-8">
-                <CalendarIcon size={40} className="mx-auto mb-2 text-slate-400" />
-                <h3 className="text-lg font-medium mb-1">No Workflow Added</h3>
-                <p className="text-slate-500 dark:text-slate-400 mb-4">
-                  Add a workflow to manage deadlines
-                </p>
-                <Button onClick={() => setActiveTab('current')}>
-                  Go to Workflow
-                </Button>
-              </div>
-            )}
+          <TabsContent value="assignments" className="mt-4">
+            <WorkflowAssignment 
+              contentId={contentId}
+              steps={steps.map(step => ({ 
+                id: step.id,
+                name: step.name,
+                status: step.status as 'pending' | 'completed' | 'rejected'
+              }))}
+              onAssignmentsUpdated={() => {
+                toast({
+                  title: "Assignments updated",
+                  description: "Workflow assignments have been updated"
+                });
+              }}
+            />
           </TabsContent>
           
-          <TabsContent value="assignments" className="p-4 pt-0">
-            {currentWorkflow.length > 0 ? (
-              <WorkflowAssignment 
-                contentId={contentId}
-                steps={currentWorkflow}
-                onAssignmentsUpdated={handleAssignmentsUpdated}
-              />
-            ) : (
-              <div className="text-center py-8">
-                <Users size={40} className="mx-auto mb-2 text-slate-400" />
-                <h3 className="text-lg font-medium mb-1">No Workflow Added</h3>
-                <p className="text-slate-500 dark:text-slate-400 mb-4">
-                  Add a workflow to manage assignments
-                </p>
-                <Button onClick={() => setActiveTab('current')}>
-                  Go to Workflow
-                </Button>
+          <TabsContent value="deadlines" className="space-y-4 mt-4">
+            {steps.map((step) => (
+              <div
+                key={`deadline-${step.id}`}
+                className="p-4 border rounded-md shadow-sm"
+              >
+                <p className="mb-2 font-medium">{step.name}</p>
+                <DeadlineManager 
+                  contentId={contentId}
+                  currentDeadline={step.dueDate}
+                  onDeadlineChange={(date) => handleDeadlineChange(step.id, date)}
+                />
               </div>
-            )}
+            ))}
+          </TabsContent>
+          
+          <TabsContent value="comments" className="mt-4">
+            <div className="space-y-4">
+              <div className="border rounded-md p-4">
+                <div className="flex gap-2 items-center">
+                  <Textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Add a comment about the workflow..."
+                    className="resize-none"
+                  />
+                </div>
+                <div className="mt-2 flex justify-end">
+                  <Button size="sm" onClick={handleAddComment} disabled={!newComment.trim()}>
+                    Add Comment
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                {comments.length === 0 ? (
+                  <p className="text-center py-4 text-muted-foreground">No comments yet</p>
+                ) : (
+                  comments.map(comment => (
+                    <div key={comment.id} className="border rounded-md p-3 bg-muted/20">
+                      <div className="flex justify-between items-center mb-1">
+                        <p className="font-medium">{comment.userName}</p>
+                        <span className="text-xs text-muted-foreground">
+                          {comment.createdAt.toLocaleDateString()} {comment.createdAt.toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <p className="text-sm">{comment.text}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>

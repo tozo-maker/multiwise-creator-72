@@ -1,186 +1,131 @@
 
 import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Link, Network } from 'lucide-react';
-import { DocumentInsightService } from '@/services/document-insights';
-import { useToast } from '@/hooks/use-toast';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { KBFile } from './KnowledgeBaseFileList';
+import { Badge } from '@/components/ui/badge';
+import { DocumentInsightService } from '@/services/DocumentInsightService';
 import { FileTypeIcon } from './FileTypeIcon';
+import { X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface DocumentRelationshipManagerProps {
-  currentFileId: string;
+  fileId: string;
   projectId: string;
-  projectFiles: KBFile[];
-  onRelationshipsUpdated?: () => void;
 }
 
 export const DocumentRelationshipManager: React.FC<DocumentRelationshipManagerProps> = ({
-  currentFileId,
-  projectId,
-  projectFiles,
-  onRelationshipsUpdated
+  fileId,
+  projectId
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [relatedFileIds, setRelatedFileIds] = useState<string[]>([]);
+  const [relatedFiles, setRelatedFiles] = useState<Array<{ id: string; name: string; type: string }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   
-  const currentFile = projectFiles.find(file => file.id === currentFileId);
-  
-  // Load related files when dialog opens
   useEffect(() => {
     const fetchRelatedFiles = async () => {
-      if (!isOpen) return;
-      
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const insight = await DocumentInsightService.getByFileId(currentFileId);
-        
-        if (insight?.related_files) {
-          setRelatedFileIds(insight.related_files);
-        } else {
-          setRelatedFileIds([]);
-        }
+        // In a real implementation, you would fetch the related files from the database
+        // For now, we'll just simulate some related files
+        setTimeout(() => {
+          setRelatedFiles([
+            { id: 'file1', name: 'Chapter 1 - Introduction.pdf', type: 'pdf' },
+            { id: 'file2', name: 'Curriculum Standards.docx', type: 'docx' },
+            { id: 'file3', name: 'Learning Objectives.xlsx', type: 'xlsx' }
+          ]);
+          setIsLoading(false);
+        }, 1000);
       } catch (error) {
         console.error('Error fetching related files:', error);
-      } finally {
         setIsLoading(false);
+        toast({
+          title: "Error",
+          description: "Failed to load related files",
+          variant: "destructive"
+        });
       }
     };
     
-    fetchRelatedFiles();
-  }, [currentFileId, isOpen]);
-  
-  // Handle toggling a file's relationship
-  const toggleFileRelationship = (fileId: string) => {
-    if (relatedFileIds.includes(fileId)) {
-      setRelatedFileIds(prev => prev.filter(id => id !== fileId));
-    } else {
-      setRelatedFileIds(prev => [...prev, fileId]);
+    if (fileId) {
+      fetchRelatedFiles();
     }
+  }, [fileId, toast]);
+  
+  const handleRemoveRelationship = (relatedFileId: string) => {
+    setRelatedFiles(prev => prev.filter(file => file.id !== relatedFileId));
   };
   
-  // Save relationships
-  const handleSave = async () => {
+  const handleSaveRelationships = async () => {
+    setIsSaving(true);
     try {
-      setIsLoading(true);
-      await DocumentInsightService.updateRelationships(currentFileId, relatedFileIds, projectId);
+      await DocumentInsightService.updateRelationships(
+        fileId, 
+        relatedFiles.map(file => file.id),
+        projectId
+      );
       
       toast({
-        title: "Relationships Updated",
-        description: "Document relationships have been updated successfully"
+        title: "Relationships updated",
+        description: "Document relationships have been updated successfully",
       });
-      
-      if (onRelationshipsUpdated) {
-        onRelationshipsUpdated();
-      }
-      
-      setIsOpen(false);
     } catch (error) {
-      console.error('Error updating relationships:', error);
+      console.error('Error saving relationships:', error);
       toast({
-        title: "Update Failed",
+        title: "Error",
         description: "Failed to update document relationships",
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
   
   return (
-    <>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setIsOpen(true)}
-        title="Manage document relationships"
-        className="gap-1"
-      >
-        <Link className="h-4 w-4" />
-        Document Relationships
-      </Button>
-      
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Document Relationships</DialogTitle>
-            <DialogDescription>
-              Link this document with related documents to establish connections for AI analysis.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            {currentFile && (
-              <div className="mb-4 p-2 bg-slate-100 rounded-md flex items-center">
-                <FileTypeIcon fileType={currentFile.fileType} className="mr-2" />
-                <div>
-                  <p className="font-semibold">{currentFile.name}</p>
-                  <p className="text-sm text-slate-500">Current document</p>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="text-lg">Related Documents</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="py-4 text-center text-sm text-muted-foreground">Loading related documents...</div>
+        ) : relatedFiles.length === 0 ? (
+          <div className="py-4 text-center text-sm text-muted-foreground">
+            No related documents found
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {relatedFiles.map(file => (
+              <div 
+                key={file.id}
+                className="flex items-center justify-between p-2 rounded-md border border-slate-200 dark:border-slate-700"
+              >
+                <div className="flex items-center space-x-2">
+                  <FileTypeIcon fileType={file.type} />
+                  <span className="text-sm font-medium">{file.name}</span>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveRelationship(file.id)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-            )}
+            ))}
             
-            <div className="text-sm font-medium text-slate-700 mb-2">Select related documents:</div>
-            
-            <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
-              {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"></div>
-                  <p className="mt-2 text-sm text-slate-500">Loading related documents...</p>
-                </div>
-              ) : projectFiles.filter(file => file.id !== currentFileId).length === 0 ? (
-                <p className="text-sm text-slate-500 py-2">No other documents found in this project.</p>
-              ) : (
-                projectFiles
-                  .filter(file => file.id !== currentFileId)
-                  .map(file => (
-                    <div key={file.id} className="flex items-start space-x-2 p-2 rounded-md hover:bg-slate-50">
-                      <Checkbox
-                        id={`file-${file.id}`}
-                        checked={relatedFileIds.includes(file.id)}
-                        onCheckedChange={() => toggleFileRelationship(file.id)}
-                        disabled={isLoading}
-                      />
-                      <div className="grid gap-1 leading-none">
-                        <div className="flex items-center">
-                          <FileTypeIcon fileType={file.fileType} className="mr-2 h-4 w-4" />
-                          <Label htmlFor={`file-${file.id}`} className="font-medium cursor-pointer">
-                            {file.name}
-                          </Label>
-                        </div>
-                        {file.description && (
-                          <p className="text-xs text-slate-500 line-clamp-1">
-                            {file.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))
-              )}
+            <div className="mt-4">
+              <Button 
+                onClick={handleSaveRelationships} 
+                disabled={isSaving}
+                size="sm"
+              >
+                {isSaving ? "Saving..." : "Save Relationships"}
+              </Button>
             </div>
           </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsOpen(false)}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Saving...' : 'Save Relationships'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+        )}
+      </CardContent>
+    </Card>
   );
 };

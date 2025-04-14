@@ -38,11 +38,7 @@ export function EnhancedProjectWizard({ onComplete }: EnhancedProjectWizardProps
       name: 'Language Config',
       conditional: (data: EnhancedProjectData) => data.quickStart === 'custom'
     },
-    { 
-      id: 5, 
-      name: 'Knowledge Base',
-      conditional: (data: EnhancedProjectData) => data.hasKnowledgeBase === true
-    },
+    { id: 5, name: 'Knowledge Base' },
     { id: 6, name: 'Summary' }
   ];
   
@@ -161,12 +157,16 @@ export function EnhancedProjectWizard({ onComplete }: EnhancedProjectWizardProps
       targetAudience: data.levels.length > 0 ? data.levels[0] : data.targetAudience
     };
     
+    console.log("Creating project with data:", updatedData);
+    
     // Call the original handler with the updated data
     handleProjectCreate(updatedData);
   };
 
   // Custom navigation logic to handle conditional steps and validation
-  const handleNavigateLogic = (currentStep: number, formData: EnhancedProjectData, goToStep: (step: number) => void) => {
+  const navigateLogic = (currentStep: number, formData: EnhancedProjectData, goToStep: (step: number) => void) => {
+    console.log(`Navigation logic running for step ${currentStep} with quickStart=${formData.quickStart}`);
+    
     // Validate required fields
     if (currentStep === 0 && !formData.name) {
       toast({
@@ -180,7 +180,9 @@ export function EnhancedProjectWizard({ onComplete }: EnhancedProjectWizardProps
     // Handle template selection - skip system/project/language config if using template
     if (currentStep === 1 && formData.quickStart !== 'custom') {
       // Skip to Knowledge Base or Summary step
-      const nextStep = formData.hasKnowledgeBase ? 5 : 6;
+      const nextStep = 5; // Always go to Knowledge Base step
+      console.log(`Skipping to step ${nextStep} because quickStart=${formData.quickStart}`);
+      
       // Use setTimeout to allow React to complete the current render cycle
       setTimeout(() => {
         goToStep(nextStep);
@@ -198,7 +200,7 @@ export function EnhancedProjectWizard({ onComplete }: EnhancedProjectWizardProps
       saveKey="enhanced-project-wizard"
       onComplete={handleEnhancedProjectCreate}
       renderStep={renderStep}
-      navigateLogic={handleNavigateLogic}
+      navigateLogic={navigateLogic}
       showStepIndicator={true}
       title="Create New Project"
       description="Configure your educational content project by following these steps."

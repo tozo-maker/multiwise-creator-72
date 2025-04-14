@@ -1,201 +1,161 @@
 
-type CacheEntry<T> = {
-  data: T;
-  timestamp: number;
+/**
+ * A simple in-memory cache service with tag-based invalidation
+ */
+
+type CacheOptions = {
+  ttl?: number; // Time to live in milliseconds
+  tags?: string[]; // Tags for grouping cache entries for invalidation
 };
 
-interface CacheOptions {
-  ttl?: number; // time to live in milliseconds
-  tags?: string[]; // tags for invalidating related entries
-}
+type CacheEntry<T> = {
+  value: T;
+  expires: number;
+  tags: string[];
+};
 
-interface CacheMap {
-  [key: string]: {
-    entry: CacheEntry<any>;
-    options: CacheOptions;
-  };
-}
+class CacheService {
+  private cache: Map<string, CacheEntry<any>> = new Map();
+  private tagMap: Map<string, Set<string>> = new Map(); // Maps tags to cache keys
 
-interface TagMap {
-  [tag: string]: string[]; // keys associated with this tag
-}
-
-/**
- * Enhanced cache service with tag-based invalidation and TTL support
- */
-export class CacheService {
-  private static instance: CacheService;
-  private cache: CacheMap = {};
-  private tagMap: TagMap = {};
-  private defaultTTL: number = 5 * 60 * 1000; // 5 minutes default TTL
-  
-  // Private constructor for singleton pattern
-  private constructor() {}
-  
   /**
-   * Get singleton instance
+   * Get a value from the cache
+   * @param key The cache key
    */
-  public static getInstance(): CacheService {
-    if (!CacheService.instance) {
-      CacheService.instance = new CacheService();
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    
+    if (!entry) return null;
+    
+    // Check if the entry has expired
+    if (entry.expires && entry.expires < Date.now()) {
+      this.cache.delete(key);
+      this.removeKeyFromTags(key);
+      return null;
     }
-    return CacheService.instance;
+    
+    return entry.value as T;
   }
-  
+
   /**
-   * Set cache entry
+   * Set a value in the cache
+   * @param key The cache key
+   * @param value The value to cache
+   * @param options Optional cache settings
    */
-  public set<T>(key: string, data: T, options: CacheOptions = {}): void {
+  set<T>(key: string, value: T, options: CacheOptions = {}): void {
+    const ttl = options.ttl || 0; // 0 means no expiration
+    const tags = options.tags || [];
+    
     const entry: CacheEntry<T> = {
-      data,
-      timestamp: Date.now()
+      value,
+      expires: ttl ? Date.now() + ttl : 0,
+      tags
     };
     
-    this.cache[key] = {
-      entry,
-      options: {
-        ttl: options.ttl || this.defaultTTL,
-        tags: options.tags || []
+    this.cache.set(key, entry);
+    
+    // Associate key with tags
+    tags.forEach(tag => {
+      if (!this.tagMap.has(tag)) {
+        this.tagMap.set(tag, new Set());
       }
-    };
-    
-    // Update tag mappings
-    if (options.tags) {
-      options.tags.forEach(tag => {
-        if (!this.tagMap[tag]) {
-          this.tagMap[tag] = [];
-        }
-        
-        if (!this.tagMap[tag].includes(key)) {
-          this.tagMap[tag].push(key);
-        }
-      });
-    }
+      this.tagMap.get(tag)!.add(key);
+    });
   }
-  
+
   /**
-   * Get cache entry if it exists and hasn't expired
+   * Get a cached item or set it if not found/expired
+   * @param key Cache key
+   * @param fn Factory function to generate the value if not in cache
+   * @param options Cache options
    */
-  public get<T>(key: string): T | null {
-    const cacheItem = this.cache[key];
+  async getOrSet<T>(
+    key: string, 
+    fn: () => Promise<T>, 
+    options: CacheOptions = {}
+  ): Promise<T> {
+    const cached = this.get<T>(key);
+    if (cached !== null) return cached;
     
-    if (!cacheItem) {
-      return null;
-    }
-    
-    const { entry, options } = cacheItem;
-    const now = Date.now();
-    
-    // Check if entry has expired
-    if (now - entry.timestamp > options.ttl!) {
-      // Remove expired entry
-      delete this.cache[key];
-      
-      // Clean up tag mappings
-      if (options.tags) {
-        options.tags.forEach(tag => {
-          if (this.tagMap[tag]) {
-            this.tagMap[tag] = this.tagMap[tag].filter(k => k !== key);
-            if (this.tagMap[tag].length === 0) {
-              delete this.tagMap[tag];
-            }
-          }
-        });
-      }
-      
-      return null;
-    }
-    
-    return entry.data as T;
+    const value = await fn();
+    this.set(key, value, options);
+    return value;
   }
-  
+
   /**
-   * Check if key exists in cache and hasn't expired
+   * Remove an item from the cache
+   * @param key The cache key
    */
-  public has(key: string): boolean {
-    return this.get(key) !== null;
-  }
-  
-  /**
-   * Delete a specific cache entry
-   */
-  public delete(key: string): void {
-    const cacheItem = this.cache[key];
-    if (!cacheItem) return;
-    
-    // Clean up tag mappings
-    const { options } = cacheItem;
-    if (options.tags) {
-      options.tags.forEach(tag => {
-        if (this.tagMap[tag]) {
-          this.tagMap[tag] = this.tagMap[tag].filter(k => k !== key);
-          if (this.tagMap[tag].length === 0) {
-            delete this.tagMap[tag];
-          }
-        }
-      });
+  remove(key: string): boolean {
+    if (this.cache.has(key)) {
+      this.removeKeyFromTags(key);
+      return this.cache.delete(key);
     }
-    
-    // Delete the entry
-    delete this.cache[key];
+    return false;
   }
-  
-  /**
-   * Invalidate all cache entries with a specific tag
-   */
-  public invalidateTag(tag: string): void {
-    const keys = this.tagMap[tag] || [];
-    keys.forEach(key => this.delete(key));
-  }
-  
+
   /**
    * Clear all cache entries
    */
-  public clear(): void {
-    this.cache = {};
-    this.tagMap = {};
+  clear(): void {
+    this.cache.clear();
+    this.tagMap.clear();
   }
-  
+
   /**
-   * Set default TTL for cache entries
+   * Invalidate cache entries associated with a tag
+   * @param tag The tag to invalidate
    */
-  public setDefaultTTL(ttl: number): void {
-    this.defaultTTL = ttl;
+  invalidateTag(tag: string): void {
+    const keys = this.tagMap.get(tag);
+    if (!keys) return;
+    
+    keys.forEach(key => {
+      this.cache.delete(key);
+    });
+    
+    // Clear the tag set
+    this.tagMap.delete(tag);
   }
-  
+
   /**
-   * Get or set cache entry (if not exists)
+   * Add tags to an existing cache entry
+   * @param key The cache key
+   * @param tags Tags to add
    */
-  public async getOrSet<T>(
-    key: string, 
-    fetcher: () => Promise<T>, 
-    options: CacheOptions = {}
-  ): Promise<T> {
-    const cachedData = this.get<T>(key);
+  addTags(key: string, tags: string[]): void {
+    const entry = this.cache.get(key);
+    if (!entry) return;
     
-    if (cachedData !== null) {
-      return cachedData;
-    }
-    
-    const data = await fetcher();
-    this.set(key, data, options);
-    return data;
-  }
-  
-  /**
-   * Remove all expired entries
-   */
-  public cleanup(): void {
-    const now = Date.now();
-    
-    Object.keys(this.cache).forEach(key => {
-      const { entry, options } = this.cache[key];
+    tags.forEach(tag => {
+      entry.tags.push(tag);
       
-      if (now - entry.timestamp > options.ttl!) {
-        this.delete(key);
+      if (!this.tagMap.has(tag)) {
+        this.tagMap.set(tag, new Set());
+      }
+      this.tagMap.get(tag)!.add(key);
+    });
+  }
+  
+  /**
+   * Remove a key from all tag mappings it belongs to
+   * @param key The cache key
+   */
+  private removeKeyFromTags(key: string): void {
+    const entry = this.cache.get(key);
+    if (!entry) return;
+    
+    entry.tags.forEach(tag => {
+      const keys = this.tagMap.get(tag);
+      if (keys) {
+        keys.delete(key);
+        if (keys.size === 0) {
+          this.tagMap.delete(tag);
+        }
       }
     });
   }
 }
 
-export const cacheService = CacheService.getInstance();
+export const cacheService = new CacheService();

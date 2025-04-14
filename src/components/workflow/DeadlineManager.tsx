@@ -1,174 +1,155 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+
+import React, { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { CalendarIcon, Clock, AlertTriangle } from 'lucide-react';
-import { WorkflowService } from '@/services/WorkflowService';
-import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { CalendarIcon, Clock } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { format, isAfter, isBefore, differenceInDays, addDays } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface DeadlineManagerProps {
-  contentId: string;
-  steps: {
-    id: string;
-    name: string;
-    status: 'pending' | 'completed' | 'rejected';
-    metadata?: {
-      deadline?: string;
-      [key: string]: any;
-    };
-  }[];
-  onDeadlinesUpdated?: () => void;
+  projectId?: string;
+  contentId?: string;
+  currentDeadline?: Date | null;
+  onDeadlineChange?: (date: Date | null) => void;
+  className?: string;
 }
 
 export const DeadlineManager: React.FC<DeadlineManagerProps> = ({
+  projectId,
   contentId,
-  steps,
-  onDeadlinesUpdated
+  currentDeadline,
+  onDeadlineChange,
+  className
 }) => {
-  const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [isSettingDeadline, setIsSettingDeadline] = useState(false);
+  const [date, setDate] = useState<Date | null>(currentDeadline || null);
+  const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-
-  const handleOpenCalendar = (stepId: string, existingDeadline?: string) => {
-    setSelectedStepId(stepId);
+  
+  useEffect(() => {
+    if (currentDeadline) {
+      setDate(currentDeadline);
+    }
+  }, [currentDeadline]);
+  
+  const handleDateSelect = (selectedDate: Date | null) => {
+    setDate(selectedDate);
     
-    if (existingDeadline) {
-      setSelectedDate(new Date(existingDeadline));
+    if (selectedDate && isBefore(selectedDate, new Date())) {
+      toast({
+        title: "Past date selected",
+        description: "The deadline cannot be set in the past",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (onDeadlineChange) {
+      onDeadlineChange(selectedDate);
+    }
+    
+    setIsOpen(false);
+    
+    if (selectedDate) {
+      toast({
+        title: "Deadline updated",
+        description: `Deadline set to ${format(selectedDate, 'PP')}`,
+      });
     } else {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      setSelectedDate(tomorrow);
-    }
-    
-    setIsSettingDeadline(true);
-  };
-
-  const handleSetDeadline = async () => {
-    if (!selectedStepId || !selectedDate) return;
-    
-    try {
-      await WorkflowService.setStepDeadlines(contentId, [
-        { stepId: selectedStepId, deadline: selectedDate }
-      ]);
-      
       toast({
-        title: 'Deadline Set',
-        description: `Deadline set for ${format(selectedDate, 'PPP')}`,
+        title: "Deadline removed",
+        description: "No deadline is set for this item",
       });
-      
-      if (onDeadlinesUpdated) {
-        onDeadlinesUpdated();
-      }
-    } catch (error) {
-      console.error('Error setting deadline:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to set deadline',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsSettingDeadline(false);
-      setSelectedStepId(null);
     }
   };
-
-  const isStepOverdue = (step: any) => {
-    if (!step.metadata?.deadline) return false;
-    
-    const deadlineDate = new Date(step.metadata.deadline);
-    return deadlineDate < new Date() && step.status === 'pending';
-  };
-
-  const getDeadlineStatus = (step: any) => {
-    if (!step.metadata?.deadline) return null;
-    
-    const deadlineDate = new Date(step.metadata.deadline);
-    const today = new Date();
-    const diffTime = deadlineDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0 && step.status === 'pending') {
-      return { type: 'overdue', days: Math.abs(diffDays) };
-    } else if (diffDays <= 2 && step.status === 'pending') {
-      return { type: 'soon', days: diffDays };
+  
+  const handleClear = () => {
+    setDate(null);
+    if (onDeadlineChange) {
+      onDeadlineChange(null);
     }
+    setIsOpen(false);
     
-    return { type: 'normal', days: diffDays };
+    toast({
+      title: "Deadline cleared",
+      description: "Deadline has been removed",
+    });
   };
-
+  
+  // Get remaining days
+  const getRemainingDays = () => {
+    if (!date) return null;
+    return differenceInDays(date, new Date());
+  };
+  
+  // Get deadline status
+  const getDeadlineStatus = () => {
+    if (!date) return null;
+    
+    const remainingDays = getRemainingDays();
+    
+    if (remainingDays === null) return null;
+    
+    if (remainingDays < 0) {
+      return { status: 'overdue', label: 'Overdue' };
+    } else if (remainingDays === 0) {
+      return { status: 'today', label: 'Due Today' };
+    } else if (remainingDays <= 3) {
+      return { status: 'imminent', label: `Due Soon (${remainingDays}d)` };
+    } else {
+      return { status: 'upcoming', label: `${remainingDays} days left` };
+    }
+  };
+  
+  const status = getDeadlineStatus();
+  
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-semibold">Manage Deadlines</h3>
-      
-      {steps.map(step => {
-        const deadlineStatus = getDeadlineStatus(step);
+    <div className={cn("space-y-2", className)}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-slate-500" />
+          <span className="text-sm font-medium">Deadline</span>
+        </div>
         
-        return (
-          <div 
-            key={step.id} 
-            className={`p-3 rounded-md border flex items-center justify-between ${
-              isStepOverdue(step) ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : 
-              'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Clock className="h-4 w-4 text-slate-500" />
-              <div>
-                <div className="font-medium">{step.name}</div>
-                {step.metadata?.deadline ? (
-                  <div className="text-xs text-slate-500">
-                    Due: {format(new Date(step.metadata.deadline), 'PPP')}
-                    {deadlineStatus?.type === 'overdue' && (
-                      <Badge variant="destructive" className="ml-2">
-                        {deadlineStatus.days} {deadlineStatus.days === 1 ? 'day' : 'days'} overdue
-                      </Badge>
-                    )}
-                    {deadlineStatus?.type === 'soon' && (
-                      <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
-                        Due {deadlineStatus.days === 0 ? 'today' : `in ${deadlineStatus.days} ${deadlineStatus.days === 1 ? 'day' : 'days'}`}
-                      </Badge>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-xs text-slate-500">No deadline set</div>
-                )}
-              </div>
-            </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => handleOpenCalendar(step.id, step.metadata?.deadline)}
-            >
-              {step.metadata?.deadline ? 'Change Deadline' : 'Set Deadline'}
-            </Button>
-          </div>
-        );
-      })}
+        {date && status && (
+          <Badge variant={
+            status.status === 'overdue' ? 'destructive' : 
+            status.status === 'today' ? 'destructive' : 
+            status.status === 'imminent' ? 'outline' : 
+            'secondary'
+          }>
+            {status.label}
+          </Badge>
+        )}
+      </div>
       
-      <Popover open={isSettingDeadline} onOpenChange={setIsSettingDeadline}>
-        <PopoverContent className="w-auto p-0" align="end">
-          <div className="p-3 border-b">
-            <h4 className="font-medium">Set Deadline</h4>
-            <p className="text-xs text-slate-500">Select date for step completion</p>
-          </div>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-full justify-start text-left font-normal"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, 'PPP') : <span>No deadline set</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
-            selected={selectedDate}
-            onSelect={setSelectedDate}
+            selected={date}
+            onSelect={handleDateSelect}
             initialFocus
-            disabled={(date) => date < new Date()}
+            disabled={(date) => isBefore(date, addDays(new Date(), -1))}
           />
-          <div className="flex justify-end p-3 border-t">
-            <Button 
-              size="sm" 
-              onClick={handleSetDeadline}
-              disabled={!selectedDate}
+          <div className="p-3 border-t border-slate-200 dark:border-slate-800">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleClear}
             >
-              Set Deadline
+              Clear Deadline
             </Button>
           </div>
         </PopoverContent>
