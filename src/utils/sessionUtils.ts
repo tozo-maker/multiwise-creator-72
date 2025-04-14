@@ -23,7 +23,7 @@ export const getStoredSession = (): Session | null => {
 export const isSessionExpired = (session: Session): boolean => {
   if (!session || !session.expires_at) return true;
   const expiresAt = session.expires_at * 1000; // convert to ms
-  return Date.now() > expiresAt;
+  return Date.now() >= expiresAt; // Changed > to >= for more precision
 };
 
 /**
@@ -31,11 +31,13 @@ export const isSessionExpired = (session: Session): boolean => {
  */
 export const refreshSession = async (): Promise<Session | null> => {
   try {
+    console.log('Attempting to refresh session...');
     const { data, error } = await supabase.auth.refreshSession();
     if (error) {
       console.error('Error refreshing session:', error);
       return null;
     }
+    console.log('Session refreshed successfully');
     return data.session;
   } catch (err) {
     console.error('Error in refreshSession:', err);
@@ -51,15 +53,18 @@ export const getValidSession = async (): Promise<Session | null> => {
   
   // If no stored session, get current session from auth
   if (!storedSession) {
+    console.log('No stored session found, getting current session');
     const { data } = await supabase.auth.getSession();
     return data.session;
   }
   
   // If session exists but is expired, try to refresh
   if (isSessionExpired(storedSession)) {
+    console.log('Session expired, attempting to refresh');
     return await refreshSession();
   }
   
+  console.log('Valid session found');
   return storedSession;
 };
 
@@ -87,6 +92,7 @@ export const setupSessionRefresh = (onSessionTimeout: () => void): () => void =>
 export const clearSessionStorage = (): void => {
   try {
     localStorage.removeItem(SESSION_STORAGE_KEY);
+    console.log('Session storage cleared');
   } catch (err) {
     console.error('Error clearing session storage:', err);
   }

@@ -44,6 +44,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -55,6 +56,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         return null;
       }
       
+      console.log('Profile data fetched:', data);
       return data;
     } catch (error) {
       console.error('Exception fetching profile:', error);
@@ -65,12 +67,14 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   // Function to handle profile fetching with timeouts to avoid deadlocks
   const fetchProfileSafely = useCallback(async (userId: string) => {
     if (!userId) return;
+    console.log('Safely fetching profile for user ID:', userId);
     const profileData = await fetchProfile(userId);
     setProfile(profileData);
   }, []);
 
   useEffect(() => {
     let mounted = true;
+    console.log('Auth context initializing');
     
     // First set up the auth state listener for session changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -97,9 +101,11 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     // Then check for existing session
     const initAuth = async () => {
       try {
+        console.log('Checking for existing valid session');
         const currentSession = await getValidSession();
         if (!mounted) return;
         
+        console.log('Initial session check result:', currentSession ? 'Session found' : 'No session');
         setSession(currentSession);
         
         if (currentSession?.user) {
@@ -136,21 +142,26 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       mounted = false;
       subscription.unsubscribe();
       cleanupRefresh();
+      console.log('Auth context cleanup completed');
     };
   }, [fetchProfileSafely, toast]);
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('Attempting sign-in with email:', email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (!error) {
+        console.log('Sign-in successful');
         toast({
           title: "Signed in successfully",
           description: "Welcome back!",
         });
+      } else {
+        console.error('Sign-in error:', error);
       }
       
       return { error };
@@ -162,6 +173,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
 
   const signUp = async (email: string, password: string, metadata?: any) => {
     try {
+      console.log('Attempting sign-up with email:', email);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -169,6 +181,12 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
           data: metadata || {},
         },
       });
+      
+      if (!error) {
+        console.log('Sign-up successful');
+      } else {
+        console.error('Sign-up error:', error);
+      }
       
       return { error, user: data?.user || null };
     } catch (error) {
@@ -179,6 +197,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
 
   const signOut = async () => {
     try {
+      console.log('Signing out');
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
@@ -190,6 +209,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
+      console.log('Sign-out successful');
     } catch (error) {
       console.error('Error signing out:', error);
       toast({
@@ -202,15 +222,19 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
 
   const resetPassword = async (email: string) => {
     try {
+      console.log('Attempting password reset for email:', email);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       
       if (!error) {
+        console.log('Password reset email sent');
         toast({
           title: "Password reset email sent",
           description: "Please check your email for instructions to reset your password.",
         });
+      } else {
+        console.error('Password reset error:', error);
       }
       
       return { error };
@@ -224,6 +248,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     if (!user) return;
     
     try {
+      console.log('Updating user profile with data:', data);
       const { error } = await supabase
         .from('profiles')
         .upsert({ id: user.id, ...data })
@@ -239,6 +264,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
       });
+      console.log('Profile update successful');
     } catch (error: any) {
       toast({
         variant: "destructive",

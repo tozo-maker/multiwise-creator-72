@@ -7,9 +7,9 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 // Create a single supabase client for interacting with your database
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    storage: localStorage
   }
 });

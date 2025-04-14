@@ -43,7 +43,16 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     try {
       const { error } = await signIn(email, password);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Login error:', error);
+        
+        if (error.message?.includes('Invalid login credentials')) {
+          setLoginError('The email or password you entered is incorrect. Please try again.');
+        } else {
+          setLoginError(error.message || 'An error occurred during login. Please try again.');
+        }
+        return;
+      }
       
       // Call success callback if provided
       if (onLoginSuccess) {
@@ -73,8 +82,13 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     setLoginError(null);
     
     try {
-      // Use demo account credentials
-      await signIn('demo@example.com', 'password');
+      // Use demo account credentials - update these to valid credentials for your app
+      const { error } = await signIn('demo@example.com', 'demopassword');
+      
+      if (error) {
+        setLoginError('Demo login is currently unavailable. Please create an account or try again later.');
+        return;
+      }
       
       // Call success callback if provided
       if (onLoginSuccess) {
