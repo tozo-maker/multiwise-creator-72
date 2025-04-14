@@ -15,3 +15,32 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     flowType: 'implicit'
   }
 });
+
+// Add a listener for auth changes to help with debugging
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log(`Supabase auth event: ${event}`, session ? 'Session exists' : 'No session');
+});
+
+// Export a function to get current session for easy access
+export const getCurrentSession = async () => {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return data.session;
+  } catch (err) {
+    console.error('Error getting current session:', err);
+    return null;
+  }
+};
+
+// Export a function to get current user for easy access
+export const getCurrentUser = async () => {
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return data.user;
+  } catch (err) {
+    console.error('Error getting current user:', err);
+    return null;
+  }
+};

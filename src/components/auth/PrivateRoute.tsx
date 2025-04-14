@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle } from 'lucide-react';
 
 export const PrivateRoute = () => {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   
   const location = useLocation();
   const { toast } = useToast();
@@ -15,7 +15,17 @@ export const PrivateRoute = () => {
   const [loadingTimeout, setLoadingTimeout] = React.useState(false);
   const [criticalTimeout, setCriticalTimeout] = React.useState(false);
   
-  React.useEffect(() => {
+  // Debugging info
+  useEffect(() => {
+    console.log('PrivateRoute render:', { 
+      isAuthenticated, 
+      isLoading, 
+      user: user?.email || 'none',
+      path: location.pathname
+    });
+  }, [isAuthenticated, isLoading, user, location.pathname]);
+  
+  useEffect(() => {
     // Small delay to prevent flash of loading state for fast connections
     const readyTimer = setTimeout(() => {
       setIsReady(true);
@@ -49,7 +59,7 @@ export const PrivateRoute = () => {
   }, [toast]);
   
   // Show loading state
-  if (authLoading && !isReady) {
+  if (isLoading && !isReady) {
     return (
       <div className="flex items-center justify-center h-screen p-6">
         <div className="w-full max-w-md space-y-6">
@@ -82,13 +92,15 @@ export const PrivateRoute = () => {
   }
   
   // Handle dashboard and other protected routes
-  if (!user) {
+  if (!isAuthenticated) {
+    console.log('User not authenticated, redirecting to login');
     // Save the current path to redirect back after login
     const returnPath = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/auth/login?returnTo=${returnPath}`} replace />;
   }
   
   // User is authenticated and trying to access a protected route
+  console.log('User authenticated, allowing access to protected route');
   return <Outlet />;
 };
 

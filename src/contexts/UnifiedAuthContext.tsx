@@ -1,11 +1,11 @@
-
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { getValidSession, setupSessionRefresh } from '@/utils/sessionUtils';
+import { getValidSession, setupSessionRefresh, getSessionInfo } from '@/utils/sessionUtils';
 import { useToast } from '@/hooks/use-toast';
 
-interface Profile {
+export interface Profile {
+  id?: string;
   username?: string;
   avatar_url?: string;
   name?: string;
@@ -18,6 +18,7 @@ interface Profile {
   notification_frequency?: string;
   two_factor_enabled?: boolean;
   session_timeout?: string;
+  updated_at?: string;
 }
 
 interface AuthContextType {
@@ -31,6 +32,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   updateProfile: (data: Partial<Profile>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,20 +41,31 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const { toast } = useToast();
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    if (!userId) {
+      console.log('No user ID provided to fetchProfile');
+      return null;
+    }
+    
     try {
-      console.log('Fetching profile for user:', userId);
+      console.log(`Fetching profile for user: ${userId}`);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
         
-      if (error && error.code !== 'PGRST116') { // PGRST116 is not found error
-        console.error('Error fetching user profile:', error);
+      if (error) {
+        if (error.code !== 'PGRST116') {
+          console.error('Error fetching user profile:', error);
+          return null;
+        }
+        
+        console.log('No profile found for user', userId);
         return null;
       }
       
@@ -64,81 +77,113 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     }
   };
   
-  // Function to handle profile fetching with timeouts to avoid deadlocks
-  const fetchProfileSafely = useCallback(async (userId: string) => {
+  const fetchProfileSafely = useCallback(async (userId: string): Promise<void> => {
     if (!userId) return;
+    
     console.log('Safely fetching profile for user ID:', userId);
-    const profileData = await fetchProfile(userId);
-    setProfile(profileData);
+    
+    try {
+      const profileData = await fetchProfile(userId);
+      if (profileData) {
+        setProfile(profileData);
+      } else {
+        console.log('No profile data returned, setting profile to null');
+        setProfile(null);
+      }
+    } catch (err) {
+      console.error('Error in fetchProfileSafely:', err);
+    }
   }, []);
 
+  const refreshProfile = useCallback(async (): Promise<void> => {
+    if (!user?.id) {
+      console.log('Cannot refresh profile, no user ID available');
+      return;
+    }
+    
+    console.log('Explicitly refreshing profile for user:', user.id);
+    await fetchProfileSafely(user.id);
+  }, [user?.id, fetchProfileSafely]);
+
   useEffect(() => {
-    // Flag to prevent state updates after component unmount
     let mounted = true;
     console.log('Auth context initializing');
 
-    // First set up the auth state listener for session changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        console.log('Auth state changed:', event);
-        if (!mounted) return;
-
-        if (newSession) {
-          console.log('New session established');
-          setSession(newSession);
-          setUser(newSession.user);
-          
-          // Use setTimeout to avoid potential deadlock with the onAuthStateChange callback
-          if (newSession.user) {
-            setTimeout(() => {
-              if (mounted) {
-                fetchProfileSafely(newSession.user.id);
-              }
-            }, 0);
-          }
-        } else {
-          console.log('Session ended');
-          setUser(null);
-          setSession(null);
-          setProfile(null);
-        }
-      }
-    );
-
-    // Then check for existing session
     const initAuth = async () => {
       try {
+        console.log('Setting up auth state listener');
+        
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, newSession) => {
+            if (!mounted) return;
+            console.log(`Auth state changed: ${event}`, newSession ? 'Session exists' : 'No session');
+
+            if (newSession) {
+              console.log(`New session established for user: ${newSession.user.id}`);
+              console.log(`Session info: ${getSessionInfo(newSession)}`);
+              
+              setUser(newSession.user);
+              setSession(newSession);
+              
+              if (newSession.user) {
+                setTimeout(() => {
+                  if (mounted) {
+                    fetchProfileSafely(newSession.user.id);
+                  }
+                }, 0);
+              }
+            } else if (event === 'SIGNED_OUT') {
+              console.log('User signed out, clearing auth state');
+              setUser(null);
+              setSession(null);
+              setProfile(null);
+            }
+          }
+        );
+
         console.log('Checking for existing valid session');
         const currentSession = await getValidSession();
         
         if (!mounted) return;
         
-        console.log('Initial session check result:', currentSession ? 'Session found' : 'No session');
-        
         if (currentSession?.user) {
-          console.log('Valid session user found:', currentSession.user.email);
+          console.log(`Valid session found for user: ${currentSession.user.id}`);
+          console.log(`Session info: ${getSessionInfo(currentSession)}`);
+          
           setSession(currentSession);
           setUser(currentSession.user);
-          fetchProfileSafely(currentSession.user.id);
+          
+          await fetchProfileSafely(currentSession.user.id);
         } else {
-          console.log('No valid session found');
+          console.log('No valid session found during initialization');
           setSession(null);
           setUser(null);
           setProfile(null);
         }
+
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error('Error during auth initialization:', error);
+        
+        if (mounted) {
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+        }
+        
+        return () => {};
       } finally {
         if (mounted) {
           setIsLoading(false);
+          setIsInitialized(true);
         }
       }
     };
 
-    // Initialize auth
-    initAuth();
+    const cleanup = initAuth();
 
-    // Set up session refresh
     const cleanupRefresh = setupSessionRefresh(() => {
       if (mounted) {
         toast({
@@ -152,11 +197,14 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       }
     });
 
-    // Clean up the subscription and interval
     return () => {
       mounted = false;
-      subscription.unsubscribe();
       cleanupRefresh();
+      
+      cleanup.then(cleanupFn => {
+        if (cleanupFn) cleanupFn();
+      });
+      
       console.log('Auth context cleanup completed');
     };
   }, [fetchProfileSafely, toast]);
@@ -164,31 +212,40 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   const signIn = async (email: string, password: string) => {
     try {
       console.log('Attempting sign-in with email:', email);
+      setIsLoading(true);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
-      if (!error) {
-        console.log('Sign-in successful for:', email);
-        toast({
-          title: "Signed in successfully",
-          description: "Welcome back!",
-        });
-      } else {
+      if (error) {
         console.error('Sign-in error:', error);
+        return { error };
       }
       
+      console.log('Sign-in successful for:', email);
+      console.log('Session established:', data.session ? 'Yes' : 'No');
+      
+      toast({
+        title: "Signed in successfully",
+        description: "Welcome back!",
+      });
+      
+      return { error: null };
+    } catch (error: any) {
+      console.error('Exception during sign in:', error);
       return { error };
-    } catch (error) {
-      console.error('Error signing in:', error);
-      return { error };
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, metadata?: any) => {
     try {
       console.log('Attempting sign-up with email:', email);
+      setIsLoading(true);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -197,26 +254,34 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         },
       });
       
-      if (!error) {
-        console.log('Sign-up successful for:', email);
-        toast({
-          title: "Account created",
-          description: "Please check your email for verification instructions.",
-        });
-      } else {
+      if (error) {
         console.error('Sign-up error:', error);
+        return { error, user: null };
       }
       
-      return { error, user: data?.user || null };
-    } catch (error) {
-      console.error('Error signing up:', error);
+      console.log('Sign-up successful for:', email, 'Email confirmation required:', !data.session);
+      
+      toast({
+        title: "Account created",
+        description: data.session 
+          ? "You are now signed in!"
+          : "Please check your email for verification instructions.",
+      });
+      
+      return { error: null, user: data?.user || null };
+    } catch (error: any) {
+      console.error('Exception during sign up:', error);
       return { error, user: null };
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
       console.log('Signing out');
+      setIsLoading(true);
+      
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
@@ -228,22 +293,27 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
+      
       console.log('Sign-out successful');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing out:', error);
       toast({
         title: "Error",
         description: "An error occurred while signing out.",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const resetPassword = async (email: string) => {
     try {
       console.log('Attempting password reset for email:', email);
+      setIsLoading(true);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/auth/reset-password`,
       });
       
       if (!error) {
@@ -257,40 +327,50 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       }
       
       return { error };
-    } catch (error) {
-      console.error('Error resetting password:', error);
+    } catch (error: any) {
+      console.error('Exception during password reset:', error);
       return { error };
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const updateProfile = async (data: Partial<Profile>) => {
-    if (!user) return;
+    if (!user) {
+      console.error('Cannot update profile: No user logged in');
+      throw new Error('You must be logged in to update your profile');
+    }
     
     try {
       console.log('Updating user profile with data:', data);
+      setIsLoading(true);
+      
       const { error } = await supabase
         .from('profiles')
-        .upsert({ id: user.id, ...data })
+        .upsert({ id: user.id, ...data, updated_at: new Date().toISOString() })
         .select()
         .single();
 
       if (error) throw error;
       
-      // Update local state
-      setProfile(prev => prev ? { ...prev, ...data } : data);
+      await refreshProfile();
       
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
       });
+      
       console.log('Profile update successful');
     } catch (error: any) {
+      console.error('Error updating profile:', error);
       toast({
         variant: "destructive",
         title: "Profile update failed",
         description: error.message || "An error occurred while updating your profile.",
       });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -298,13 +378,14 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     session,
     user,
     profile,
-    isLoading,
+    isLoading: isLoading || !isInitialized,
     isAuthenticated: !!user,
     signIn,
     signUp,
     signOut,
     resetPassword,
     updateProfile,
+    refreshProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

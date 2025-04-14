@@ -10,7 +10,21 @@ const SESSION_STORAGE_KEY = 'sb-lejrjwwtovvzekqevsez-auth-token';
 export const getStoredSession = (): Session | null => {
   try {
     const storedSession = localStorage.getItem(SESSION_STORAGE_KEY);
-    return storedSession ? JSON.parse(storedSession) : null;
+    if (!storedSession) {
+      return null;
+    }
+    
+    // Attempt to parse the stored session
+    const parsedSession = JSON.parse(storedSession);
+    
+    // Check if it has the structure of a session
+    if (parsedSession && typeof parsedSession === 'object' && parsedSession.access_token && parsedSession.refresh_token) {
+      return parsedSession;
+    }
+    
+    // Not a valid session structure
+    console.warn('Found stored session data but it does not appear to be a valid session');
+    return null;
   } catch (err) {
     console.error('Error parsing stored session:', err);
     return null;
@@ -23,7 +37,13 @@ export const getStoredSession = (): Session | null => {
 export const isSessionExpired = (session: Session): boolean => {
   if (!session || !session.expires_at) return true;
   const expiresAt = session.expires_at * 1000; // convert to ms
-  return Date.now() >= expiresAt;
+  const timeRemaining = expiresAt - Date.now();
+  
+  // Add debug logging for session expiration info
+  console.log(`Session expires at: ${new Date(expiresAt).toISOString()}`);
+  console.log(`Time remaining: ${Math.round(timeRemaining / 1000)} seconds`);
+  
+  return timeRemaining <= 0;
 };
 
 /**
@@ -51,7 +71,11 @@ export const refreshSession = async (): Promise<Session | null> => {
 export const getValidSession = async (): Promise<Session | null> => {
   try {
     // First try to get the current session directly from auth
-    const { data: sessionData } = await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error('Error getting session:', sessionError);
+    }
     
     if (sessionData?.session) {
       console.log('Valid session found from auth.getSession()');
@@ -92,8 +116,21 @@ export const setupSessionRefresh = (onSessionTimeout: () => void): () => void =>
     try {
       const session = await getValidSession();
       if (!session) {
+        console.log('No valid session found during interval check, triggering timeout callback');
         onSessionTimeout();
         clearInterval(intervalId);
+      } else if (session.expires_at) {
+        const expiresAt = session.expires_at * 1000;
+        const timeRemaining = expiresAt - Date.now();
+        
+        // Log time remaining for debugging
+        console.log(`Session refresh check: ${Math.round(timeRemaining / 1000)}s remaining`);
+        
+        // If less than 5 minutes remaining, attempt refresh
+        if (timeRemaining < 300000) {
+          console.log('Session expiring soon, refreshing');
+          await refreshSession();
+        }
       }
     } catch (error) {
       console.error('Error in session refresh interval:', error);
@@ -113,4 +150,18 @@ export const clearSessionStorage = (): void => {
   } catch (err) {
     console.error('Error clearing session storage:', err);
   }
+};
+
+/**
+ * Get public session information safe for logging
+ */
+export const getSessionInfo = (session: Session | null): string => {
+  if (!session) return 'null';
+  
+  return JSON.stringify({
+    user_id: session.user?.id,
+    expires_at: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : null,
+    has_access_token: !!session.access_token,
+    has_refresh_token: !!session.refresh_token,
+  });
 };
