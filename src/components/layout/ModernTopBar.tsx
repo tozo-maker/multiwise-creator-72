@@ -53,7 +53,12 @@ export const ModernTopBar = ({ showProjectNav = false }) => {
           </div>
         </SheetContent>
       </Sheet>
-      <div className="ml-auto flex items-center gap-2">
+      
+      <div className="flex-1 mr-4">
+        <SearchBar />
+      </div>
+      
+      <div className="flex items-center gap-2">
         {authError && (
           <Button 
             variant="outline" 
@@ -65,7 +70,6 @@ export const ModernTopBar = ({ showProjectNav = false }) => {
             <span>Retry Auth</span>
           </Button>
         )}
-        <SearchBar />
         <ThemeToggle />
         <NotificationPanel />
         <UserMenu />

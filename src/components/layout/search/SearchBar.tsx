@@ -19,7 +19,7 @@ export const SearchBar = ({ searchTerm: externalSearchTerm, setSearchTerm: exter
   const setSearchTerm = externalSetSearchTerm || setInternalSearchTerm;
 
   return (
-    <div className="relative w-full max-w-3xl">
+    <div className="relative w-full">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
         <Input 

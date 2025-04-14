@@ -22,12 +22,13 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarRail,
   useSidebar
 } from '@/components/ui/sidebar';
 import { SidebarNavItems } from '@/components/layout/sidebar/SidebarMenu';
 import { SidebarAccountMenu } from '@/components/layout/sidebar/SidebarAccountMenu';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/UnifiedAuthContext';
+import { useAuth } from '@/contexts/auth';
 
 export const ModernSidebar = () => {
   const { state, setOpen } = useSidebar();
@@ -93,6 +94,7 @@ export const ModernSidebar = () => {
       aria-label="Main Sidebar"
       aria-expanded={state === "expanded"}
     >
+      <SidebarRail /> {/* Add this to make sidebar collapsible via rail */}
       <SidebarHeader>
         <Link 
           to="/" 
