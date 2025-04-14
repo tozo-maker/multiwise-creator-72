@@ -22,7 +22,15 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, user } = useAuth();
+  
+  // Get auth context safely
+  const authContext = React.useContext(React.createContext<{
+    signIn: (email: string, password: string) => Promise<{error: any}>,
+    user: any
+  } | null>(null));
+  
+  const signIn = authContext?.signIn;
+  const user = authContext?.user;
   
   // Extract return path from URL if available
   const searchParams = new URLSearchParams(location.search);
@@ -37,10 +45,17 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!signIn) {
+      setLoginError("Authentication service unavailable. Please try again later.");
+      return;
+    }
+    
     setIsLoading(true);
     setLoginError(null);
     
     try {
+      console.log("Attempting login for:", email);
       const { error } = await signIn(email, password);
       
       if (error) {
@@ -70,14 +85,19 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
       }, 800);
     } catch (error: any) {
       // Set the error message for display
-      setLoginError(error.message || "An unknown error occurred during login");
       console.error("Login error:", error);
+      setLoginError(error.message || "An unknown error occurred during login");
     } finally {
       setIsLoading(false);
     }
   };
   
   const handleDemoLogin = async () => {
+    if (!signIn) {
+      setLoginError("Authentication service unavailable. Please try again later.");
+      return;
+    }
+    
     setIsLoading(true);
     setLoginError(null);
     

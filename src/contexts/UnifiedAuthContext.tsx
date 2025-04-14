@@ -73,26 +73,33 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
+    // Flag to prevent state updates after component unmount
     let mounted = true;
     console.log('Auth context initializing');
-    
+
     // First set up the auth state listener for session changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         console.log('Auth state changed:', event);
         if (!mounted) return;
-        
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user) {
+
+        if (newSession) {
+          console.log('New session established');
+          setSession(newSession);
+          setUser(newSession.user);
+          
           // Use setTimeout to avoid potential deadlock with the onAuthStateChange callback
-          setTimeout(() => {
-            if (mounted) {
-              fetchProfileSafely(newSession.user.id);
-            }
-          }, 0);
+          if (newSession.user) {
+            setTimeout(() => {
+              if (mounted) {
+                fetchProfileSafely(newSession.user.id);
+              }
+            }, 0);
+          }
         } else {
+          console.log('Session ended');
+          setUser(null);
+          setSession(null);
           setProfile(null);
         }
       }
@@ -103,14 +110,21 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       try {
         console.log('Checking for existing valid session');
         const currentSession = await getValidSession();
+        
         if (!mounted) return;
         
         console.log('Initial session check result:', currentSession ? 'Session found' : 'No session');
-        setSession(currentSession);
         
         if (currentSession?.user) {
+          console.log('Valid session user found:', currentSession.user.email);
+          setSession(currentSession);
           setUser(currentSession.user);
           fetchProfileSafely(currentSession.user.id);
+        } else {
+          console.log('No valid session found');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
         }
       } catch (error) {
         console.error('Error during auth initialization:', error);
@@ -121,6 +135,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       }
     };
 
+    // Initialize auth
     initAuth();
 
     // Set up session refresh
@@ -155,7 +170,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       });
       
       if (!error) {
-        console.log('Sign-in successful');
+        console.log('Sign-in successful for:', email);
         toast({
           title: "Signed in successfully",
           description: "Welcome back!",
@@ -183,7 +198,11 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       });
       
       if (!error) {
-        console.log('Sign-up successful');
+        console.log('Sign-up successful for:', email);
+        toast({
+          title: "Account created",
+          description: "Please check your email for verification instructions.",
+        });
       } else {
         console.error('Sign-up error:', error);
       }
@@ -228,7 +247,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       });
       
       if (!error) {
-        console.log('Password reset email sent');
+        console.log('Password reset email sent to:', email);
         toast({
           title: "Password reset email sent",
           description: "Please check your email for instructions to reset your password.",

@@ -23,7 +23,7 @@ export const getStoredSession = (): Session | null => {
 export const isSessionExpired = (session: Session): boolean => {
   if (!session || !session.expires_at) return true;
   const expiresAt = session.expires_at * 1000; // convert to ms
-  return Date.now() >= expiresAt; // Changed > to >= for more precision
+  return Date.now() >= expiresAt;
 };
 
 /**

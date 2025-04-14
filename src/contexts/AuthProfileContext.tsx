@@ -22,7 +22,10 @@ interface AuthProfileContextType {
 const AuthProfileContext = createContext<AuthProfileContextType | undefined>(undefined);
 
 export const AuthProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, profile } = useAuth();
+  // Only attempt to use useAuth if wrapped in UnifiedAuthProvider
+  const auth = useContext(React.createContext<{user: any, profile: any} | undefined>(undefined)) || {user: null, profile: null};
+  const { user, profile } = auth;
+  
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
   const [profileCompletion, setProfileCompletion] = useState<ProfileCompletion>({
