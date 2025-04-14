@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,11 +24,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authError, setAuthError] = useState<string | null>(null);
   const { toast } = useToast();
   
-  // Custom hooks
   const { fetchProfileSafely, refreshProfile: refreshProfileHook } = useProfileManagement(user);
   const { handleAuthError } = useAuthErrorHandler();
   
-  // Auth actions
   const { 
     signIn, 
     signUp, 
@@ -49,12 +46,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user
   );
   
-  // Wrapper for retryAuth that includes lastRefreshAttempt state
   const retryAuthentication = useCallback(async () => {
     return await retryAuth(lastRefreshAttempt, setLastRefreshAttempt);
   }, [retryAuth, lastRefreshAttempt]);
   
-  // Wrapper around refreshProfileHook to update state
   const refreshProfile = useCallback(async () => {
     const updatedProfile = await refreshProfileHook();
     if (updatedProfile) {
@@ -62,7 +57,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [refreshProfileHook]);
 
-  // Initialize auth state
   useEffect(() => {
     let mounted = true;
     console.log('Auth context initializing');
@@ -198,6 +192,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
+export const UnifiedAuthProvider = AuthProvider;
 
 export const useAuth = () => {
   const context = React.useContext(AuthContext);
