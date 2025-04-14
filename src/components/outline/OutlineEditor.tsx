@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,13 +17,15 @@ interface OutlineEditorProps {
   projectId: string;
   onSave: (outline: ProjectOutline) => Promise<void>;
   onGenerateOutline: () => Promise<void>;
+  onCreateOutline: () => Promise<void>;
 }
 
 export const OutlineEditor: React.FC<OutlineEditorProps> = ({ 
   outline, 
   projectId,
   onSave,
-  onGenerateOutline
+  onGenerateOutline,
+  onCreateOutline
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -45,18 +46,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
       setIsCreatingOutline(true);
       console.log('Creating new outline for project:', projectId);
       
-      // Let the parent component handle the outline creation
-      await onSave({
-        id: 'new',
-        projectId,
-        title: 'Project Outline',
-        description: 'Main outline for the project',
-        sections: [],
-        version: 1,
-        status: 'draft',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+      await onCreateOutline();
       
       toast({
         title: 'New outline created',
@@ -76,7 +66,6 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   
   const handleGenerateWithAI = async () => {
     try {
-      // Let the parent component handle AI generation
       await onGenerateOutline();
     } catch (error: any) {
       console.error('Error generating outline with AI:', error);

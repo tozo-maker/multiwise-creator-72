@@ -50,7 +50,6 @@ const OutlineWorkspace = () => {
         setError(null);
         setConfigMissing(false);
         
-        // First fetch the basic project details
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
           .select('*')
@@ -71,7 +70,6 @@ const OutlineWorkspace = () => {
         if (projectData) {
           console.log('Project data loaded:', projectData.name);
           
-          // Set basic project info
           setProject({
             id: projectData.id,
             name: projectData.name,
@@ -80,7 +78,6 @@ const OutlineWorkspace = () => {
             config: null
           });
 
-          // Check if project_config table exists first
           try {
             const { error: tableCheckError } = await supabase
               .from('project_config')
@@ -99,7 +96,6 @@ const OutlineWorkspace = () => {
               }
             }
             
-            // Now check if project configuration exists
             const { data: configData, error: configError } = await supabase
               .from('project_config')
               .select('*')
@@ -118,13 +114,10 @@ const OutlineWorkspace = () => {
               console.log('Project configuration found:', configData);
               setConfigMissing(false);
               
-              // Fetch outline
-              console.log('Fetching outline for project:', projectData.id);
               const outlineData = await OutlineService.getOutlineByProject(projectData.id);
               
               if (outlineData) {
                 console.log('Outline found, fetching sections');
-                // Fetch sections and items for the outline
                 const sections = await OutlineService.getSectionsByOutline(outlineData.id);
                 setOutline({
                   ...outlineData,
@@ -181,7 +174,6 @@ const OutlineWorkspace = () => {
       console.log('Saving outline:', updatedOutline);
       const savedOutline = await OutlineService.updateOutline(updatedOutline);
       if (savedOutline) {
-        // Refresh outline data with sections
         const sections = await OutlineService.getSectionsByOutline(savedOutline.id);
         setOutline({
           ...savedOutline,
@@ -237,7 +229,6 @@ const OutlineWorkspace = () => {
       );
       
       if (newOutline) {
-        // Set empty sections array
         const updatedOutline = {
           ...newOutline,
           sections: []
@@ -288,7 +279,6 @@ const OutlineWorkspace = () => {
         throw new Error('Missing project ID');
       }
       
-      // Fetch project_config for AI outline generation
       const { data: configData, error: configError } = await supabase
         .from('project_config')
         .select('*')
@@ -322,14 +312,12 @@ const OutlineWorkspace = () => {
           variant: 'destructive'
         });
         
-        // Navigate to the configuration page
         navigate(`/projects/${project.id}/configuration`);
         return;
       }
       
       console.log('Generating outline with config:', configData);
       
-      // Create default values if not present
       const enhancedConfig = {
         name: project.name,
         projectType: project.type || 'course',
@@ -349,7 +337,6 @@ const OutlineWorkspace = () => {
       );
       
       if (generatedOutline) {
-        // Fetch sections for the new outline
         const sections = await OutlineService.getSectionsByOutline(generatedOutline.id);
         setOutline({
           ...generatedOutline,
