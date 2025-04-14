@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,13 +37,11 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateDescription, setNewTemplateDescription] = useState('');
   const [newTemplateSteps, setNewTemplateSteps] = useState<string[]>(['']);
-
-  // For deadline management
+  
   const [date, setDate] = useState<Date>();
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [deadlineSetting, setDeadlineSetting] = useState(false);
   
-  // Fetch workflow templates
   useEffect(() => {
     const loadTemplates = async () => {
       try {
@@ -61,12 +58,9 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     loadTemplates();
   }, []);
   
-  // Fetch current workflow for the content
   useEffect(() => {
     const loadCurrentWorkflow = async () => {
       try {
-        // This would normally fetch from the database
-        // For now, we'll use a sample workflow
         if (contentId) {
           const workflow = await ApprovalService.createWorkflow(contentId);
           setCurrentWorkflow(workflow);
@@ -81,7 +75,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     }
   }, [contentId]);
   
-  // Add a workflow for the content
   const handleAddWorkflow = async () => {
     if (!selectedTemplateId) {
       toast({
@@ -110,12 +103,10 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     }
   };
   
-  // Update workflow step status
   const updateStepStatus = async (stepId: string, status: 'pending' | 'completed' | 'rejected', comments?: string) => {
     try {
       await ApprovalService.updateWorkflowStep(contentId, stepId, { status, comments });
       
-      // Update local state
       setCurrentWorkflow(currentWorkflow.map(step => 
         step.id === stepId ? { ...step, status, comments } : step
       ));
@@ -133,7 +124,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     }
   };
   
-  // Create a new workflow template
   const handleCreateTemplate = () => {
     if (!newTemplateName) {
       toast({
@@ -153,7 +143,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
       return;
     }
     
-    // In a real app, this would save to the database
     const newTemplate: ApprovalWorkflowTemplate = {
       id: `custom-${Date.now()}`,
       name: newTemplateName,
@@ -170,7 +159,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     setSelectedTemplateId(newTemplate.id);
     setIsCreatingTemplate(false);
     
-    // Reset form
     setNewTemplateName('');
     setNewTemplateDescription('');
     setNewTemplateSteps(['']);
@@ -181,31 +169,25 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     });
   };
   
-  // Add a new step input to the custom template form
   const addTemplateStep = () => {
     setNewTemplateSteps([...newTemplateSteps, '']);
   };
   
-  // Update step name in the custom template form
   const updateTemplateStep = (index: number, value: string) => {
     const updatedSteps = [...newTemplateSteps];
     updatedSteps[index] = value;
     setNewTemplateSteps(updatedSteps);
   };
   
-  // Remove step from the custom template form
   const removeTemplateStep = (index: number) => {
     if (newTemplateSteps.length <= 1) return;
     const updatedSteps = newTemplateSteps.filter((_, i) => i !== index);
     setNewTemplateSteps(updatedSteps);
   };
   
-  // Set deadline for a workflow step
   const setStepDeadline = () => {
     if (!selectedStepId || !date) return;
     
-    // In a real app, this would update the database
-    // For now, we'll just update the local state
     setCurrentWorkflow(currentWorkflow.map(step => 
       step.id === selectedStepId ? { 
         ...step, 
@@ -225,7 +207,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     });
   };
   
-  // Get status badge color
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -237,7 +218,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
     }
   };
   
-  // Get status badge icon
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -268,7 +248,7 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
               <span>Templates</span>
             </TabsTrigger>
             <TabsTrigger value="deadlines" className="flex items-center gap-1">
-              <Calendar size={15} />
+              <CalendarIcon size={15} />
               <span>Deadlines</span>
             </TabsTrigger>
           </TabsList>
@@ -378,7 +358,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
               </div>
             )}
             
-            {/* Add Workflow Dialog */}
             <Dialog open={isAddingWorkflow} onOpenChange={setIsAddingWorkflow}>
               <DialogContent>
                 <DialogHeader>
@@ -435,7 +414,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
               </DialogContent>
             </Dialog>
             
-            {/* Create Template Dialog */}
             <Dialog open={isCreatingTemplate} onOpenChange={setIsCreatingTemplate}>
               <DialogContent>
                 <DialogHeader>
@@ -604,7 +582,6 @@ export const WorkflowManager: React.FC<WorkflowManagerProps> = ({ contentId, pro
                   </div>
                 ))}
                 
-                {/* Deadline Setting Dialog */}
                 <Dialog open={deadlineSetting} onOpenChange={setDeadlineSetting}>
                   <DialogContent>
                     <DialogHeader>
