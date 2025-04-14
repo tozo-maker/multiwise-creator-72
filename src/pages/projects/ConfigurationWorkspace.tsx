@@ -105,8 +105,41 @@ export const ConfigurationWorkspace = () => {
             targetLanguage: projectData.target_language
           }));
           
+          // Check if project_config table exists first
           try {
-            // Try to fetch existing configuration
+            // Try RPC method first
+            const { count, error: rpcError } = await supabase
+              .rpc('does_table_exist', { table_name: 'project_config' });
+            
+            // If RPC failed (function doesn't exist), try direct query 
+            if (rpcError) {
+              console.log('RPC function not available, trying direct query');
+              const { count: directCount, error: directError } = await supabase
+                .from('project_config')
+                .select('*', { count: 'exact', head: true })
+                .limit(1);
+              
+              // If there's an error that's not related to missing table
+              if (directError && 
+                  !directError.message.includes('does not exist') && 
+                  !directError.message.includes('relation')) {
+                throw directError;
+              }
+              
+              // If table doesn't exist, don't try to fetch config
+              if (directError && 
+                  (directError.message.includes('does not exist') || 
+                   directError.message.includes('relation'))) {
+                console.log('project_config table does not exist (direct check)');
+                return;
+              }
+            } else if (!count || count === 0) {
+              // RPC worked but table doesn't exist
+              console.log('project_config table does not exist (RPC check)');
+              return;
+            }
+            
+            // If we get here, table exists, try to fetch config
             const { data: configData, error: configError } = await supabase
               .from('project_config')
               .select('*')

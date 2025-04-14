@@ -80,25 +80,51 @@ const OutlineWorkspace = () => {
           });
 
           try {
-            // Try to fetch config directly, simplifying the check
+            // First check if project_config table exists
+            try {
+              const { count, error: tableCheckError } = await supabase
+                .rpc('does_table_exist', { table_name: 'project_config' });
+              
+              if (tableCheckError) {
+                console.log('Error checking table existence, assuming it does not exist:', tableCheckError);
+                setConfigMissing(true);
+                return;
+              }
+              
+              if (!count || count === 0) {
+                console.log('project_config table does not exist');
+                setConfigMissing(true);
+                return;
+              }
+            } catch (tableError) {
+              // If RPC fails or is not available, try direct query
+              try {
+                const { count, error: directTableCheckError } = await supabase
+                  .from('project_config')
+                  .select('*', { count: 'exact', head: true })
+                  .limit(1);
+                  
+                if (directTableCheckError && 
+                    (directTableCheckError.message.includes('does not exist') || 
+                     directTableCheckError.code === '42P01')) {
+                  console.log('project_config table does not exist (direct check)');
+                  setConfigMissing(true);
+                  return;
+                }
+              } catch (directError) {
+                console.error('Error with direct table check:', directError);
+              }
+            }
+            
+            // Try to fetch config 
             const { data: configData, error: configError } = await supabase
               .from('project_config')
               .select('*')
               .eq('project_id', projectData.id)
               .maybeSingle();
 
-            if (configError) {
+            if (configError && !configError.message.includes('does not exist')) {
               console.error('Error fetching project config:', configError);
-              // If table doesn't exist or other error
-              if (configError.message.includes('does not exist') || 
-                  configError.message.includes('relation') ||
-                  configError.code === '42P01') {
-                
-                console.log('Project configuration table issue');
-                setConfigMissing(true);
-                setIsLoading(false);
-                return;
-              }
               throw configError;
             }
             
@@ -440,48 +466,26 @@ const OutlineWorkspace = () => {
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="outline" />
         
-        {configMissing ? (
-          <div className="mt-8">
-            <Alert variant="default" className="bg-amber-50 border-amber-200">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-              <AlertTitle className="text-amber-800">Configuration Required</AlertTitle>
-              <AlertDescription className="text-amber-700">
-                Please set up your project configuration first before creating an outline.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="mt-6 flex justify-center">
-              <Button 
-                onClick={() => navigate(`/projects/${projectId}/configuration`)}
-                className="gap-2"
-              >
-                <Settings size={16} />
-                Go to Project Configuration
-              </Button>
-            </div>
+        <>
+          <div className="mb-6">
+            <h2 className={`text-xl font-semibold mb-2 ${
+              isDark ? 'text-slate-100' : 'text-slate-900'
+            }`}>
+              Project Outline
+            </h2>
+            <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+              Create and manage the structure of your project content
+            </p>
           </div>
-        ) : (
-          <>
-            <div className="mb-6">
-              <h2 className={`text-xl font-semibold mb-2 ${
-                isDark ? 'text-slate-100' : 'text-slate-900'
-              }`}>
-                Project Outline
-              </h2>
-              <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-                Create and manage the structure of your project content
-              </p>
-            </div>
-            
-            <OutlineEditor 
-              outline={outline} 
-              projectId={project.id}
-              onSave={handleSaveOutline}
-              onGenerateOutline={handleGenerateOutline}
-              onCreateOutline={handleCreateOutline}
-            />
-          </>
-        )}
+          
+          <OutlineEditor 
+            outline={outline} 
+            projectId={project.id}
+            onSave={handleSaveOutline}
+            onGenerateOutline={handleGenerateOutline}
+            onCreateOutline={handleCreateOutline}
+          />
+        </>
       </div>
     </DashboardLayout>
   );

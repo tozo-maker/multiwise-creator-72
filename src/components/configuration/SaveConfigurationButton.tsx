@@ -39,60 +39,69 @@ export const SaveConfigurationButton: React.FC<SaveConfigurationButtonProps> = (
         updated_at: new Date().toISOString(),
       };
       
-      // Check if config exists for this project
+      // First check if project_config table exists
       try {
-        const { data: existingConfig, error: checkError } = await supabase
+        const { count, error: tableCheckError } = await supabase
           .from('project_config')
-          .select('id')
-          .eq('project_id', projectId)
-          .maybeSingle();
+          .select('*', { count: 'exact', head: true })
+          .limit(1);
         
-        if (checkError) {
-          console.error('Error checking existing config:', checkError);
-          // Only throw if it's not a "relation does not exist" error
-          if (!checkError.message.includes('does not exist') && !checkError.message.includes('relation')) {
+        // If table exists (no error), proceed with config check
+        if (!tableCheckError) {
+          // Check if config exists for this project
+          const { data: existingConfig, error: checkError } = await supabase
+            .from('project_config')
+            .select('id')
+            .eq('project_id', projectId)
+            .maybeSingle();
+          
+          if (checkError) {
+            console.error('Error checking existing config:', checkError);
             throw checkError;
           }
-        }
-        
-        let result;
-        
-        if (existingConfig) {
-          // Update existing config
-          console.log('Updating existing config with ID:', existingConfig.id);
-          const { data, error } = await supabase
-            .from('project_config')
-            .update(configToSave)
-            .eq('id', existingConfig.id)
-            .select();
-            
-          if (error) throw error;
-          result = data;
           
-        } else {
-          // Insert new config
-          console.log('Creating new config for project:', projectId);
-          const { data, error } = await supabase
-            .from('project_config')
-            .insert({
-              ...configToSave,
-              created_at: new Date().toISOString(),
-            })
-            .select();
+          let result;
+          
+          if (existingConfig) {
+            // Update existing config
+            console.log('Updating existing config with ID:', existingConfig.id);
+            const { data, error } = await supabase
+              .from('project_config')
+              .update(configToSave)
+              .eq('id', existingConfig.id)
+              .select();
+              
+            if (error) throw error;
+            result = data;
             
-          if (error) throw error;
-          result = data;
+          } else {
+            // Insert new config
+            console.log('Creating new config for project:', projectId);
+            const { data, error } = await supabase
+              .from('project_config')
+              .insert({
+                ...configToSave,
+                created_at: new Date().toISOString(),
+              })
+              .select();
+              
+            if (error) throw error;
+            result = data;
+          }
+          
+          console.log('Configuration saved successfully:', result);
+          
+          toast({
+            title: "Configuration saved",
+            description: "Project settings have been updated successfully",
+          });
+          
+          // Call the parent onSave callback
+          onSave();
+        } else {
+          console.error('Error checking project_config table:', tableCheckError);
+          throw new Error('Project configuration table does not exist or is not accessible');
         }
-        
-        console.log('Configuration saved successfully:', result);
-        
-        toast({
-          title: "Configuration saved",
-          description: "Project settings have been updated successfully",
-        });
-        
-        // Call the parent onSave callback
-        onSave();
       } catch (error: any) {
         console.error('Error saving configuration:', error);
         throw error;
