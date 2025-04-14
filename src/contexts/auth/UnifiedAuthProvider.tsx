@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +13,6 @@ import { AuthService } from '@/services/AuthService';
 import { ProfileService } from '@/services/ProfileService';
 import { Profile, AuthContextType } from './types';
 
-// Import AuthChangeEvent from supabase-js to fix the TypeScript error
 type AuthChangeEvent = 'INITIAL_SESSION' | 'PASSWORD_RECOVERY' | 'SIGNED_IN' | 'SIGNED_OUT' | 'TOKEN_REFRESHED' | 'USER_UPDATED' | 'USER_DELETED' | 'MFA_CHALLENGE_VERIFIED';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
