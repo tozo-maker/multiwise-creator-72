@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/UnifiedAuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface RegisterPageProps {
   onRegisterSuccess?: () => void;
@@ -18,6 +19,7 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { signUp, user } = useAuth();
@@ -32,10 +34,11 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setRegisterError(null);
     
     try {
       const metadata = { name };
-      const { error } = await signUp(email, password, metadata);
+      const { error, user } = await signUp(email, password, metadata);
       
       if (error) throw error;
       
@@ -53,6 +56,7 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
       // Redirect to login page
       navigate('/auth/login');
     } catch (error: any) {
+      setRegisterError(error.message || "An error occurred during registration.");
       toast({
         variant: "destructive",
         title: "Registration failed",
@@ -64,18 +68,18 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <div className="container max-w-lg mx-auto flex-1 flex flex-col justify-center px-4 py-12">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
             <div className="h-8 w-8 rounded-md bg-brand-500 flex items-center justify-center">
               <BookText className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-slate-900">MultiGuide</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-slate-50">MultiGuide</span>
           </Link>
         </div>
         
-        <Card>
+        <Card className="border-slate-200 dark:border-slate-700">
           <CardHeader>
             <CardTitle>Create an account</CardTitle>
             <CardDescription>
@@ -83,6 +87,12 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {registerError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{registerError}</AlertDescription>
+              </Alert>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
@@ -92,6 +102,8 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  className="bg-white dark:bg-slate-800"
+                  disabled={isLoading}
                 />
               </div>
               
@@ -104,6 +116,8 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-white dark:bg-slate-800"
+                  disabled={isLoading}
                 />
               </div>
               
@@ -116,6 +130,8 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="bg-white dark:bg-slate-800"
+                  disabled={isLoading}
                 />
                 <p className="text-xs text-slate-500">
                   Must be at least 8 characters and include a number
@@ -176,9 +192,9 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
             </div>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <div className="text-sm text-slate-600">
+            <div className="text-sm text-slate-600 dark:text-slate-400">
               Already have an account?{' '}
-              <Link to="/auth/login" className="font-medium text-brand-600 hover:text-brand-700">
+              <Link to="/auth/login" className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300">
                 Log in
               </Link>
             </div>
@@ -186,7 +202,7 @@ export const RegisterPage = ({ onRegisterSuccess }: RegisterPageProps) => {
         </Card>
         
         <div className="mt-6 text-center">
-          <Link to="/" className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center">
+          <Link to="/" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300 inline-flex items-center">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to home
           </Link>

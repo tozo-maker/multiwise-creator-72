@@ -4,25 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, HelpCircle, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SheetClose, SheetFooter } from '@/components/ui/sheet';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/UnifiedAuthContext';
 
 export const MobileUserSection: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // Safely access the auth context
-  let signOut = async () => {
-    console.log('Fallback signOut function called');
-    return Promise.resolve();
-  };
-  
-  try {
-    const auth = useAuth();
-    signOut = auth.signOut;
-  } catch (error) {
-    console.error('Error accessing auth context:', error);
-  }
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     try {

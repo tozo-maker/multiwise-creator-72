@@ -2,7 +2,7 @@
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-const SESSION_STORAGE_KEY = 'supabase.auth.session';
+const SESSION_STORAGE_KEY = 'sb-lejrjwwtovvzekqevsez-auth-token';
 
 /**
  * Gets the current session from storage

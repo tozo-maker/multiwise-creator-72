@@ -1,9 +1,9 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { getValidSession, setupSessionRefresh } from '@/utils/sessionUtils';
-import { toast as showToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
   username?: string;
@@ -40,6 +40,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -60,20 +61,32 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       return null;
     }
   };
+  
+  // Function to handle profile fetching with timeouts to avoid deadlocks
+  const fetchProfileSafely = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const profileData = await fetchProfile(userId);
+    setProfile(profileData);
+  }, []);
 
   useEffect(() => {
+    let mounted = true;
+    
     // First set up the auth state listener for session changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('Auth state changed:', event);
+        if (!mounted) return;
+        
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
           // Use setTimeout to avoid potential deadlock with the onAuthStateChange callback
-          setTimeout(async () => {
-            const profileData = await fetchProfile(newSession.user.id);
-            setProfile(profileData);
+          setTimeout(() => {
+            if (mounted) {
+              fetchProfileSafely(newSession.user.id);
+            }
           }, 0);
         } else {
           setProfile(null);
@@ -85,17 +98,20 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     const initAuth = async () => {
       try {
         const currentSession = await getValidSession();
+        if (!mounted) return;
+        
         setSession(currentSession);
         
         if (currentSession?.user) {
           setUser(currentSession.user);
-          const profileData = await fetchProfile(currentSession.user.id);
-          setProfile(profileData);
+          fetchProfileSafely(currentSession.user.id);
         }
       } catch (error) {
         console.error('Error during auth initialization:', error);
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -103,32 +119,35 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
 
     // Set up session refresh
     const cleanupRefresh = setupSessionRefresh(() => {
-      showToast({
-        title: "Session Expired",
-        description: "Your session has expired. Please sign in again.",
-        variant: "destructive"
-      });
-      setUser(null);
-      setSession(null);
-      setProfile(null);
+      if (mounted) {
+        toast({
+          title: "Session Expired",
+          description: "Your session has expired. Please sign in again.",
+          variant: "destructive"
+        });
+        setUser(null);
+        setSession(null);
+        setProfile(null);
+      }
     });
 
     // Clean up the subscription and interval
     return () => {
+      mounted = false;
       subscription.unsubscribe();
       cleanupRefresh();
     };
-  }, []);
+  }, [fetchProfileSafely, toast]);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (!error) {
-        showToast({
+        toast({
           title: "Signed in successfully",
           description: "Welcome back!",
         });
@@ -160,14 +179,20 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
-      showToast({
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
     } catch (error) {
       console.error('Error signing out:', error);
-      showToast({
+      toast({
         title: "Error",
         description: "An error occurred while signing out.",
         variant: "destructive"
@@ -182,7 +207,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       });
       
       if (!error) {
-        showToast({
+        toast({
           title: "Password reset email sent",
           description: "Please check your email for instructions to reset your password.",
         });
@@ -210,12 +235,12 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       // Update local state
       setProfile(prev => prev ? { ...prev, ...data } : data);
       
-      showToast({
+      toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
       });
     } catch (error: any) {
-      showToast({
+      toast({
         variant: "destructive",
         title: "Profile update failed",
         description: error.message || "An error occurred while updating your profile.",

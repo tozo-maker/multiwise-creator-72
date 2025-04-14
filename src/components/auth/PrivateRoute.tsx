@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle } from 'lucide-react';
-import { getValidSession } from '@/utils/sessionUtils';
 
 export const PrivateRoute = () => {
   const { user, isLoading: authLoading } = useAuth();
@@ -14,30 +13,6 @@ export const PrivateRoute = () => {
   const [isReady, setIsReady] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [criticalTimeout, setCriticalTimeout] = useState(false);
-  const [sessionChecked, setSessionChecked] = useState(false);
-  
-  useEffect(() => {
-    // Validate session on mount
-    const validateSession = async () => {
-      try {
-        const session = await getValidSession();
-        setSessionChecked(true);
-        
-        if (!session && !location.pathname.startsWith('/auth')) {
-          toast({
-            title: "Authentication Required",
-            description: "Please sign in to access this page",
-            variant: "default"
-          });
-        }
-      } catch (error) {
-        console.error("Error validating session:", error);
-        setSessionChecked(true);
-      }
-    };
-    
-    validateSession();
-  }, [location.pathname, toast]);
   
   useEffect(() => {
     // Small delay to prevent flash of loading state for fast connections
@@ -73,7 +48,7 @@ export const PrivateRoute = () => {
   }, [toast]);
   
   // Show loading state
-  if ((authLoading || !sessionChecked) && !isReady) {
+  if (authLoading && !isReady) {
     return (
       <div className="flex items-center justify-center h-screen p-6">
         <div className="w-full max-w-md space-y-6">
