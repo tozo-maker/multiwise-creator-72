@@ -1,85 +1,77 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useToast } from '@/hooks/use-toast';
+import { Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { UserMenu } from '@/components/layout/user/UserMenu';
+import { MobileUserSection } from '@/components/layout/mobile/MobileUserSection';
+import { MobileMenuItems } from '@/components/layout/mobile/MobileMenuItems';
+import { MobileProjectNavigation } from '@/components/layout/mobile/MobileProjectNavigation';
 import { SearchBar } from '@/components/layout/search/SearchBar';
-import { NotificationPanel } from './notifications/NotificationPanel';
-import { ThemeToggle } from './theme/ThemeToggle';
-import { NewProjectButton } from '../projects/NewProjectButton';
-import { HelpCircle } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { ThemeButton } from '@/components/shared/ThemeButton';
-import { ThemeTooltip } from '@/components/shared/ThemeTooltip';
-import { useDashboard } from '@/contexts/DashboardContext';
+import { ThemeToggle } from '@/components/layout/theme/ThemeToggle';
+import { MobileThemeToggle } from '@/components/layout/mobile/MobileThemeToggle';
+import { MobileAccessibleNavigation } from '@/components/layout/mobile/MobileAccessibleNavigation';
+import { NotificationPanel } from '@/components/layout/notifications/NotificationPanel';
+import { useAuth } from '@/contexts/auth';
+import { AlertTriangle } from 'lucide-react';
 
-export const ModernTopBar = React.memo(function ModernTopBar() {
-  const { toast } = useToast();
-  const { isDark } = useTheme();
-  const navigate = useNavigate();
-
-  // Get dashboard context if it's available, otherwise use default values
-  let searchTerm = '';
-  let setSearchTerm = (_: string) => {}; // No-op function as fallback
+export const ModernTopBar = ({ showProjectNav = false }) => {
+  const { authError, retryAuthentication } = useAuth();
   
-  try {
-    // This will throw an error if not in a DashboardProvider
-    const dashboard = useDashboard();
-    searchTerm = dashboard.searchTerm;
-    setSearchTerm = dashboard.setSearchTerm;
-  } catch (error) {
-    // Dashboard context not available, using default values
-    console.log('Dashboard context not available in ModernTopBar');
-  }
-
-  const handleHelpClick = React.useCallback(() => {
-    navigate('/help');
-  }, [navigate]);
+  const handleRetryAuth = async () => {
+    if (retryAuthentication) {
+      await retryAuthentication();
+    }
+  };
 
   return (
-    <header 
-      className={`h-16 border-b ${
-        isDark 
-          ? 'border-slate-800 bg-slate-900' 
-          : 'border-slate-200 bg-white'
-      } px-4 flex items-center sticky top-0 z-10`}
-      role="banner"
-      aria-label="Page header"
-    >
-      <div className="flex items-center space-x-2">
-        <SidebarTrigger 
-          aria-label="Toggle sidebar" 
-          aria-expanded="false"
-          aria-controls="main-sidebar"
-        />
-      </div>
-      
-      <div className="flex-1 pl-4 pr-4 max-w-2xl mx-auto">
-        <SearchBar 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
-        />
-      </div>
-      
-      <div className="flex items-center space-x-2 sm:space-x-4">
-        <NewProjectButton />
-        
-        <ThemeToggle />
-        
-        <ThemeTooltip content="Help">
-          <ThemeButton 
-            variant="ghost" 
-            size="icon" 
-            className="hidden sm:flex"
-            onClick={handleHelpClick}
-            aria-label="Open help page"
+    <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-10">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" className="md:hidden">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle Menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex flex-col">
+          <nav className="grid gap-2 text-lg font-medium">
+            <MobileMenuItems />
+          </nav>
+          {showProjectNav && (
+            <div className="mt-6 border-t pt-6">
+              <MobileProjectNavigation />
+            </div>
+          )}
+          <div className="mt-auto border-t pt-4">
+            <MobileThemeToggle />
+          </div>
+          <div className="border-t pt-4">
+            <MobileUserSection />
+          </div>
+          <div className="mt-2">
+            <MobileAccessibleNavigation />
+          </div>
+        </SheetContent>
+      </Sheet>
+      <div className="ml-auto flex items-center gap-2">
+        {authError && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="hidden md:inline-flex items-center gap-1 border-amber-200 bg-amber-50 text-amber-900 hover:bg-amber-100 hover:text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400"
+            onClick={handleRetryAuth}
           >
-            <HelpCircle className="h-5 w-5" />
-          </ThemeButton>
-        </ThemeTooltip>
-
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <span>Retry Auth</span>
+          </Button>
+        )}
+        <SearchBar />
+        <ThemeToggle />
         <NotificationPanel />
+        <UserMenu />
       </div>
     </header>
   );
-});
+};
+
+export default ModernTopBar;

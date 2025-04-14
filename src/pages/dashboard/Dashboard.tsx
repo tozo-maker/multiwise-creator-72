@@ -1,204 +1,100 @@
-import React, { useMemo, useEffect, useState } from 'react';
-import { DashboardWelcome } from '@/components/dashboard/DashboardWelcome';
-import { DashboardStats } from '@/components/dashboard/DashboardStats';
-import { InteractiveHelp } from '@/components/dashboard/InteractiveHelp';
-import { DashboardGrid } from '@/components/dashboard/DashboardGrid';
-import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
+
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/UnifiedAuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { DashboardProvider, useDashboard } from '@/contexts/DashboardContext';
-import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { DashboardWelcome } from '@/components/dashboard/DashboardWelcome';
+import { DashboardGrid } from '@/components/dashboard/DashboardGrid';
+import { DashboardProjectSection } from '@/components/dashboard/DashboardProjectSection';
+import { DashboardStats } from '@/components/dashboard/DashboardStats';
+import { DashboardActivityTimeline } from '@/components/dashboard/DashboardActivityTimeline';
+import { DashboardAIInsights } from '@/components/dashboard/DashboardAIInsights';
+import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
+import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
-  return (
-    <DashboardProvider>
-      <DashboardLayout 
-        contentWidth="wide" 
-        pageTitle="Dashboard" 
-        pageDescription="Welcome to your MultiGuide Dashboard"
-        mainId="dashboard-main"
-      >
-        <DashboardContent />
-      </DashboardLayout>
-    </DashboardProvider>
-  );
-};
-
-// Separated component to use hooks within the DashboardProvider context
-const DashboardContent = () => {
-  const { isFirstVisit, isLoading, filteredProjects, isDemo, refreshProjects, refreshError } = useDashboard();
-  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const { user, profile, authError, retryAuthentication } = useAuth();
   const { toast } = useToast();
-  const [refreshState, setRefreshState] = useState({
-    isRefreshing: false,
-    lastRefreshed: null as Date | null
-  });
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
   
-  // Memoize the hasProjects value to prevent unnecessary rerenders
-  const hasProjects = useMemo(() => filteredProjects.length > 0, [filteredProjects]);
-
-  // Effect to handle initial data loading
   useEffect(() => {
-    if (!isLoading && user) {
-      // Check if we should refresh data on mount
-      const lastRefresh = localStorage.getItem('dashboard_last_refresh');
-      const shouldRefresh = !lastRefresh || 
-        (Date.now() - new Date(lastRefresh).getTime()) > 5 * 60 * 1000; // 5 minutes
+    // Simulate loading data
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Current user info for debugging
+  useEffect(() => {
+    if (user) {
+      console.log('Current user:', user.email);
+    }
+  }, [user]);
+  
+  const handleRetryAuth = async () => {
+    if (retryAuthentication) {
+      const success = await retryAuthentication();
       
-      if (shouldRefresh) {
-        handleRefreshDashboard();
+      if (success) {
+        toast({
+          title: "Connection Restored",
+          description: "Your authentication issue has been resolved",
+        });
       }
     }
-  }, [user, isLoading]);
-
-  // Set a timeout for loading
-  useEffect(() => {
-    if (isLoading) {
-      const timeout = setTimeout(() => {
-        setLoadingTimeout(true);
-      }, 10000);
-      
-      return () => clearTimeout(timeout);
-    } else {
-      setLoadingTimeout(false);
-    }
-  }, [isLoading]);
-
-  const handleRefreshDashboard = async () => {
-    if (refreshState.isRefreshing) return;
-    
-    setRefreshState(prev => ({ ...prev, isRefreshing: true }));
-    try {
-      await refreshProjects();
-      
-      // Update last refresh time
-      const now = new Date();
-      localStorage.setItem('dashboard_last_refresh', now.toISOString());
-      setRefreshState({ isRefreshing: false, lastRefreshed: now });
-      
-      toast({
-        title: "Dashboard refreshed",
-        description: "Your dashboard data has been updated",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error refreshing dashboard:', error);
-      toast({
-        title: "Refresh failed",
-        description: "Failed to update dashboard data",
-        variant: "destructive",
-      });
-    } finally {
-      setRefreshState(prev => ({ ...prev, isRefreshing: false }));
-    }
   };
-
-  // Function to handle manual refresh
-  const handleManualRefresh = () => {
-    handleRefreshDashboard();
-  };
-
+  
   if (isLoading) {
     return <DashboardLoading />;
   }
-
-  // Show error if there's a refresh error or loading timeout
-  if (refreshError || loadingTimeout) {
+  
+  const username = profile?.name || profile?.username || user?.email?.split('@')[0] || 'User';
+  
+  const renderAuthError = () => {
+    if (!authError) return null;
+    
     return (
-      <div className="flex flex-col items-center justify-center h-64 p-6">
-        <Alert variant="destructive" className="mb-6 w-full max-w-md">
-          <AlertCircle className="h-4 w-4 mr-2" />
-          <AlertDescription>
-            {refreshError || "There was a problem loading your dashboard data."}
-          </AlertDescription>
-        </Alert>
-        
-        <Button 
-          onClick={handleManualRefresh} 
-          className="flex items-center gap-2"
-          variant="outline"
-        >
-          <RefreshCw className="h-4 w-4" />
-          <span>Retry Loading</span>
-        </Button>
+      <div className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4 dark:bg-amber-900/20 dark:border-amber-800">
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0 text-amber-500 dark:text-amber-400">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-amber-800 dark:text-amber-300">Authentication Issue</h3>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+              There might be a problem with the authentication service.
+            </p>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="ml-auto bg-white text-amber-700 border-amber-300 hover:bg-amber-50 hover:text-amber-800 dark:bg-amber-800/30 dark:border-amber-700 dark:text-amber-300"
+            onClick={handleRetryAuth}
+          >
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Retry
+          </Button>
+        </div>
       </div>
     );
-  }
-
-  // Get default username for non-authenticated users
-  const userName = user ? (user.email?.split('@')[0] || "User") : "Guest";
-
+  };
+  
   return (
-    <div className="space-y-8">
-      <AnimatePresence>
-        {isFirstVisit && (
-          <motion.div
-            key="welcome-alert"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mb-6"
-          >
-            <Alert variant="default" className="bg-brand-50 text-brand-800 border-brand-200">
-              <CheckCircle2 className="h-4 w-4 text-brand-500" />
-              <AlertDescription>
-                Welcome to MultiWise Creator! This platform helps you create educational content efficiently.
-              </AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex items-center justify-between mb-8">
-          <DashboardWelcome 
-            userName={userName}
-            hasProjects={hasProjects}
-          />
-          
-          {isDemo ? (
-            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300 ml-4">
-              Demo Mode
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 ml-4">
-              Live Data
-            </Badge>
-          )}
-        </div>
-      </motion.div>
-      
-      {isFirstVisit && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <InteractiveHelp isNew={true} className="mb-8" />
-        </motion.div>
-      )}
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <DashboardStats onRefresh={handleRefreshDashboard} isRefreshing={refreshState.isRefreshing} />
-      </motion.div>
-      
-      <DashboardGrid hasProjects={hasProjects} />
-    </div>
+    <DashboardLayout>
+      <div className="p-6 space-y-6">
+        {renderAuthError()}
+        <DashboardWelcome username={username} />
+        <DashboardGrid>
+          <DashboardStats />
+          <DashboardProjectSection />
+          <DashboardActivityTimeline />
+          <DashboardAIInsights />
+        </DashboardGrid>
+      </div>
+    </DashboardLayout>
   );
 };
 

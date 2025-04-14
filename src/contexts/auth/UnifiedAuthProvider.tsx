@@ -2,7 +2,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { getValidSession, setupSessionRefresh, getSessionInfo } from '@/utils/sessionUtils';
+import { 
+  getValidSession, 
+  setupSessionRefresh, 
+  getSessionInfo, 
+  forceSessionRefresh, 
+  clearSessionStorage 
+} from '@/utils/sessionUtils';
 import { useToast } from '@/hooks/use-toast';
 import { AuthService } from '@/services/AuthService';
 import { ProfileService } from '@/services/ProfileService';
@@ -16,6 +22,8 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [lastRefreshAttempt, setLastRefreshAttempt] = useState<number>(0);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const fetchProfileSafely = useCallback(async (userId: string): Promise<void> => {
@@ -46,6 +54,66 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     await fetchProfileSafely(user.id);
   }, [user?.id, fetchProfileSafely]);
 
+  // Add a function to handle authentication errors
+  const handleAuthError = useCallback((error: any) => {
+    console.error('Authentication error:', error);
+    setAuthError(error?.message || 'Unknown authentication error');
+    
+    // Only show toast for critical errors, not routine session expiration
+    const errorMsg = error?.message || 'Authentication issue detected';
+    if (!errorMsg.includes('expired')) {
+      toast({
+        title: "Authentication Error",
+        description: errorMsg,
+        variant: "destructive"
+      });
+    }
+  }, [toast]);
+
+  // Add a function to manually retry authentication
+  const retryAuthentication = useCallback(async () => {
+    const now = Date.now();
+    
+    // Prevent multiple rapid refresh attempts (throttle to once per 5 seconds)
+    if (now - lastRefreshAttempt < 5000) {
+      console.log('Throttling refresh attempt, too soon since last attempt');
+      return false;
+    }
+    
+    setLastRefreshAttempt(now);
+    setAuthError(null);
+    
+    try {
+      console.log('Manually retrying authentication...');
+      const refreshedSession = await forceSessionRefresh();
+      
+      if (refreshedSession) {
+        console.log('Manual authentication retry successful');
+        setSession(refreshedSession);
+        setUser(refreshedSession.user);
+        
+        if (refreshedSession.user) {
+          await fetchProfileSafely(refreshedSession.user.id);
+        }
+        
+        toast({
+          title: "Authentication Restored",
+          description: "Your session has been successfully refreshed.",
+        });
+        
+        return true;
+      } else {
+        console.log('Manual authentication retry failed - no session returned');
+        setAuthError('Unable to restore authentication. Please sign in again.');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error during manual authentication retry:', error);
+      handleAuthError(error);
+      return false;
+    }
+  }, [fetchProfileSafely, handleAuthError, lastRefreshAttempt, toast]);
+
   useEffect(() => {
     let mounted = true;
     console.log('Auth context initializing');
@@ -59,12 +127,19 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
             if (!mounted) return;
             console.log(`Auth state changed: ${event}`, newSession ? 'Session exists' : 'No session');
 
-            if (newSession) {
+            if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+              console.log('User signed out or deleted, clearing auth state');
+              setUser(null);
+              setSession(null);
+              setProfile(null);
+              clearSessionStorage();
+            } else if (newSession) {
               console.log(`New session established for user: ${newSession.user.id}`);
               console.log(`Session info: ${getSessionInfo(newSession)}`);
               
               setUser(newSession.user);
               setSession(newSession);
+              setAuthError(null);
               
               if (newSession.user) {
                 setTimeout(() => {
@@ -73,11 +148,6 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
                   }
                 }, 0);
               }
-            } else if (event === 'SIGNED_OUT') {
-              console.log('User signed out, clearing auth state');
-              setUser(null);
-              setSession(null);
-              setProfile(null);
             }
           }
         );
@@ -93,6 +163,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
           
           setSession(currentSession);
           setUser(currentSession.user);
+          setAuthError(null);
           
           await fetchProfileSafely(currentSession.user.id);
         } else {
@@ -109,6 +180,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         console.error('Error during auth initialization:', error);
         
         if (mounted) {
+          handleAuthError(error);
           setUser(null);
           setSession(null);
           setProfile(null);
@@ -127,6 +199,8 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
 
     const cleanupRefresh = setupSessionRefresh(() => {
       if (mounted) {
+        console.log('Session expired completely, notifying user');
+        setAuthError('Your session has expired. Please sign in again.');
         toast({
           title: "Session Expired",
           description: "Your session has expired. Please sign in again.",
@@ -148,11 +222,12 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       
       console.log('Auth context cleanup completed');
     };
-  }, [fetchProfileSafely, toast]);
+  }, [fetchProfileSafely, handleAuthError, toast]);
 
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
+      setAuthError(null);
       const result = await AuthService.signIn(email, password);
       
       if (!result.error) {
@@ -160,6 +235,8 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
           title: "Signed in successfully",
           description: "Welcome back!",
         });
+      } else {
+        handleAuthError(result.error);
       }
       
       return result;
@@ -171,6 +248,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   const signUp = async (email: string, password: string, metadata?: any) => {
     try {
       setIsLoading(true);
+      setAuthError(null);
       const result = await AuthService.signUp(email, password, metadata);
       
       if (!result.error) {
@@ -180,6 +258,8 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
             ? "Please check your email for verification instructions."
             : "You are now signed in!",
         });
+      } else {
+        handleAuthError(result.error);
       }
       
       return result;
@@ -196,12 +276,14 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
       setUser(null);
       setSession(null);
       setProfile(null);
+      setAuthError(null);
       
       toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
       });
     } catch (error: any) {
+      handleAuthError(error);
       toast({
         title: "Error",
         description: "An error occurred while signing out.",
@@ -215,6 +297,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
   const resetPassword = async (email: string) => {
     try {
       setIsLoading(true);
+      setAuthError(null);
       const result = await AuthService.resetPassword(email);
       
       if (!result.error) {
@@ -222,6 +305,8 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
           title: "Password reset email sent",
           description: "Please check your email for instructions to reset your password.",
         });
+      } else {
+        handleAuthError(result.error);
       }
       
       return result;
@@ -246,6 +331,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         description: "Your profile has been updated successfully.",
       });
     } catch (error: any) {
+      handleAuthError(error);
       toast({
         variant: "destructive",
         title: "Profile update failed",
@@ -263,12 +349,14 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     profile,
     isLoading: isLoading || !isInitialized,
     isAuthenticated: !!user,
+    authError,
     signIn,
     signUp,
     signOut,
     resetPassword,
     updateProfile,
     refreshProfile,
+    retryAuthentication,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

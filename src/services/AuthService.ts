@@ -13,6 +13,17 @@ export const AuthService = {
       
       if (error) {
         console.error('Sign-in error:', error);
+        
+        // Enhance error messages for better user experience
+        if (error.message?.includes('Invalid login credentials')) {
+          return { error: { ...error, message: 'The email or password you entered is incorrect' } };
+        }
+        
+        // Improve network error messages
+        if (error.message?.includes('fetch')) {
+          return { error: { ...error, message: 'Network error: Unable to connect to authentication service' } };
+        }
+        
         return { error };
       }
       
@@ -22,7 +33,14 @@ export const AuthService = {
       return { error: null };
     } catch (error: any) {
       console.error('Exception during sign in:', error);
-      return { error };
+      
+      // Better error message for unexpected errors
+      const enhancedError = {
+        ...error,
+        message: error.message || 'An unexpected error occurred during sign in'
+      };
+      
+      return { error: enhancedError };
     }
   },
 
@@ -40,6 +58,17 @@ export const AuthService = {
       
       if (error) {
         console.error('Sign-up error:', error);
+        
+        // Enhance common sign-up error messages
+        if (error.message?.includes('already registered')) {
+          return { error: { ...error, message: 'This email is already registered. Please try logging in instead.' }, user: null };
+        }
+        
+        // Password validation errors
+        if (error.message?.includes('password')) {
+          return { error: { ...error, message: 'Password must be at least 6 characters' }, user: null };
+        }
+        
         return { error, user: null };
       }
       

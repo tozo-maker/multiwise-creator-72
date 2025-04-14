@@ -12,7 +12,9 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     detectSessionInUrl: true,
     storage: localStorage,
     storageKey: 'sb-lejrjwwtovvzekqevsez-auth-token',
-    flowType: 'implicit'
+    flowType: 'implicit',
+    // Add debug logging
+    debug: true
   }
 });
 
@@ -41,6 +43,19 @@ export const getCurrentUser = async () => {
     return data.user;
   } catch (err) {
     console.error('Error getting current user:', err);
+    return null;
+  }
+};
+
+// Add a helper function to manually refresh the token
+export const refreshAuthToken = async () => {
+  try {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) throw error;
+    console.log('Auth token refreshed manually');
+    return data.session;
+  } catch (err) {
+    console.error('Error refreshing auth token manually:', err);
     return null;
   }
 };

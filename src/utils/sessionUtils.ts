@@ -40,10 +40,12 @@ export const isSessionExpired = (session: Session): boolean => {
   const timeRemaining = expiresAt - Date.now();
   
   // Add debug logging for session expiration info
+  const minutesRemaining = Math.round(timeRemaining / 60000);
   console.log(`Session expires at: ${new Date(expiresAt).toISOString()}`);
-  console.log(`Time remaining: ${Math.round(timeRemaining / 1000)} seconds`);
+  console.log(`Time remaining: ${minutesRemaining} minutes (${Math.round(timeRemaining / 1000)} seconds)`);
   
-  return timeRemaining <= 0;
+  // Consider session expired if less than 5 minutes remaining
+  return timeRemaining <= 300000;
 };
 
 /**
@@ -52,13 +54,52 @@ export const isSessionExpired = (session: Session): boolean => {
 export const refreshSession = async (): Promise<Session | null> => {
   try {
     console.log('Attempting to refresh session...');
-    const { data, error } = await supabase.auth.refreshSession();
-    if (error) {
-      console.error('Error refreshing session:', error);
-      return null;
+    
+    // Add additional error handling and retries
+    let retryCount = 0;
+    const maxRetries = 2;
+    let lastError = null;
+    
+    while (retryCount <= maxRetries) {
+      try {
+        const { data, error } = await supabase.auth.refreshSession();
+        
+        if (error) {
+          console.warn(`Refresh attempt ${retryCount + 1} failed:`, error);
+          lastError = error;
+          retryCount++;
+          
+          if (retryCount <= maxRetries) {
+            // Wait a bit before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+            continue;
+          }
+          
+          return null;
+        }
+        
+        console.log('Session refreshed successfully');
+        return data.session;
+      } catch (err) {
+        console.error(`Refresh attempt ${retryCount + 1} exception:`, err);
+        lastError = err;
+        retryCount++;
+        
+        if (retryCount <= maxRetries) {
+          // Wait a bit before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+          continue;
+        }
+        
+        break;
+      }
     }
-    console.log('Session refreshed successfully');
-    return data.session;
+    
+    if (lastError) {
+      console.error('Session refresh failed after retries:', lastError);
+    }
+    
+    return null;
   } catch (err) {
     console.error('Error in refreshSession:', err);
     return null;
@@ -70,6 +111,8 @@ export const refreshSession = async (): Promise<Session | null> => {
  */
 export const getValidSession = async (): Promise<Session | null> => {
   try {
+    console.log('Getting valid session...');
+    
     // First try to get the current session directly from auth
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     
@@ -94,7 +137,15 @@ export const getValidSession = async (): Promise<Session | null> => {
     // If session exists but is expired, try to refresh
     if (isSessionExpired(storedSession)) {
       console.log('Session expired, attempting to refresh');
-      return await refreshSession();
+      const refreshedSession = await refreshSession();
+      
+      if (refreshedSession) {
+        return refreshedSession;
+      } else {
+        // If refresh fails, clear the stored session to prevent future errors
+        clearSessionStorage();
+        return null;
+      }
     }
     
     console.log('Valid session found in storage');
@@ -114,28 +165,40 @@ export const setupSessionRefresh = (onSessionTimeout: () => void): () => void =>
   // Check session every minute
   const intervalId = setInterval(async () => {
     try {
-      const session = await getValidSession();
-      if (!session) {
+      // Get current session directly rather than from storage
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      const session = sessionData?.session;
+      
+      if (error || !session) {
         console.log('No valid session found during interval check, triggering timeout callback');
         onSessionTimeout();
         clearInterval(intervalId);
-      } else if (session.expires_at) {
+        return;
+      }
+      
+      if (session.expires_at) {
         const expiresAt = session.expires_at * 1000;
         const timeRemaining = expiresAt - Date.now();
         
-        // Log time remaining for debugging
-        console.log(`Session refresh check: ${Math.round(timeRemaining / 1000)}s remaining`);
+        // Log time remaining every 5 minutes or when it's getting close
+        const minutesRemaining = Math.round(timeRemaining / 60000);
+        if (minutesRemaining < 10 || minutesRemaining % 5 === 0) {
+          console.log(`Session refresh check: ${minutesRemaining} minutes remaining`);
+        }
         
         // If less than 5 minutes remaining, attempt refresh
         if (timeRemaining < 300000) {
           console.log('Session expiring soon, refreshing');
-          await refreshSession();
+          const refreshedSession = await refreshSession();
+          if (!refreshedSession) {
+            console.error("Session refresh failed, will continue trying");
+          }
         }
       }
     } catch (error) {
       console.error('Error in session refresh interval:', error);
     }
-  }, 60000);
+  }, 60000); // Check every minute
   
   return () => clearInterval(intervalId);
 };
@@ -153,6 +216,20 @@ export const clearSessionStorage = (): void => {
 };
 
 /**
+ * Force a session refresh immediately
+ */
+export const forceSessionRefresh = async (): Promise<Session | null> => {
+  try {
+    console.log('Force refreshing session...');
+    const refreshedSession = await refreshSession();
+    return refreshedSession;
+  } catch (error) {
+    console.error('Error during forced session refresh:', error);
+    return null;
+  }
+};
+
+/**
  * Get public session information safe for logging
  */
 export const getSessionInfo = (session: Session | null): string => {
@@ -165,3 +242,4 @@ export const getSessionInfo = (session: Session | null): string => {
     has_refresh_token: !!session.refresh_token,
   });
 };
+
