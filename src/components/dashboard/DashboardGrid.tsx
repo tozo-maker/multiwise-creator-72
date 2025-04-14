@@ -10,9 +10,10 @@ import { useAuthProfile } from '@/contexts/AuthProfileContext';
 
 interface DashboardGridProps {
   hasProjects: boolean;
+  children?: React.ReactNode;
 }
 
-export const DashboardGrid: React.FC<DashboardGridProps> = React.memo(({ hasProjects }) => {
+export const DashboardGrid: React.FC<DashboardGridProps> = React.memo(({ hasProjects, children }) => {
   const { isProfileComplete } = useAuthProfile();
   
   return (
@@ -37,7 +38,7 @@ export const DashboardGrid: React.FC<DashboardGridProps> = React.memo(({ hasProj
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <DashboardProjectSection />
+          {children ? children : <DashboardProjectSection />}
         </motion.div>
         
         <motion.div

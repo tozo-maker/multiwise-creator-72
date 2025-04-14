@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasProjects, setHasProjects] = useState(false);
   const { user, profile, authError, retryAuthentication } = useAuth();
   const { toast } = useToast();
   
@@ -22,6 +23,9 @@ const Dashboard = () => {
     // Simulate loading data
     const timer = setTimeout(() => {
       setIsLoading(false);
+      // For now, we'll just assume there are no projects
+      // This would normally be determined from actual project data
+      setHasProjects(false);
     }, 1000);
     
     return () => clearTimeout(timer);
@@ -86,8 +90,8 @@ const Dashboard = () => {
     <DashboardLayout>
       <div className="p-6 space-y-6">
         {renderAuthError()}
-        <DashboardWelcome username={username} />
-        <DashboardGrid>
+        <DashboardWelcome userName={username} hasProjects={hasProjects} />
+        <DashboardGrid hasProjects={hasProjects}>
           <DashboardStats />
           <DashboardProjectSection />
           <DashboardActivityTimeline />

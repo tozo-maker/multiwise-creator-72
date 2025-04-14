@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,12 +53,10 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     await fetchProfileSafely(user.id);
   }, [user?.id, fetchProfileSafely]);
 
-  // Add a function to handle authentication errors
   const handleAuthError = useCallback((error: any) => {
     console.error('Authentication error:', error);
     setAuthError(error?.message || 'Unknown authentication error');
     
-    // Only show toast for critical errors, not routine session expiration
     const errorMsg = error?.message || 'Authentication issue detected';
     if (!errorMsg.includes('expired')) {
       toast({
@@ -70,11 +67,9 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
     }
   }, [toast]);
 
-  // Add a function to manually retry authentication
   const retryAuthentication = useCallback(async () => {
     const now = Date.now();
     
-    // Prevent multiple rapid refresh attempts (throttle to once per 5 seconds)
     if (now - lastRefreshAttempt < 5000) {
       console.log('Throttling refresh attempt, too soon since last attempt');
       return false;
