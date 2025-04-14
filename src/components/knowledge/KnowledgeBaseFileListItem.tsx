@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { EyeIcon, PencilIcon, TrashIcon, DownloadIcon, BrainIcon, Link } from 'lucide-react';
@@ -6,7 +5,7 @@ import { FileTypeIcon } from './FileTypeIcon';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { DocumentInsights } from './DocumentInsights';
 import { useDocumentProcessor } from '@/hooks/useDocumentProcessor';
-import { DocumentInsightService } from '@/services/document-insights';
+import { DocumentInsightService } from '@/services/DocumentInsightService';
 import { DocumentRelationshipManager } from './DocumentRelationshipManager';
 import { KBFile } from './KnowledgeBaseFileList';
 
@@ -53,7 +52,6 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
     setIsLoadingInsight(true);
     
     try {
-      // First try to get existing insights
       const existingInsight = await DocumentInsightService.getByFileId(file.id);
       
       if (existingInsight) {
@@ -80,17 +78,15 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
   };
   
   const handleRelationshipsUpdated = () => {
-    // Refresh insights if needed
     if (insightDialogOpen) {
       handleViewInsights();
     }
   };
 
-  // Convert projectFiles to have the correct type structure if they don't match
   const formattedProjectFiles = projectFiles.map(pf => ({
     id: pf.id,
     name: pf.name,
-    type: pf.fileType || pf.type || ''
+    type: pf.fileType || ''
   }));
 
   return (
@@ -166,7 +162,6 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
         </td>
       </tr>
       
-      {/* Document Insights Dialog */}
       <Dialog open={insightDialogOpen} onOpenChange={setInsightDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DocumentInsights 
