@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { AIService } from './AIService';
 import { AnthropicService } from './AnthropicService';
@@ -93,7 +92,7 @@ export const ContentAnalysisService = {
         overallScore: results.overallScore,
         strengths: results.strengths,
         weaknesses: results.weaknesses,
-        improvements: results.improvements || [] // Ensure this property exists by providing a default empty array
+        improvements: results.improvements ?? [] // Use nullish coalescing to provide empty array if undefined
       };
       
       return metrics;
