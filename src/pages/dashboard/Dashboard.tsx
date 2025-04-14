@@ -8,6 +8,7 @@ import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { DashboardActivityTimeline } from '@/components/dashboard/DashboardActivityTimeline';
 import { DashboardAIInsights } from '@/components/dashboard/DashboardAIInsights';
 import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
+import { DashboardProvider } from '@/contexts/DashboardContext';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
@@ -87,18 +88,20 @@ const Dashboard = () => {
   };
   
   return (
-    <DashboardLayout>
-      <div className="p-6 space-y-6">
-        {renderAuthError()}
-        <DashboardWelcome userName={username} hasProjects={hasProjects} />
-        <DashboardGrid hasProjects={hasProjects}>
-          <DashboardStats />
-          <DashboardProjectSection />
-          <DashboardActivityTimeline />
-          <DashboardAIInsights />
-        </DashboardGrid>
-      </div>
-    </DashboardLayout>
+    <DashboardProvider>
+      <DashboardLayout>
+        <div className="p-6 space-y-6">
+          {renderAuthError()}
+          <DashboardWelcome userName={username} hasProjects={hasProjects} />
+          <DashboardGrid hasProjects={hasProjects}>
+            <DashboardStats />
+            <DashboardProjectSection />
+            <DashboardActivityTimeline />
+            <DashboardAIInsights />
+          </DashboardGrid>
+        </div>
+      </DashboardLayout>
+    </DashboardProvider>
   );
 };
 
