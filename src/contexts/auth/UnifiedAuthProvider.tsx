@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   getValidSession, 
@@ -118,7 +118,7 @@ export function UnifiedAuthProvider({ children }: { children: React.ReactNode })
         console.log('Setting up auth state listener');
         
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, newSession) => {
+          async (event: AuthChangeEvent, newSession) => {
             if (!mounted) return;
             console.log(`Auth state changed: ${event}`, newSession ? 'Session exists' : 'No session');
 
