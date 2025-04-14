@@ -38,6 +38,8 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({ data }) => {
     }
   };
 
+  console.log('Summary data:', data);
+
   return (
     <div className="space-y-6">
       {/* Project overview */}
@@ -139,11 +141,11 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({ data }) => {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Word Distribution</div>
-                  <div className="text-sm capitalize">{data.wordDistribution}</div>
+                  <div className="text-sm capitalize">{data.wordDistribution || 'balanced'}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Word Enforcement</div>
-                  <div className="text-sm capitalize">{data.wordEnforcement}</div>
+                  <div className="text-sm capitalize">{data.wordEnforcement || 'flexible'}</div>
                 </div>
               </div>
               
@@ -194,34 +196,34 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({ data }) => {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Goal</div>
-                  <div className="text-sm">{data.goal}</div>
+                  <div className="text-sm">{data.goal || 'Teaching'}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Complexity</div>
-                  <div className="text-sm">{data.complexity}</div>
+                  <div className="text-sm">{data.complexity || 'Intermediate'}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Cultural Integration</div>
-                  <div className="text-sm">{data.culturalIntegration}</div>
+                  <div className="text-sm">{data.culturalIntegration || 'Moderate'}</div>
                 </div>
               </div>
               
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Terminology Style</div>
-                  <div className="text-sm">{data.terminology}</div>
+                  <div className="text-sm">{data.terminology || 'Standard'}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Content Markers</div>
-                  <div className="text-sm">{data.markers}</div>
+                  <div className="text-sm">{data.markers || 'Standard'}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Structure</div>
-                  <div className="text-sm">{data.structure}</div>
+                  <div className="text-sm">{data.structure || 'Default'}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="text-sm text-muted-foreground">Formatting</div>
-                  <div className="text-sm">{data.formatting}</div>
+                  <div className="text-sm">{data.formatting || 'Default'}</div>
                 </div>
               </div>
             </div>
@@ -292,4 +294,3 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({ data }) => {
     </div>
   );
 };
-

@@ -21,6 +21,7 @@ export class DatabaseService {
       if (error) {
         // If we get a "relation does not exist" error, the table doesn't exist
         if (error.message.includes('does not exist') || error.code === '42P01') {
+          console.log(`Table '${tableName}' does not exist`);
           return false;
         }
         
@@ -30,10 +31,12 @@ export class DatabaseService {
       }
       
       // If we got here with no error, the table exists
+      console.log(`Table '${tableName}' exists`);
       return true;
     } catch (err: any) {
       // Don't treat "relation does not exist" errors as errors
       if (err.message && (err.message.includes('does not exist') || err.code === '42P01')) {
+        console.log(`Table '${tableName}' does not exist (from catch)`);
         return false;
       }
       
@@ -52,6 +55,7 @@ export class DatabaseService {
       // First check if the table exists
       const tableExists = await this.tableExists('project_config');
       if (!tableExists) {
+        console.log('project_config table does not exist');
         return false;
       }
       
@@ -67,7 +71,9 @@ export class DatabaseService {
         throw error;
       }
       
-      return !!data; // Return true if data exists, false if null
+      const exists = !!data;
+      console.log(`Config for project ${projectId} exists: ${exists}`);
+      return exists;
     } catch (err) {
       console.error('Error checking project config existence:', err);
       return false; // Return false on any error to be safe
@@ -91,13 +97,49 @@ export class DatabaseService {
           throw error;
         }
         
+        console.log('project_config table created successfully');
         return true;
       }
       
+      console.log('project_config table already exists');
       return true;
     } catch (err) {
       console.error('Error ensuring project config table exists:', err);
       return false;
+    }
+  }
+  
+  /**
+   * Get configuration for a project
+   * @param projectId Project ID to get configuration for
+   * @returns Promise with the configuration data
+   */
+  static async getProjectConfig(projectId: string): Promise<any | null> {
+    try {
+      // First check if the table exists
+      const tableExists = await this.tableExists('project_config');
+      if (!tableExists) {
+        console.log('project_config table does not exist');
+        return null;
+      }
+      
+      // Then get the config for this project
+      const { data, error } = await supabase
+        .from('project_config')
+        .select('*')
+        .eq('project_id', projectId)
+        .maybeSingle();
+        
+      if (error) {
+        console.error('Error getting project config:', error);
+        throw error;
+      }
+      
+      console.log('Got project config:', data);
+      return data;
+    } catch (err) {
+      console.error('Error getting project config:', err);
+      return null;
     }
   }
 }

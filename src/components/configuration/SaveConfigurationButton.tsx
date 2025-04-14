@@ -36,16 +36,32 @@ export const SaveConfigurationButton: React.FC<SaveConfigurationButtonProps> = (
       console.log('Saving configuration for project:', projectId);
       console.log('Config data to save:', configData);
       
-      // Extract relevant data from configData
+      // Extract all relevant data from configData
       const configToSave = {
         project_id: projectId,
         name: configData.name || '',
         projectType: configData.projectType || '',
         targetLanguage: configData.targetLanguage || '',
         subjects: configData.subjects || [],
-        levels: configData.levels || ['Secondary', 'High School'],
+        levels: configData.levels || [],
         pedagogy: configData.pedagogy || 'Standard',
         complexity: configData.complexity || 'Intermediate',
+        wordCount: configData.wordCount || 5000,
+        wordDistribution: configData.wordDistribution || 'balanced',
+        wordEnforcement: configData.wordEnforcement || 'flexible',
+        goal: configData.goal || 'Teaching',
+        culturalIntegration: configData.culturalIntegration || 'Moderate',
+        terminology: configData.terminology || 'Standard',
+        markers: configData.markers || 'Standard',
+        standards: configData.standards || [],
+        customStandards: configData.customStandards || [],
+        structure: configData.structure || 'Default',
+        formatting: configData.formatting || 'Default',
+        interfaceLanguage: configData.interfaceLanguage || 'English',
+        experienceLevel: configData.experienceLevel || 'Intermediate',
+        interactionMode: configData.interactionMode || 'Guided',
+        outputDetail: configData.outputDetail || 'Detailed',
+        systemBehavior: configData.systemBehavior || 'Balanced',
         updated_at: new Date().toISOString(),
       };
 
