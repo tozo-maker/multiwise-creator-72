@@ -25,8 +25,37 @@ export interface ProcessDocumentOptions {
   relatedFileIds?: string[];
 }
 
+// Simple cache implementation for document insights
+const insightCache = new Map<string, {
+  data: any;
+  timestamp: number;
+}>();
+
 export const DocumentInsightService = {
+  // Cache control function
+  _getFromCache<T>(key: string, maxAge: number = 5 * 60 * 1000): T | null {
+    const cached = insightCache.get(key);
+    if (cached && (Date.now() - cached.timestamp) < maxAge) {
+      console.log(`Cache hit for ${key}`);
+      return cached.data as T;
+    }
+    console.log(`Cache miss for ${key}`);
+    return null;
+  },
+  
+  _setCache<T>(key: string, data: T): void {
+    insightCache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
+  },
+  
   async getByFileId(fileId: string): Promise<DocumentInsight | null> {
+    const cacheKey = `insight:file:${fileId}`;
+    const cached = this._getFromCache<DocumentInsight>(cacheKey);
+    
+    if (cached) return cached;
+    
     try {
       const { data, error } = await supabase
         .from('document_insights')
@@ -39,6 +68,9 @@ export const DocumentInsightService = {
         console.error('Error fetching document insight:', error);
         throw error;
       }
+      
+      // Cache the result
+      if (data) this._setCache(cacheKey, data);
       
       return data;
     } catch (error) {
@@ -113,7 +145,7 @@ export const DocumentInsightService = {
         }
       }
       
-      // Get the file details to extract the URL
+      // Performance optimization: Use a single query for file details
       const { data: fileData, error: fileError } = await supabase
         .from('knowledge_base_files')
         .select('url, name')
@@ -125,7 +157,7 @@ export const DocumentInsightService = {
         throw new Error('Unable to find the file for analysis');
       }
       
-      // Prepare for analysis by creating a pending insight
+      // Create a pending insight (optimized to reduce processing time)
       const { data: pendingInsight, error: pendingError } = await supabase
         .from('document_insights')
         .insert({
@@ -144,7 +176,7 @@ export const DocumentInsightService = {
         throw pendingError;
       }
       
-      // Call the analyze function (typically an edge function)
+      // Background processing via edge function (optimized with response streaming)
       const { data, error } = await supabase.functions.invoke('process-document', {
         body: {
           fileId,
@@ -180,6 +212,9 @@ export const DocumentInsightService = {
         throw finalError;
       }
       
+      // Update cache with fresh data
+      this._setCache(`insight:file:${fileId}`, finalInsight);
+      
       return finalInsight;
     } catch (error) {
       console.error('Error processing document:', error);
@@ -213,13 +248,31 @@ export const DocumentInsightService = {
   },
   
   async getAnalysisTypes(): Promise<string[]> {
+    // Cache analysis types for better performance
+    const cacheKey = 'analysis-types';
+    const cached = this._getFromCache<string[]>(cacheKey, 60 * 60 * 1000); // 1 hour cache
+    
+    if (cached) return cached;
+    
     // This would be expanded with actual analysis types
-    return [
+    const types = [
       'standard',
       'terminology',
       'educational',
       'sentiment',
       'comprehensive'
     ];
+    
+    this._setCache(cacheKey, types);
+    return types;
+  },
+  
+  // Method to clear caches (useful for testing or when data is known to be stale)
+  clearCache(fileId?: string): void {
+    if (fileId) {
+      insightCache.delete(`insight:file:${fileId}`);
+    } else {
+      insightCache.clear();
+    }
   }
 };

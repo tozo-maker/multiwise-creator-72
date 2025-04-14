@@ -1,28 +1,59 @@
 
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { AnalyticsEmptyState } from './AnalyticsEmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/page-header';
+import { useMediaQuery } from '@/hooks/use-media-query';
+
+// Lazy-loaded components for better performance
+const ContentQualityMetricsChart = lazy(() => import('@/components/analytics/ContentQualityMetrics'));
+const ProjectComparisonView = lazy(() => import('@/components/analytics/ProjectComparisonTool'));
 
 export const AnalyticsDetailedView = () => {
   const { projects, isDemo } = useDashboard();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
+  // Render the empty state if no projects are available and not in demo mode
   if (projects.length === 0 && !isDemo) {
     return <AnalyticsEmptyState />;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="border border-slate-200 dark:border-slate-700">
+      <PageHeader 
+        heading="Detailed Analytics" 
+        subheading="In-depth analysis and performance metrics"
+      />
+      
+      {/* Content Quality Section */}
+      <Card className="border border-slate-200 dark:border-slate-700 overflow-hidden">
         <CardHeader>
-          <CardTitle>Detailed Analytics</CardTitle>
+          <CardTitle>Content Quality Metrics</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Detailed analytics features will be available soon.
-          </p>
+          <Suspense fallback={<Skeleton className="h-[300px] w-full" />}>
+            <ContentQualityMetricsChart />
+          </Suspense>
         </CardContent>
       </Card>
+      
+      {/* Project Comparison Section */}
+      {!isMobile && (
+        <Card className="border border-slate-200 dark:border-slate-700">
+          <CardHeader>
+            <CardTitle>Project Performance Comparison</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-hidden">
+            <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+              <ProjectComparisonView />
+            </Suspense>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
+
+export default AnalyticsDetailedView;

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { 
   ContentQualityAssessment, 
@@ -33,7 +32,55 @@ export interface AnalysisResult {
   improvements?: string[];
 }
 
+// Simple in-memory cache for analysis results
+const analysisCache = new Map<string, {
+  data: any;
+  timestamp: number;
+  expiresIn: number;
+}>();
+
 export class ContentAnalysisService {
+  /**
+   * Helper method to get data from cache or run the fetcher function
+   */
+  private static async getWithCache<T>(
+    cacheKey: string, 
+    fetcher: () => Promise<T>, 
+    expiresIn: number = 5 * 60 * 1000 // 5 minutes by default
+  ): Promise<T> {
+    const now = Date.now();
+    const cached = analysisCache.get(cacheKey);
+    
+    // Return cached data if it's still valid
+    if (cached && now - cached.timestamp < cached.expiresIn) {
+      console.log('Returning cached data for', cacheKey);
+      return cached.data as T;
+    }
+    
+    console.log('Fetching fresh data for', cacheKey);
+    try {
+      // Fetch fresh data
+      const result = await fetcher();
+      
+      // Cache the result
+      analysisCache.set(cacheKey, {
+        data: result,
+        timestamp: now,
+        expiresIn
+      });
+      
+      return result;
+    } catch (error) {
+      // If we have stale cache data, return it on error as fallback
+      if (cached) {
+        console.warn('Using stale cache data for', cacheKey, 'due to error:', error);
+        return cached.data as T;
+      }
+      
+      throw error;
+    }
+  }
+
   static async analyzeContent(content: string, targetLevel: string): Promise<AnalysisResult> {
     try {
       // In a real app, this would call an AI service or API
@@ -101,20 +148,22 @@ export class ContentAnalysisService {
   }
 
   static async getContentQualityAssessment(contentId: string): Promise<ContentQualityAssessment> {
-    try {
-      const { data, error } = await supabase
-        .from('content_quality_assessments')
-        .select('*')
-        .eq('content_id', contentId)
-        .single();
-      
-      if (error) throw error;
-      
-      return data as ContentQualityAssessment;
-    } catch (error) {
-      console.error('Error getting content quality assessment:', error);
-      throw new Error('Failed to get content quality assessment');
-    }
+    const cacheKey = `quality_assessment:${contentId}`;
+    
+    return this.getWithCache(
+      cacheKey,
+      async () => {
+        const { data, error } = await supabase
+          .from('content_quality_assessments')
+          .select('*')
+          .eq('content_id', contentId)
+          .maybeSingle();
+        
+        if (error) throw error;
+        
+        return data as ContentQualityAssessment;
+      }
+    );
   }
 
   static async getImprovementSuggestions(contentId: string): Promise<string[]> {
@@ -144,43 +193,48 @@ export class ContentAnalysisService {
     }
   }
 
-  // Add new methods that are being called from components
-
-  static async analyzeContentQuality(content: string, contentType: string, projectId: string): Promise<ContentQualityMetrics> {
-    try {
-      // Simulate AI analysis with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Generate random scores for demo
-      const readabilityScore = Math.floor(Math.random() * 40) + 60;
-      const engagementScore = Math.floor(Math.random() * 30) + 70;
-      const alignmentScore = Math.floor(Math.random() * 40) + 60;
-      const accessibilityScore = Math.floor(Math.random() * 20) + 80;
-      const overallScore = Math.floor((readabilityScore + engagementScore + alignmentScore + accessibilityScore) / 4);
-      
-      const metrics: ContentQualityMetrics = {
-        overallScore,
-        readabilityScore,
-        engagementScore,
-        alignmentScore,
-        accessibilityScore,
-        strengths: [
-          'Good use of examples to illustrate concepts.',
-          'Clear structure with logical progression.',
-          'Consistent tone throughout the content.'
-        ],
-        improvements: [
-          'Some sentences are too long and could be simplified.',
-          'Consider adding more visuals to support key points.',
-          'Technical terms could be better explained for the target audience.'
-        ]
-      };
-      
-      return metrics;
-    } catch (error) {
-      console.error('Error analyzing content quality:', error);
-      throw new Error('Failed to analyze content quality');
-    }
+  static async analyzeContentQuality(
+    content: string, 
+    contentType: string, 
+    projectId: string
+  ): Promise<ContentQualityMetrics> {
+    const cacheKey = `content_quality:${contentType}:${projectId}:${content.length}`;
+    
+    return this.getWithCache(
+      cacheKey,
+      async () => {
+        // Simulate AI analysis with a delay
+        await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay for better performance
+        
+        // Generate metrics
+        const readabilityScore = Math.floor(Math.random() * 40) + 60;
+        const engagementScore = Math.floor(Math.random() * 30) + 70;
+        const alignmentScore = Math.floor(Math.random() * 40) + 60;
+        const accessibilityScore = Math.floor(Math.random() * 20) + 80;
+        const overallScore = Math.floor((readabilityScore + engagementScore + alignmentScore + accessibilityScore) / 4);
+        
+        const metrics: ContentQualityMetrics = {
+          overallScore,
+          readabilityScore,
+          engagementScore,
+          alignmentScore,
+          accessibilityScore,
+          strengths: [
+            'Good use of examples to illustrate concepts.',
+            'Clear structure with logical progression.',
+            'Consistent tone throughout the content.'
+          ],
+          improvements: [
+            'Some sentences are too long and could be simplified.',
+            'Consider adding more visuals to support key points.',
+            'Technical terms could be better explained for the target audience.'
+          ]
+        };
+        
+        return metrics;
+      },
+      10 * 60 * 1000 // Cache for 10 minutes
+    );
   }
 
   static async generateImprovementSuggestions(content: string, contentType: string, projectId: string): Promise<ContentImprovementSuggestion[]> {
@@ -228,52 +282,57 @@ export class ContentAnalysisService {
   }
 
   static async analyzeReadability(content: string, projectId: string): Promise<ReadabilityMetrics> {
-    try {
-      // Simulate AI analysis with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Demo metrics
-      const metrics: ReadabilityMetrics = {
-        fleschKincaidScore: Math.floor(Math.random() * 40) + 60,
-        fleschKincaidGradeLevel: Math.floor(Math.random() * 6) + 6,
-        complexWordCount: Math.floor(Math.random() * 20) + 10,
-        averageSentenceLength: Math.floor(Math.random() * 10) + 15,
-        averageWordLength: Math.floor(Math.random() * 3) + 4,
-        paragraphStructure: ['excellent', 'good', 'fair', 'poor'][Math.floor(Math.random() * 4)] as 'excellent' | 'good' | 'fair' | 'poor'
-      };
-      
-      return metrics;
-    } catch (error) {
-      console.error('Error analyzing readability:', error);
-      throw new Error('Failed to analyze readability');
-    }
+    const cacheKey = `readability:${projectId}:${content.length}`;
+    
+    return this.getWithCache(
+      cacheKey,
+      async () => {
+        // Optimize simulation time
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Demo metrics
+        const metrics: ReadabilityMetrics = {
+          fleschKincaidScore: Math.floor(Math.random() * 40) + 60,
+          fleschKincaidGradeLevel: Math.floor(Math.random() * 6) + 6,
+          complexWordCount: Math.floor(Math.random() * 20) + 10,
+          averageSentenceLength: Math.floor(Math.random() * 10) + 15,
+          averageWordLength: Math.floor(Math.random() * 3) + 4,
+          paragraphStructure: ['excellent', 'good', 'fair', 'poor'][Math.floor(Math.random() * 4)] as 'excellent' | 'good' | 'fair' | 'poor'
+        };
+        
+        return metrics;
+      },
+      15 * 60 * 1000 // Cache for 15 minutes
+    );
   }
 
   static async analyzeAccessibility(content: string, projectId: string): Promise<AccessibilityMetrics> {
-    try {
-      // Simulate AI analysis with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Demo metrics
-      const metrics: AccessibilityMetrics = {
-        overallRating: Math.floor(Math.random() * 40) + 60,
-        screenReaderFriendliness: Math.floor(Math.random() * 30) + 70,
-        semanticStructure: Math.floor(Math.random() * 40) + 60,
-        keyboardNavigability: Math.floor(Math.random() * 20) + 80,
-        colorContrastCompliance: Math.random() > 0.5,
-        mediaAlternatives: Math.random() > 0.7,
-        improvementAreas: [
-          'Add alt text to images',
-          'Improve heading hierarchy',
-          'Ensure proper ARIA labels on interactive elements'
-        ]
-      };
-      
-      return metrics;
-    } catch (error) {
-      console.error('Error analyzing accessibility:', error);
-      throw new Error('Failed to analyze accessibility');
-    }
+    const cacheKey = `accessibility:${projectId}:${content.length}`;
+    
+    return this.getWithCache(
+      cacheKey,
+      async () => {
+        // Optimize simulation time
+        await new Promise(resolve => setTimeout(resolve, 250));
+        
+        // Demo metrics
+        const metrics: AccessibilityMetrics = {
+          overallRating: Math.floor(Math.random() * 40) + 60,
+          screenReaderFriendliness: Math.floor(Math.random() * 30) + 70,
+          semanticStructure: Math.floor(Math.random() * 40) + 60,
+          keyboardNavigability: Math.floor(Math.random() * 20) + 80,
+          colorContrastCompliance: Math.random() > 0.5,
+          mediaAlternatives: Math.random() > 0.7,
+          improvementAreas: [
+            'Add alt text to images',
+            'Improve heading hierarchy',
+            'Ensure proper ARIA labels on interactive elements'
+          ]
+        };
+        
+        return metrics;
+      }
+    );
   }
 
   static async analyzeLearningObjectiveAlignment(
@@ -330,5 +389,21 @@ export class ContentAnalysisService {
       console.error('Error saving analysis results:', error);
       throw new Error('Failed to save analysis results');
     }
+  }
+
+  static clearCache(cacheKey?: string): void {
+    if (cacheKey) {
+      analysisCache.delete(cacheKey);
+    } else {
+      analysisCache.clear();
+    }
+    console.log('Cache cleared', cacheKey ? `for key: ${cacheKey}` : 'completely');
+  }
+
+  static getCacheStatus(): { keys: string[], size: number } {
+    return {
+      keys: Array.from(analysisCache.keys()),
+      size: analysisCache.size
+    };
   }
 }
