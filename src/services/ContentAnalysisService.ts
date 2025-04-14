@@ -10,6 +10,14 @@ import {
   LearningObjectiveAlignment
 } from '@/types/supabase-custom';
 
+export type { 
+  ContentQualityMetrics,
+  ReadabilityMetrics,
+  AccessibilityMetrics,
+  ContentImprovementSuggestion,
+  LearningObjectiveAlignment
+};
+
 export interface AnalysisResult {
   id: string;
   readabilityScore: number;
