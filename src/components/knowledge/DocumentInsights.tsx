@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { DocumentInsightService, DocumentInsight } from '@/services/DocumentInsightService';
+import { DocumentInsightService, DocumentInsight } from '@/services/document-insights';
 import { useToast } from '@/hooks/use-toast';
 import { BrainCircuit, BarChart2, Languages, FileType2, Scale, Award, RefreshCw, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
