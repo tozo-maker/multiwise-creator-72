@@ -47,7 +47,7 @@ export function useAnalyticsData(projectId: string, dataType: AnalyticsDataType 
       }
     },
     staleTime: 60000, // Data remains fresh for 1 minute
-    cacheTime: 300000, // Cache data for 5 minutes
+    gcTime: 300000, // Cache data for 5 minutes (replacing cacheTime with gcTime)
   });
 
   return {

@@ -33,17 +33,17 @@ const insightCache = new Map<string, {
 
 export const DocumentInsightService = {
   // Cache control function
-  _getFromCache<T>(key: string, maxAge: number = 5 * 60 * 1000): T | null {
+  _getFromCache(key: string, maxAge: number = 5 * 60 * 1000): any {
     const cached = insightCache.get(key);
     if (cached && (Date.now() - cached.timestamp) < maxAge) {
       console.log(`Cache hit for ${key}`);
-      return cached.data as T;
+      return cached.data;
     }
     console.log(`Cache miss for ${key}`);
     return null;
   },
   
-  _setCache<T>(key: string, data: T): void {
+  _setCache(key: string, data: any): void {
     insightCache.set(key, {
       data,
       timestamp: Date.now()
@@ -52,7 +52,7 @@ export const DocumentInsightService = {
   
   async getByFileId(fileId: string): Promise<DocumentInsight | null> {
     const cacheKey = `insight:file:${fileId}`;
-    const cached = this._getFromCache<DocumentInsight>(cacheKey);
+    const cached = this._getFromCache(cacheKey);
     
     if (cached) return cached;
     
@@ -250,7 +250,7 @@ export const DocumentInsightService = {
   async getAnalysisTypes(): Promise<string[]> {
     // Cache analysis types for better performance
     const cacheKey = 'analysis-types';
-    const cached = this._getFromCache<string[]>(cacheKey, 60 * 60 * 1000); // 1 hour cache
+    const cached = this._getFromCache(cacheKey, 60 * 60 * 1000); // 1 hour cache
     
     if (cached) return cached;
     
