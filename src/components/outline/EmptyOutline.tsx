@@ -24,6 +24,8 @@ export const EmptyOutline: React.FC<EmptyOutlineProps> = ({
   const [isCreatingManually, setIsCreatingManually] = useState(false);
   
   const handleCreateManually = async () => {
+    if (isCreatingManually || isGenerating || isCreating) return;
+    
     try {
       setIsCreatingManually(true);
       console.log("Starting manual outline creation");
@@ -42,6 +44,8 @@ export const EmptyOutline: React.FC<EmptyOutlineProps> = ({
   };
   
   const handleGenerateWithAI = async () => {
+    if (isCreatingManually || isGenerating || isCreating) return;
+    
     try {
       setIsGenerating(true);
       console.log("Starting AI outline generation");
@@ -71,7 +75,7 @@ export const EmptyOutline: React.FC<EmptyOutlineProps> = ({
         <p className={`text-center max-w-md mb-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
           Create a project outline to organize your content structure. An outline helps you plan and track your content creation progress.
         </p>
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap justify-center">
           <Button
             variant="outline"
             onClick={handleCreateManually}

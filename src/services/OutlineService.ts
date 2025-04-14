@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 import { ProjectOutline, OutlineSection, OutlineItem, OutlineVersion } from '@/types/outline';
 import { AnthropicService } from './AnthropicService';
 import { ConfigData } from '@/components/wizard/types';
@@ -71,11 +71,6 @@ export const OutlineService = {
       }));
     } catch (error: any) {
       console.error('Error fetching outline sections:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load outline sections',
-        variant: 'destructive',
-      });
       return [];
     }
   },
@@ -105,11 +100,6 @@ export const OutlineService = {
       return this.mapDbOutlineToProjectOutline(data);
     } catch (error: any) {
       console.error('Error creating outline:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create project outline: ' + error.message,
-        variant: 'destructive',
-      });
       throw error;
     }
   },
@@ -140,12 +130,7 @@ export const OutlineService = {
       return this.mapDbOutlineToProjectOutline(data);
     } catch (error: any) {
       console.error('Error updating outline:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update project outline',
-        variant: 'destructive',
-      });
-      return null;
+      throw error;
     }
   },
   
@@ -325,11 +310,6 @@ export const OutlineService = {
       }));
     } catch (error: any) {
       console.error('Error fetching outline versions:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load outline versions',
-        variant: 'destructive',
-      });
       return [];
     }
   },
@@ -405,17 +385,17 @@ export const OutlineService = {
       For each section, include brief descriptions of what should be covered.`;
       
       const userPrompt = `Create an educational outline for a ${projectConfig.projectType} on ${projectConfig.subjects?.join(", ") || "general topics"} 
-      targeting ${projectConfig.levels?.join(", ") || "all levels"} using ${projectConfig.pedagogy} methodology.
-      The project name is "${projectConfig.name}" and will be taught in ${projectConfig.targetLanguage}.
-      The content should be at ${projectConfig.complexity} complexity level.`;
+      targeting ${projectConfig.levels?.join(", ") || "all levels"} using ${projectConfig.pedagogy || "standard"} methodology.
+      The project name is "${projectConfig.name}" and will be taught in ${projectConfig.targetLanguage || "English"}.
+      The content should be at ${projectConfig.complexity || "intermediate"} complexity level.`;
       
       const response = await AnthropicService.generateContent({
         prompt: userPrompt,
         systemPrompt,
         projectId,
-        language: projectConfig.targetLanguage,
-        audience: projectConfig.levels?.join(", "),
-        complexity: projectConfig.complexity
+        language: projectConfig.targetLanguage || "English",
+        audience: projectConfig.levels?.join(", ") || "general",
+        complexity: projectConfig.complexity || "intermediate"
       });
       
       if (!response || !response.content) {

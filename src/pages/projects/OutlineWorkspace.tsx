@@ -195,6 +195,7 @@ const OutlineWorkspace = () => {
         description: `Failed to create outline: ${error.message}`,
         variant: 'destructive'
       });
+      throw error; // Rethrow for component-level handling
     } finally {
       setIsCreatingOutline(false);
     }
@@ -213,6 +214,40 @@ const OutlineWorkspace = () => {
         throw new Error('Missing project ID');
       }
       
+      // Check if project_config table exists
+      try {
+        const { count, error } = await supabase
+          .from('project_config')
+          .select('*', { count: 'exact', head: true })
+          .eq('project_id', project.id);
+          
+        if (error) {
+          if (error.message.includes('does not exist')) {
+            toast({
+              title: 'Configuration Required',
+              description: 'Please set up your project configuration first before generating content.',
+              variant: 'destructive'
+            });
+            navigate(`/projects/${project.id}/configuration`);
+            return;
+          } else {
+            throw error;
+          }
+        }
+      } catch (error: any) {
+        if (error.message.includes('does not exist')) {
+          toast({
+            title: 'Configuration Required',
+            description: 'Project configuration is necessary to generate an outline. Please set up your project configuration first.',
+            variant: 'destructive'
+          });
+          navigate(`/projects/${project.id}/configuration`);
+          return;
+        } else {
+          throw error;
+        }
+      }
+      
       // Fetch project_config separately for AI outline generation
       const { data: configData, error: configError } = await supabase
         .from('project_config')
@@ -221,13 +256,23 @@ const OutlineWorkspace = () => {
         .maybeSingle();
         
       if (configError) {
-        console.error('Error fetching project config:', configError);
-        toast({
-          title: 'Error',
-          description: 'Failed to load project configuration for AI generation',
-          variant: 'destructive'
-        });
-        throw configError;
+        if (configError.message.includes('does not exist')) {
+          toast({
+            title: 'Configuration Required',
+            description: 'Please set up your project configuration first before generating content.',
+            variant: 'destructive'
+          });
+          navigate(`/projects/${project.id}/configuration`);
+          return;
+        } else {
+          console.error('Error fetching project config:', configError);
+          toast({
+            title: 'Error',
+            description: 'Failed to load project configuration for AI generation',
+            variant: 'destructive'
+          });
+          throw configError;
+        }
       }
       
       if (!configData) {
@@ -243,9 +288,24 @@ const OutlineWorkspace = () => {
       }
       
       console.log('Generating outline with config:', configData);
+      
+      // Create default values if not present
+      const enhancedConfig = {
+        name: project.name,
+        projectType: project.type || 'course',
+        targetLanguage: project.targetLanguage || 'English',
+        subjects: ['General'],
+        levels: ['Beginner'],
+        pedagogy: 'Standard',
+        complexity: 'Intermediate',
+        ...configData
+      };
+      
+      console.log('Enhanced config for AI generation:', enhancedConfig);
+      
       const generatedOutline = await OutlineService.generateOutlineWithAI(
         project.id, 
-        configData
+        enhancedConfig
       );
       
       if (generatedOutline) {
