@@ -5,7 +5,7 @@ import { User, HelpCircle, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SheetClose, SheetFooter } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/UnifiedAuthContext';
+import { useAuth } from '@/contexts/auth';
 
 export const MobileUserSection: React.FC = () => {
   const navigate = useNavigate();

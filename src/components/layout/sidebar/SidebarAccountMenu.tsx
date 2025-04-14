@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, User, Settings, HelpCircle } from 'lucide-react';
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/UnifiedAuthContext';
+import { useAuth } from '@/contexts/auth';
 import { Link } from 'react-router-dom';
 
 export const SidebarAccountMenu = () => {

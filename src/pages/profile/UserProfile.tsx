@@ -1,12 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { ModernLayout } from '@/components/layout/ModernLayout';
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/UnifiedAuthContext';
+import { useAuth } from '@/contexts/auth';
 import { User, Camera } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -163,7 +162,7 @@ const UserProfile = () => {
                 </div>
               </div>
               
-              <div className="flex justify-between">
+              <CardFooter>
                 <Button 
                   type="submit" 
                   disabled={isLoading || uploading}
@@ -178,7 +177,7 @@ const UserProfile = () => {
                 >
                   Sign Out
                 </Button>
-              </div>
+              </CardFooter>
             </form>
           </CardContent>
         </Card>
