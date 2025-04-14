@@ -6,6 +6,11 @@ export interface DocumentInsight {
   content_summary?: string;
   key_concepts?: string[];
   language?: string;
+  language_detected?: string;
+  complexity_level?: string;
+  sentiment_score?: number;
+  analysis_type?: string;
+  summary?: string;
   relationships?: Record<string, string[]>;
   metadata?: Record<string, any>;
   created_at?: string;
@@ -14,6 +19,7 @@ export interface DocumentInsight {
 
 export interface ProcessDocumentOptions {
   forceReprocess?: boolean;
+  forceReAnalysis?: boolean; // Added this property to fix the processor.ts error
   analysisType?: string;
 }
 

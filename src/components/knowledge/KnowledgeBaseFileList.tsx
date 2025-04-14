@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusIcon, FolderIcon } from 'lucide-react';
@@ -7,10 +8,12 @@ export interface KBFile {
   id: string;
   name: string;
   description: string;
-  fileType: string; // This is the correct property name
+  fileType: string;
   size: string;
   uploadDate: string;
   category?: string;
+  tags?: string[];
+  project_id?: string;
   url: string;
 }
 
@@ -24,6 +27,7 @@ interface KnowledgeBaseFileListProps {
   isLoading?: boolean;
   projectId?: string;
   projectFiles?: KBFile[];
+  categories?: string[]; // Added to fix KnowledgeBaseFileSection and KnowledgeBaseTabContent errors
 }
 
 export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({

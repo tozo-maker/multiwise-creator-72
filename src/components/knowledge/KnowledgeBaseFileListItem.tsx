@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { EyeIcon, PencilIcon, TrashIcon, DownloadIcon, BrainIcon, Link } from 'lucide-react';
+import { EyeIcon, PencilIcon, TrashIcon, DownloadIcon, BrainIcon } from 'lucide-react';
 import { FileTypeIcon } from './FileTypeIcon';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { DocumentInsights } from './DocumentInsights';
@@ -19,6 +19,7 @@ interface KnowledgeBaseFileListItemProps {
     size: string;
     uploadDate: string;
     category?: string;
+    tags?: string[];
     url: string;
   };
   onEdit: (id: string) => void;

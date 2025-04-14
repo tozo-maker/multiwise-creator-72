@@ -380,6 +380,7 @@ export const KnowledgeBaseAdvanced = () => {
             onEdit={handleEditFile}
             onPreview={handleViewFileDetails}
             onDownload={(id) => toast({ title: "File download", description: "File download would start here." })}
+            onUpload={handleAddCategory}
           />
           
           {sortedFiles.length === 0 && (

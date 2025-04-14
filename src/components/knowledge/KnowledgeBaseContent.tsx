@@ -1,101 +1,93 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { KnowledgeBaseFileList, KBFile } from '@/components/knowledge/KnowledgeBaseFileList';
-import { KnowledgeBaseUpload } from '@/components/knowledge/KnowledgeBaseUpload';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Skeleton } from '@/components/ui/skeleton';
-import { KnowledgeBaseDescription } from './KnowledgeBaseDescription';
+import { Button } from '@/components/ui/button';
+import { PlusIcon, FolderIcon } from 'lucide-react';
+import { KnowledgeBaseFileListItem } from './KnowledgeBaseFileListItem';
+import { KBFile } from './KnowledgeBaseFileList';
 
-interface KnowledgeBaseContentProps {
+interface KnowledgeBaseFileListProps {
   files: KBFile[];
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onPreview: (id: string) => void;
+  onDownload: (id: string) => void;
+  onUpload: () => void;
   isLoading?: boolean;
-  onDeleteFile: (id: string) => void;
-  onEditDescription: (id: string, description: string) => void;
-  onPreviewFile: (id: string) => void;
-  onDownloadFile: (id: string) => void;
-  onFilesUploaded: (files: { file: File, description: string }[]) => void;
   projectId?: string;
+  projectFiles?: KBFile[];
 }
 
-export const KnowledgeBaseContent: React.FC<KnowledgeBaseContentProps> = ({
+export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
   files,
+  onEdit,
+  onDelete,
+  onPreview,
+  onDownload,
+  onUpload,
   isLoading = false,
-  onDeleteFile,
-  onEditDescription,
-  onPreviewFile,
-  onDownloadFile,
-  onFilesUploaded,
-  projectId
+  projectId,
+  projectFiles = []
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  
-  // State for edit dialog
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [currentEditFile, setCurrentEditFile] = useState<KBFile | null>(null);
-  const [editedDescription, setEditedDescription] = useState('');
-  
-  // Handler for edit button click
-  const handleEditButtonClick = (id: string) => {
-    const file = files.find(f => f.id === id);
-    if (file) {
-      setCurrentEditFile(file);
-      setEditedDescription(file.description || '');
-      setEditDialogOpen(true);
-    }
-  };
-  
-  // Handler for saving description
-  const handleSaveDescription = () => {
-    if (currentEditFile) {
-      onEditDescription(currentEditFile.id, editedDescription);
-      setEditDialogOpen(false);
-    }
-  };
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
 
   return (
-    <>
-      <Card className={isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200 shadow-sm"}>
-        <CardHeader className="pb-3">
-          <CardTitle className={`text-xl ${isDark ? "text-slate-100" : "text-slate-900"}`}>Knowledge Base</CardTitle>
-          <CardDescription className={isDark ? "text-slate-400" : "text-slate-500"}>
-            Manage files that provide context and guidance for AI content generation.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-end mb-6">
-            <KnowledgeBaseUpload onFilesUploaded={onFilesUploaded} />
-          </div>
-          
-          {isLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
-            </div>
-          ) : (
-            <KnowledgeBaseFileList 
-              files={files} 
-              onDelete={onDeleteFile} 
-              onEdit={handleEditButtonClick} 
-              onPreview={onPreviewFile} 
-              onDownload={onDownloadFile}
-              projectId={projectId}
-            />
-          )}
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Knowledge Base Files</h2>
+        <Button onClick={onUpload}>
+          <PlusIcon className="mr-2 h-4 w-4" />
+          Upload File
+        </Button>
+      </div>
       
-      {/* Add the description editor dialog */}
-      <KnowledgeBaseDescription
-        isOpen={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        currentFile={currentEditFile}
-        description={editedDescription}
-        onDescriptionChange={setEditedDescription}
-        onSave={handleSaveDescription}
-      />
-    </>
+      {isLoading ? (
+        <div className="text-slate-500 dark:text-slate-400">Loading files...</div>
+      ) : files.length === 0 ? (
+        <div className="text-slate-500 dark:text-slate-400">
+          <FolderIcon className="mr-2 inline-block h-5 w-5" />
+          No files in knowledge base yet.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-800">
+              <tr>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200">
+                  File Name
+                </th>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
+                  Category
+                </th>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
+                  Type
+                </th>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
+                  Size
+                </th>
+                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
+                  Upload Date
+                </th>
+                <th className="py-3.5 px-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-200">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
+              {files.map((file) => (
+                <KnowledgeBaseFileListItem
+                  key={file.id}
+                  file={file}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onPreview={onPreview}
+                  onDownload={onDownload}
+                  projectId={projectId}
+                  projectFiles={projectFiles}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 };
