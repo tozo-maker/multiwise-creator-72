@@ -82,6 +82,8 @@ export const OutlineService = {
   
   async createOutline(projectId: string, title: string, description?: string): Promise<ProjectOutline | null> {
     try {
+      console.log('Creating outline with project ID:', projectId, 'title:', title);
+      
       const { data, error } = await supabase
         .from('project_outlines')
         .insert({
@@ -95,18 +97,20 @@ export const OutlineService = {
         .single();
       
       if (error) {
+        console.error('Error creating outline:', error);
         throw error;
       }
       
+      console.log('Created outline:', data);
       return this.mapDbOutlineToProjectOutline(data);
     } catch (error: any) {
       console.error('Error creating outline:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create project outline',
+        description: 'Failed to create project outline: ' + error.message,
         variant: 'destructive',
       });
-      return null;
+      throw error;
     }
   },
   

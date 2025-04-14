@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,35 +35,33 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   
   useEffect(() => {
     setWorkingOutline(outline);
   }, [outline]);
   
   const createNewOutline = async () => {
-    setIsCreatingOutline(true);
     try {
+      setIsCreatingOutline(true);
       console.log('Creating new outline for project:', projectId);
-      const newOutline = await OutlineService.createOutline(
-        projectId,
-        'Project Outline',
-        'Main outline for the project'
-      );
       
-      if (newOutline) {
-        console.log('New outline created successfully:', newOutline);
-        setWorkingOutline({
-          ...newOutline,
-          sections: []
-        });
-        toast({
-          title: 'New outline created',
-          description: 'Start adding sections and items to build your outline'
-        });
-      } else {
-        throw new Error('Failed to create outline');
-      }
+      // Let the parent component handle the outline creation
+      await onSave({
+        id: 'new',
+        projectId,
+        title: 'Project Outline',
+        description: 'Main outline for the project',
+        sections: [],
+        version: 1,
+        status: 'draft',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      
+      toast({
+        title: 'New outline created',
+        description: 'Start adding sections and items to build your outline'
+      });
     } catch (error: any) {
       console.error('Error creating outline:', error);
       toast({
@@ -76,9 +75,8 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   };
   
   const handleGenerateWithAI = async () => {
-    setIsGenerating(true);
     try {
-      console.log('Generating outline with AI');
+      // Let the parent component handle AI generation
       await onGenerateOutline();
     } catch (error: any) {
       console.error('Error generating outline with AI:', error);
@@ -87,8 +85,6 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
         description: error.message || 'An unexpected error occurred',
         variant: 'destructive'
       });
-    } finally {
-      setIsGenerating(false);
     }
   };
   
@@ -269,7 +265,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
             variant="outline" 
             size="sm" 
             className="gap-1"
-            onClick={onGenerateOutline}
+            onClick={handleGenerateWithAI}
           >
             <Sparkles size={16} />
             <span className="hidden sm:inline">Generate with AI</span>
@@ -280,8 +276,9 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
             size="sm" 
             className="gap-1"
             onClick={handleSaveOutline}
+            disabled={isSaving}
           >
-            <Save size={16} />
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save size={16} />}
             <span>Save</span>
           </Button>
         </div>

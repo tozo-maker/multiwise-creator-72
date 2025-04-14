@@ -26,7 +26,9 @@ export const EmptyOutline: React.FC<EmptyOutlineProps> = ({
   const handleCreateManually = async () => {
     try {
       setIsCreatingManually(true);
+      console.log("Starting manual outline creation");
       await onCreateOutline();
+      console.log("Manual outline creation completed");
     } catch (error: any) {
       console.error('Error creating outline manually:', error);
       toast({
@@ -42,7 +44,9 @@ export const EmptyOutline: React.FC<EmptyOutlineProps> = ({
   const handleGenerateWithAI = async () => {
     try {
       setIsGenerating(true);
+      console.log("Starting AI outline generation");
       await onGenerateAIOutline();
+      console.log("AI outline generation completed");
     } catch (error: any) {
       console.error('Error generating AI outline:', error);
       toast({

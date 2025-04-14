@@ -34,6 +34,7 @@ const OutlineWorkspace = () => {
   const [outline, setOutline] = useState<ProjectOutline | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreatingOutline, setIsCreatingOutline] = useState(false);
   
   useEffect(() => {
     const fetchProject = async () => {
@@ -48,7 +49,7 @@ const OutlineWorkspace = () => {
         setIsLoading(true);
         setError(null);
         
-        // First fetch the basic project details without joining project_config
+        // First fetch the basic project details
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
           .select('*')
@@ -69,13 +70,13 @@ const OutlineWorkspace = () => {
         if (projectData) {
           console.log('Project data loaded:', projectData.name);
           
-          // Set basic project info first
+          // Set basic project info
           setProject({
             id: projectData.id,
             name: projectData.name,
             type: projectData.type,
             targetLanguage: projectData.target_language,
-            config: null // We'll fetch config separately if needed
+            config: null
           });
           
           // Fetch outline
@@ -151,8 +152,57 @@ const OutlineWorkspace = () => {
     }
   };
   
+  const handleCreateOutline = async () => {
+    try {
+      setIsCreatingOutline(true);
+      console.log('Creating new outline manually for project:', projectId);
+      
+      if (!projectId) {
+        toast({
+          title: 'Missing project ID',
+          description: 'Project ID is required to create an outline',
+          variant: 'destructive'
+        });
+        throw new Error('Missing project ID');
+      }
+      
+      const newOutline = await OutlineService.createOutline(
+        projectId,
+        'Project Outline',
+        'Main outline for the project'
+      );
+      
+      if (newOutline) {
+        // Set empty sections array
+        const updatedOutline = {
+          ...newOutline,
+          sections: []
+        };
+        
+        setOutline(updatedOutline);
+        
+        toast({
+          title: 'Success',
+          description: 'New outline created successfully',
+        });
+      } else {
+        throw new Error('Failed to create outline');
+      }
+    } catch (error: any) {
+      console.error('Error creating outline:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to create outline: ${error.message}`,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsCreatingOutline(false);
+    }
+  };
+  
   const handleGenerateOutline = async () => {
     try {
+      setIsCreatingOutline(true);
       console.log('Starting AI outline generation');
       if (!project.id) {
         toast({
@@ -220,7 +270,8 @@ const OutlineWorkspace = () => {
         description: `Failed to generate outline with AI: ${error.message}`,
         variant: 'destructive'
       });
-      throw error; // Rethrow to handle in the component
+    } finally {
+      setIsCreatingOutline(false);
     }
   };
   
