@@ -12,7 +12,7 @@ export interface ContentQualityMetrics {
   overallScore: number;
   strengths: string[];
   weaknesses: string[];
-  improvements: string[];
+  improvements: string[]; // Required property
 }
 
 export interface LearningObjectiveAlignment {
@@ -63,13 +63,20 @@ export const ContentAnalysisService = {
   ): Promise<ContentQualityMetrics> {
     try {
       // Use AnthropicService to analyze content quality
-      return await AnthropicService.analyzeContentQuality(
+      const results = await AnthropicService.analyzeContentQuality(
         content,
         contentType,
         [], // Learning objectives (optional)
         '', // Target audience (optional)
         projectId
       );
+      
+      // Make sure the result has the improvements property
+      if (!results.improvements) {
+        results.improvements = [];
+      }
+      
+      return results;
     } catch (error) {
       console.error('Error analyzing content quality:', error);
       toast({
@@ -87,7 +94,7 @@ export const ContentAnalysisService = {
         overallScore: 0,
         strengths: [],
         weaknesses: [],
-        improvements: []
+        improvements: [] // Include the required property
       };
     }
   },
@@ -119,7 +126,7 @@ export const ContentAnalysisService = {
       const result = await AIService.generateContent({
         prompt: content,
         systemPrompt,
-        contentType: 'analysis', 
+        contentType: 'analysis',
         projectId
       });
 

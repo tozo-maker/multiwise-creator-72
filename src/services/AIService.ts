@@ -8,6 +8,7 @@ interface ContentGenerationInput {
   language?: string;
   audience?: string;
   complexity?: string;
+  projectId?: string; // Added projectId property
 }
 
 export const AIService = {

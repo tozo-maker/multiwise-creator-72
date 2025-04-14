@@ -233,7 +233,7 @@ export const ReadabilityAccessibilityMetrics: React.FC<ReadabilityAccessibilityM
                 </div>
                 
                 {readabilityMetrics.fleschKincaidScore < 60 && (
-                  <Alert variant="warning" className="mt-4">
+                  <Alert variant="destructive" className="mt-4">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
                       Your content may be too difficult for some readers. Consider simplifying language and shortening sentences.
@@ -368,7 +368,7 @@ export const ReadabilityAccessibilityMetrics: React.FC<ReadabilityAccessibilityM
                 )}
                 
                 {accessibilityMetrics.overallRating < 70 && (
-                  <Alert variant="warning" className="mt-4">
+                  <Alert variant="destructive" className="mt-4">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
                       Your content could be made more accessible. Consider addressing the improvement areas identified above.
