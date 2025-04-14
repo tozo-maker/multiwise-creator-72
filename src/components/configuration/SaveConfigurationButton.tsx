@@ -49,18 +49,8 @@ export const SaveConfigurationButton: React.FC<SaveConfigurationButtonProps> = (
         updated_at: new Date().toISOString(),
       };
 
-      // First check if table exists
-      const tableExists = await DatabaseService.tableExists('project_config');
-      
-      if (!tableExists) {
-        console.log('project_config table does not exist, creating it first...');
-        const { error: createError } = await supabase.rpc('create_project_config_table_if_not_exists');
-        
-        if (createError) {
-          console.error('Error creating project_config table:', createError);
-          throw createError;
-        }
-      }
+      // First ensure the table exists
+      await DatabaseService.ensureProjectConfigTableExists();
       
       // Check if config exists for this project
       const configExists = await DatabaseService.projectConfigExists(projectId);

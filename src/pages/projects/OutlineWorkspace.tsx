@@ -14,6 +14,7 @@ import { OutlineService } from '@/services/OutlineService';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Settings } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { DatabaseService } from '@/services/DatabaseService';
 
 const OutlineWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -79,23 +80,15 @@ const OutlineWorkspace = () => {
           });
 
           try {
-            // Try to fetch config directly 
-            const { data: configData, error: configError } = await supabase
-              .from('project_config')
-              .select('*')
-              .eq('project_id', projectData.id)
-              .maybeSingle();
-
-            if (configError && !configError.message.includes('does not exist')) {
-              console.error('Error fetching project config:', configError);
-              throw configError;
-            }
+            await DatabaseService.ensureProjectConfigTableExists();
             
-            if (!configData) {
+            const configExists = await DatabaseService.projectConfigExists(projectId);
+            
+            if (!configExists) {
               console.log('No configuration found for this project');
               setConfigMissing(true);
             } else {
-              console.log('Project configuration found:', configData);
+              console.log('Project configuration found');
               setConfigMissing(false);
               
               const outlineData = await OutlineService.getOutlineByProject(projectData.id);
@@ -115,9 +108,12 @@ const OutlineWorkspace = () => {
             }
           } catch (configError: any) {
             console.error('Error checking project configuration:', configError);
-            // If we get an error about table not existing, or any other error checking configs,
-            // don't treat it as a fatal error, just mark config as missing
-            setConfigMissing(true);
+            if (!configError.message?.includes('does not exist') && 
+                !configError.message?.includes('relation')) {
+              setError(`Error checking configuration: ${configError.message}`);
+            } else {
+              setConfigMissing(true);
+            }
           }
         } else {
           console.error('No project data returned');

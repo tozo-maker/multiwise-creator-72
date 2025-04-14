@@ -73,4 +73,31 @@ export class DatabaseService {
       return false; // Return false on any error to be safe
     }
   }
+  
+  /**
+   * Create or ensure the project_config table exists
+   * @returns Promise<boolean> indicating success
+   */
+  static async ensureProjectConfigTableExists(): Promise<boolean> {
+    try {
+      const tableExists = await this.tableExists('project_config');
+      
+      if (!tableExists) {
+        console.log('Creating project_config table using RPC function');
+        const { error } = await supabase.rpc('create_project_config_table_if_not_exists');
+        
+        if (error) {
+          console.error('Error creating project_config table:', error);
+          throw error;
+        }
+        
+        return true;
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('Error ensuring project config table exists:', err);
+      return false;
+    }
+  }
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ModernLayout } from '@/components/layout/ModernLayout';
@@ -101,49 +100,45 @@ export const ConfigurationWorkspace = () => {
             targetLanguage: projectData.target_language
           }));
           
-          // Check if project_config table exists and has data for this project
+          // Ensure config table exists
+          await DatabaseService.ensureProjectConfigTableExists();
+          
+          // Check if project_config has data for this project
           try {
-            // Check if table exists first
-            const tableExists = await DatabaseService.tableExists('project_config');
-            if (!tableExists) {
-              console.log('project_config table does not exist yet');
-              return;
-            }
-
-            // Try direct query for the project config
-            const { data: configData, error: configError } = await supabase
-              .from('project_config')
-              .select('*')
-              .eq('project_id', projectId)
-              .maybeSingle();
-              
-            if (configError) {
-              // Only throw if it's not a "relation does not exist" error
-              if (!configError.message.includes('does not exist')) {
-                throw configError;
-              }
-            }
+            // Check if config exists for this project
+            const configExists = await DatabaseService.projectConfigExists(projectId);
             
-            if (configData) {
-              // Update state with existing configuration
-              console.log('Found existing configuration:', configData);
-              setConfigData(prevData => ({
-                ...prevData,
-                name: projectData.name,
-                projectType: configData.projectType || projectData.type,
-                targetLanguage: configData.targetLanguage || projectData.target_language,
-                subjects: configData.subjects || [],
-                levels: configData.levels || ['Secondary', 'High School'],
-                pedagogy: configData.pedagogy || 'Standard',
-                complexity: configData.complexity || 'Intermediate',
-                lastModified: configData.updated_at || new Date().toISOString()
-              }));
+            if (configExists) {
+              // Get the config data
+              const { data: configData, error: configDataError } = await supabase
+                .from('project_config')
+                .select('*')
+                .eq('project_id', projectId)
+                .maybeSingle();
+                
+              if (configDataError) throw configDataError;
+              
+              if (configData) {
+                // Update state with existing configuration
+                console.log('Found existing configuration:', configData);
+                setConfigData(prevData => ({
+                  ...prevData,
+                  name: projectData.name,
+                  projectType: configData.projectType || projectData.type,
+                  targetLanguage: configData.targetLanguage || projectData.target_language,
+                  subjects: configData.subjects || [],
+                  levels: configData.levels || ['Secondary', 'High School'],
+                  pedagogy: configData.pedagogy || 'Standard',
+                  complexity: configData.complexity || 'Intermediate',
+                  lastModified: configData.updated_at || new Date().toISOString()
+                }));
+              }
             } else {
               console.log('No existing configuration found, using project defaults');
             }
           } catch (err: any) {
             console.error('Error checking config:', err);
-            if (!err.message.includes('does not exist') && !err.message.includes('relation')) {
+            if (!err.message.includes('does not exist')) {
               setSaveError(`Error checking configuration: ${err.message}`);
             }
           }
