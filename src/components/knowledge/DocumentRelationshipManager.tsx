@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DocumentInsightService } from '@/services/DocumentInsightService';
+import { DocumentInsightService } from '@/services/document-insights';
 import { FileTypeIcon } from './FileTypeIcon';
 import { X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -11,11 +11,15 @@ import { useToast } from '@/hooks/use-toast';
 interface DocumentRelationshipManagerProps {
   fileId: string;
   projectId: string;
+  projectFiles?: Array<{ id: string; name: string; type: string }>;
+  onRelationshipsUpdated?: () => void;
 }
 
 export const DocumentRelationshipManager: React.FC<DocumentRelationshipManagerProps> = ({
   fileId,
-  projectId
+  projectId,
+  projectFiles = [],
+  onRelationshipsUpdated
 }) => {
   const [relatedFiles, setRelatedFiles] = useState<Array<{ id: string; name: string; type: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,6 +73,10 @@ export const DocumentRelationshipManager: React.FC<DocumentRelationshipManagerPr
         title: "Relationships updated",
         description: "Document relationships have been updated successfully",
       });
+      
+      if (onRelationshipsUpdated) {
+        onRelationshipsUpdated();
+      }
     } catch (error) {
       console.error('Error saving relationships:', error);
       toast({

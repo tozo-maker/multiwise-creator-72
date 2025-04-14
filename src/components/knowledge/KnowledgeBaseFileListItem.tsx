@@ -116,7 +116,7 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
             )}
             {projectId && projectFiles.length > 0 && (
               <DocumentRelationshipManager 
-                currentFileId={file.id}
+                fileId={file.id}
                 projectId={projectId}
                 projectFiles={projectFiles}
                 onRelationshipsUpdated={handleRelationshipsUpdated}
