@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProjectWorkspaceHeader } from '@/components/project/ProjectWorkspaceHeader';
 import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs';
@@ -18,6 +17,7 @@ const OutlineWorkspace = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const [project, setProject] = useState({
     id: projectId || '',
@@ -32,7 +32,10 @@ const OutlineWorkspace = () => {
   
   useEffect(() => {
     const fetchProject = async () => {
-      if (!projectId) return;
+      if (!projectId) {
+        navigate('/projects');
+        return;
+      }
       
       try {
         setIsLoading(true);
@@ -49,6 +52,7 @@ const OutlineWorkspace = () => {
             description: 'Could not load project details',
             variant: 'destructive'
           });
+          navigate('/projects');
           return;
         }
         
@@ -87,7 +91,7 @@ const OutlineWorkspace = () => {
     };
     
     fetchProject();
-  }, [projectId, toast]);
+  }, [projectId, toast, navigate]);
   
   const breadcrumbItems = [
     { label: 'Projects', path: '/projects' },

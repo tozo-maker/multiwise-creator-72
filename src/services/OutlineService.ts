@@ -1,6 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ProjectOutline, OutlineSection, OutlineItem, OutlineVersion } from '@/types/outline';
 import { AnthropicService } from './AnthropicService';
 import { ConfigData } from '@/components/wizard/types';
@@ -8,6 +7,8 @@ import { ConfigData } from '@/components/wizard/types';
 export const OutlineService = {
   async getOutlineByProject(projectId: string): Promise<ProjectOutline | null> {
     try {
+      console.log('Fetching outline for project:', projectId);
+      
       const { data, error } = await supabase
         .from('project_outlines')
         .select('*')
@@ -16,21 +17,19 @@ export const OutlineService = {
         .maybeSingle();
       
       if (error) {
+        console.error('Error in getOutlineByProject:', error);
         throw error;
       }
       
       if (!data) {
+        console.log('No outline found for project:', projectId);
         return null;
       }
       
+      console.log('Outline found:', data);
       return this.mapDbOutlineToProjectOutline(data);
     } catch (error: any) {
       console.error('Error fetching outline:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load project outline',
-        variant: 'destructive',
-      });
       return null;
     }
   },
@@ -113,7 +112,6 @@ export const OutlineService = {
   
   async updateOutline(outline: ProjectOutline): Promise<ProjectOutline | null> {
     try {
-      // First, create a version record of the current state before updating
       await this.createOutlineVersion(outline);
       
       const { data, error } = await supabase
@@ -133,7 +131,6 @@ export const OutlineService = {
         throw error;
       }
       
-      // Update sections and items separately
       await this.updateOutlineSections(outline);
       
       return this.mapDbOutlineToProjectOutline(data);
@@ -150,10 +147,8 @@ export const OutlineService = {
   
   async updateOutlineSections(outline: ProjectOutline): Promise<void> {
     try {
-      // Process each section
       for (const section of outline.sections) {
         if (!section.id.startsWith('new-')) {
-          // Update existing section
           await supabase
             .from('outline_sections')
             .update({
@@ -165,7 +160,6 @@ export const OutlineService = {
             })
             .eq('id', section.id);
         } else {
-          // Create new section
           const { data } = await supabase
             .from('outline_sections')
             .insert({
@@ -179,11 +173,9 @@ export const OutlineService = {
             .select()
             .single();
             
-          // Update section id for items processing
           section.id = data?.id;
         }
         
-        // Process items in this section
         if (section.items && section.items.length > 0) {
           await this.updateOutlineItems(section.items, outline.id, section.id);
         }
@@ -198,7 +190,6 @@ export const OutlineService = {
     try {
       for (const item of items) {
         if (item.id.startsWith('new-')) {
-          // Create new item
           await supabase
             .from('outline_items')
             .insert({
@@ -214,7 +205,6 @@ export const OutlineService = {
               metadata: item.metadata
             });
         } else {
-          // Update existing item
           await supabase
             .from('outline_items')
             .update({
@@ -238,13 +228,11 @@ export const OutlineService = {
   
   async deleteSection(sectionId: string): Promise<boolean> {
     try {
-      // First delete all items in this section
       await supabase
         .from('outline_items')
         .delete()
         .eq('section_id', sectionId);
         
-      // Then delete the section itself
       const { error } = await supabase
         .from('outline_sections')
         .delete()
@@ -354,7 +342,6 @@ export const OutlineService = {
   
   async restoreOutlineVersion(versionId: string): Promise<ProjectOutline | null> {
     try {
-      // Get the version to restore
       const { data: versionData, error: versionError } = await supabase
         .from('outline_versions')
         .select('*')
@@ -365,7 +352,6 @@ export const OutlineService = {
         throw new Error('Version not found');
       }
       
-      // Get the current outline
       const { data: outlineData, error: outlineError } = await supabase
         .from('project_outlines')
         .select('*')
@@ -376,10 +362,8 @@ export const OutlineService = {
         throw new Error('Outline not found');
       }
       
-      // Create a version record of the current state before restoring
       await this.createOutlineVersion(this.mapDbOutlineToProjectOutline(outlineData));
       
-      // Update the outline with the version data
       const { data: updatedOutline, error: updateError } = await supabase
         .from('project_outlines')
         .update({
@@ -397,10 +381,6 @@ export const OutlineService = {
         throw updateError;
       }
       
-      // TODO: Implement restoring sections and items
-      // This would require deleting all existing sections and items
-      // and recreating them from the version data
-      
       toast({
         title: 'Version restored',
         description: `Restored to version ${versionData.version}`,
@@ -417,10 +397,9 @@ export const OutlineService = {
       return null;
     }
   },
-
+  
   async generateOutlineWithAI(projectId: string, projectConfig: ConfigData): Promise<ProjectOutline | null> {
     try {
-      // Create initial outline structure
       const newOutline = await this.createOutline(
         projectId,
         `${projectConfig.name} Outline`,
@@ -431,7 +410,6 @@ export const OutlineService = {
         throw new Error("Failed to create initial outline");
       }
       
-      // Generate outline content with AI
       const systemPrompt = `You are an educational content outline creator. 
       Create a detailed, well-structured outline for a ${projectConfig.projectType} project.
       The outline should be organized into logical sections and subsections.
@@ -455,10 +433,8 @@ export const OutlineService = {
         throw new Error("Failed to generate outline with AI");
       }
       
-      // Parse the AI response and create outline sections
       const sections = this.parseAIResponseIntoSections(response.content);
       
-      // Add sections to the outline
       for (const [index, section] of sections.entries()) {
         const { data: sectionData } = await supabase
           .from('outline_sections')
@@ -472,7 +448,6 @@ export const OutlineService = {
           .select()
           .single();
           
-        // Add items to the section
         for (const [itemIndex, item] of section.items.entries()) {
           await supabase
             .from('outline_items')
@@ -488,9 +463,7 @@ export const OutlineService = {
         }
       }
       
-      // Fetch the complete outline with sections and items
       return this.getOutlineByProject(projectId);
-      
     } catch (error: any) {
       console.error('Error generating AI outline:', error);
       toast({
@@ -503,21 +476,17 @@ export const OutlineService = {
   },
   
   parseAIResponseIntoSections(aiResponse: string): { title: string; description: string; items: { title: string; description: string }[] }[] {
-    // Basic parsing - this can be enhanced with better parsing logic
     const sections: { title: string; description: string; items: { title: string; description: string }[] }[] = [];
     
     try {
-      // Simple parsing based on markdown headings
       const lines = aiResponse.split('\n');
       let currentSection: any = null;
       let currentItem: any = null;
       
       for (const line of lines) {
         if (line.startsWith('# ')) {
-          // Main title, skip
           continue;
         } else if (line.startsWith('## ')) {
-          // Section title
           if (currentSection) {
             sections.push(currentSection);
           }
@@ -528,7 +497,6 @@ export const OutlineService = {
           };
           currentItem = null;
         } else if (line.startsWith('### ')) {
-          // Item title
           if (currentSection) {
             currentItem = {
               title: line.replace('### ', ''),
@@ -537,7 +505,6 @@ export const OutlineService = {
             currentSection.items.push(currentItem);
           }
         } else {
-          // Description text
           const trimmedLine = line.trim();
           if (trimmedLine && currentItem) {
             currentItem.description += (currentItem.description ? '\n' : '') + trimmedLine;
@@ -547,12 +514,10 @@ export const OutlineService = {
         }
       }
       
-      // Add the last section if there is one
       if (currentSection) {
         sections.push(currentSection);
       }
       
-      // If parsing failed or no sections found, create a default structure
       if (sections.length === 0) {
         sections.push({
           title: 'Introduction',
@@ -583,7 +548,6 @@ export const OutlineService = {
       }
     } catch (error) {
       console.error('Error parsing AI response:', error);
-      // Return a default structure if parsing fails
       return [
         {
           title: 'Introduction',
@@ -613,7 +577,7 @@ export const OutlineService = {
       projectId: data.project_id,
       title: data.title,
       description: data.description,
-      sections: [],  // Sections are loaded separately
+      sections: [],
       version: data.version,
       status: data.status,
       createdAt: data.created_at,

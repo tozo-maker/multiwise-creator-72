@@ -16,6 +16,7 @@ interface KnowledgeBaseFileSectionProps {
   onEditFile: (id: string) => void;
   onPreviewFile: (id: string) => void;
   onDownloadFile: (id: string) => void;
+  onUpload?: () => void;
 }
 
 export const KnowledgeBaseFileSection: React.FC<KnowledgeBaseFileSectionProps> = ({
@@ -27,7 +28,8 @@ export const KnowledgeBaseFileSection: React.FC<KnowledgeBaseFileSectionProps> =
   onDeleteFile,
   onEditFile,
   onPreviewFile,
-  onDownloadFile
+  onDownloadFile,
+  onUpload = () => {}
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -58,7 +60,7 @@ export const KnowledgeBaseFileSection: React.FC<KnowledgeBaseFileSectionProps> =
             onEdit={onEditFile}
             onPreview={onPreviewFile}
             onDownload={onDownloadFile}
-            onUpload={() => {}}
+            onUpload={onUpload}
             categories={categories.map(c => c.name)}
           />
         )}
