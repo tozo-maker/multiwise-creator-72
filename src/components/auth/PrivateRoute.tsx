@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/UnifiedAuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -7,17 +7,15 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle } from 'lucide-react';
 
 export const PrivateRoute = () => {
-  // Use auth context safely with fallback values
-  const authContext = React.useContext(React.createContext<{user: any, isLoading: boolean} | null>(null));
-  const { user, isLoading: authLoading } = authContext || { user: null, isLoading: true };
+  const { user, isLoading: authLoading } = useAuth();
   
   const location = useLocation();
   const { toast } = useToast();
-  const [isReady, setIsReady] = useState(false);
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const [criticalTimeout, setCriticalTimeout] = useState(false);
+  const [isReady, setIsReady] = React.useState(false);
+  const [loadingTimeout, setLoadingTimeout] = React.useState(false);
+  const [criticalTimeout, setCriticalTimeout] = React.useState(false);
   
-  useEffect(() => {
+  React.useEffect(() => {
     // Small delay to prevent flash of loading state for fast connections
     const readyTimer = setTimeout(() => {
       setIsReady(true);

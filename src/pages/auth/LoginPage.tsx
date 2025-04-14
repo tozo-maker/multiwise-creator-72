@@ -23,14 +23,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get auth context safely
-  const authContext = React.useContext(React.createContext<{
-    signIn: (email: string, password: string) => Promise<{error: any}>,
-    user: any
-  } | null>(null));
-  
-  const signIn = authContext?.signIn;
-  const user = authContext?.user;
+  const { signIn, user, isAuthenticated } = useAuth();
   
   // Extract return path from URL if available
   const searchParams = new URLSearchParams(location.search);
@@ -38,18 +31,13 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   
   // Redirect if user is already logged in
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       navigate(returnTo, { replace: true });
     }
-  }, [user, navigate, returnTo]);
+  }, [isAuthenticated, navigate, returnTo]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!signIn) {
-      setLoginError("Authentication service unavailable. Please try again later.");
-      return;
-    }
     
     setIsLoading(true);
     setLoginError(null);
@@ -93,11 +81,6 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   };
   
   const handleDemoLogin = async () => {
-    if (!signIn) {
-      setLoginError("Authentication service unavailable. Please try again later.");
-      return;
-    }
-    
     setIsLoading(true);
     setLoginError(null);
     
