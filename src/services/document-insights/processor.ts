@@ -15,7 +15,7 @@ export const DocumentProcessor = {
           fileId,
           projectId,
           forceReAnalysis: options.forceReAnalysis || false,
-          analysisTypes: options.analysisTypes || ['key_concepts', 'summary', 'complexity']
+          analysisType: options.analysisType || ['key_concepts', 'summary', 'complexity']
         }
       });
       

@@ -1,7 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ApprovalStep, ApprovalWorkflow, ApprovalWorkflowTemplate } from '@/services/ApprovalService';
+import { ApprovalStep, ApprovalWorkflow, ApprovalWorkflowTemplate, ApprovalService } from '@/services/ApprovalService';
 
 interface WorkflowAssignment {
   id: string;

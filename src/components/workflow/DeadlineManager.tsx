@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -39,7 +38,6 @@ export const DeadlineManager: React.FC<DeadlineManagerProps> = ({
     if (existingDeadline) {
       setSelectedDate(new Date(existingDeadline));
     } else {
-      // Default to tomorrow
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       setSelectedDate(tomorrow);
@@ -129,7 +127,7 @@ export const DeadlineManager: React.FC<DeadlineManagerProps> = ({
                       </Badge>
                     )}
                     {deadlineStatus?.type === 'soon' && (
-                      <Badge variant="warning" className="ml-2 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+                      <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
                         Due {deadlineStatus.days === 0 ? 'today' : `in ${deadlineStatus.days} ${deadlineStatus.days === 1 ? 'day' : 'days'}`}
                       </Badge>
                     )}

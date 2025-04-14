@@ -1,18 +1,17 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Users, UserPlus } from 'lucide-react';
+import { WorkflowService } from '@/services/WorkflowService';
 import { useToast } from '@/hooks/use-toast';
-import { UserCheck, UserPlus } from 'lucide-react';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-}
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  Select,
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
 interface WorkflowAssignmentProps {
   contentId: string;
@@ -20,11 +19,6 @@ interface WorkflowAssignmentProps {
     id: string;
     name: string;
     status: 'pending' | 'completed' | 'rejected';
-    assignee?: {
-      id: string;
-      name: string;
-      avatar?: string;
-    };
   }[];
   onAssignmentsUpdated?: () => void;
 }
@@ -34,42 +28,28 @@ export const WorkflowAssignment: React.FC<WorkflowAssignmentProps> = ({
   steps,
   onAssignmentsUpdated
 }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [assignments, setAssignments] = useState<{[key: string]: string}>({});
+  const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [isAssigning, setIsAssigning] = useState(false);
   const { toast } = useToast();
-  
-  // Load mock users for demo
-  useEffect(() => {
-    // In a real implementation, fetch from API
-    setUsers([
-      { id: 'user1', name: 'Alice Johnson', email: 'alice@example.com', avatar: '' },
-      { id: 'user2', name: 'Bob Smith', email: 'bob@example.com', avatar: '' },
-      { id: 'user3', name: 'Carol Davis', email: 'carol@example.com', avatar: '' }
-    ]);
-    
-    // Initialize assignments from props
-    const initialAssignments: {[key: string]: string} = {};
-    steps.forEach(step => {
-      if (step.assignee) {
-        initialAssignments[step.id] = step.assignee.id;
-      }
-    });
-    setAssignments(initialAssignments);
-  }, [steps]);
-  
+
+  // Mock users data - in a real application, this would be fetched from your backend
+  const users = [
+    { id: 'user1', name: 'John Doe', email: 'john@example.com', avatar: '' },
+    { id: 'user2', name: 'Jane Smith', email: 'jane@example.com', avatar: '' },
+    { id: 'user3', name: 'Mike Johnson', email: 'mike@example.com', avatar: '' },
+  ];
+
   const handleAssign = async (stepId: string, userId: string) => {
     try {
-      // In a real implementation, update the database
-      setAssignments(prev => ({
-        ...prev,
-        [stepId]: userId
-      }));
+      setIsAssigning(true);
       
-      const user = users.find(u => u.id === userId);
+      // In a real implementation, this would call an API to assign the user
+      console.log(`Assigning step ${stepId} to user ${userId}`);
       
       toast({
         title: 'User Assigned',
-        description: `${user?.name || 'User'} has been assigned to this step.`
+        description: `Assigned to ${users.find(u => u.id === userId)?.name || userId}`,
       });
       
       if (onAssignmentsUpdated) {
@@ -78,78 +58,57 @@ export const WorkflowAssignment: React.FC<WorkflowAssignmentProps> = ({
     } catch (error) {
       console.error('Error assigning user:', error);
       toast({
-        title: 'Assignment Failed',
-        description: 'Failed to assign user to this step.',
+        title: 'Error',
+        description: 'Failed to assign user',
         variant: 'destructive'
       });
+    } finally {
+      setIsAssigning(false);
     }
-  };
-  
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase();
   };
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold">Assign Reviewers</h3>
+      <h3 className="text-sm font-semibold">Manage Assignments</h3>
       
       {steps.map(step => (
         <div 
           key={step.id} 
-          className="p-3 rounded-md border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 flex items-center justify-between"
+          className="p-3 rounded-md border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
         >
-          <div className="flex items-center gap-3">
-            {assignments[step.id] ? (
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={users.find(u => u.id === assignments[step.id])?.avatar} />
-                <AvatarFallback>
-                  {getInitials(users.find(u => u.id === assignments[step.id])?.name || 'U')}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                <UserPlus className="h-4 w-4 text-slate-500" />
-              </div>
-            )}
-            
-            <div>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Users className="h-4 w-4 text-slate-500" />
               <div className="font-medium">{step.name}</div>
-              <div className="text-xs text-slate-500">
-                {assignments[step.id] 
-                  ? `Assigned to ${users.find(u => u.id === assignments[step.id])?.name}`
-                  : 'Not assigned'
-                }
-              </div>
             </div>
+            
+            <Select onValueChange={(value) => handleAssign(step.id, value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Assign user" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map(user => (
+                  <SelectItem key={user.id} value={user.id}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={user.avatar} />
+                        <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      {user.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          
-          <Select
-            value={assignments[step.id] || ''}
-            onValueChange={(value) => handleAssign(step.id, value)}
-          >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Assign to..." />
-            </SelectTrigger>
-            <SelectContent>
-              {users.map(user => (
-                <SelectItem key={user.id} value={user.id}>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={user.avatar} />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                    </Avatar>
-                    <span>{user.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       ))}
+      
+      {steps.length === 0 && (
+        <div className="text-center py-4 text-sm text-slate-500">
+          No workflow steps available for assignment.
+        </div>
+      )}
     </div>
   );
 };

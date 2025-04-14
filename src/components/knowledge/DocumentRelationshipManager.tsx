@@ -67,7 +67,7 @@ export const DocumentRelationshipManager: React.FC<DocumentRelationshipManagerPr
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      await DocumentInsightService.updateRelationships(currentFileId, relatedFileIds);
+      await DocumentInsightService.updateRelationships(currentFileId, relatedFileIds, projectId);
       
       toast({
         title: "Relationships Updated",
