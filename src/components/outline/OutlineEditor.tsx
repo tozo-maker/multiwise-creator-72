@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -302,92 +303,10 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
                 key={section.id}
                 section={section}
                 projectId={projectId}
-                onUpdate={(updatedSection) => {
-                  if (!workingOutline) return;
-                  
-                  const updatedSections = workingOutline.sections.map(s => 
-                    s.id === updatedSection.id ? updatedSection : s
-                  );
-                  
-                  setWorkingOutline({
-                    ...workingOutline,
-                    sections: updatedSections
-                  });
-                }}
-                onDelete={async (sectionId) => {
-                  if (!workingOutline) return;
-                  
-                  if (sectionId.startsWith('new-')) {
-                    const updatedSections = workingOutline.sections.filter(s => s.id !== sectionId);
-                    setWorkingOutline({
-                      ...workingOutline,
-                      sections: updatedSections
-                    });
-                    return;
-                  }
-                  
-                  try {
-                    const success = await OutlineService.deleteSection(sectionId);
-                    if (success) {
-                      const updatedSections = workingOutline.sections.filter(s => s.id !== sectionId);
-                      setWorkingOutline({
-                        ...workingOutline,
-                        sections: updatedSections
-                      });
-                      toast({
-                        title: 'Section deleted',
-                        description: 'Section and its items have been removed'
-                      });
-                    } else {
-                      throw new Error('Failed to delete section');
-                    }
-                  } catch (error: any) {
-                    console.error('Error deleting section:', error);
-                    toast({
-                      title: 'Error',
-                      description: 'Failed to delete section',
-                      variant: 'destructive'
-                    });
-                  }
-                }}
-                onMoveUp={() => {
-                  if (!workingOutline) return;
-                  
-                  const sectionIndex = index;
-                  if (sectionIndex <= 0) return;
-                  
-                  const newSections = [...workingOutline.sections];
-                  const temp = newSections[sectionIndex];
-                  newSections[sectionIndex] = newSections[sectionIndex - 1];
-                  newSections[sectionIndex - 1] = temp;
-                  
-                  newSections[sectionIndex].order = sectionIndex;
-                  newSections[sectionIndex - 1].order = sectionIndex - 1;
-                  
-                  setWorkingOutline({
-                    ...workingOutline,
-                    sections: newSections
-                  });
-                }}
-                onMoveDown={() => {
-                  if (!workingOutline) return;
-                  
-                  const sectionIndex = index;
-                  if (sectionIndex >= workingOutline.sections.length - 1) return;
-                  
-                  const newSections = [...workingOutline.sections];
-                  const temp = newSections[sectionIndex];
-                  newSections[sectionIndex] = newSections[sectionIndex + 1];
-                  newSections[sectionIndex + 1] = temp;
-                  
-                  newSections[sectionIndex].order = sectionIndex;
-                  newSections[sectionIndex + 1].order = sectionIndex + 1;
-                  
-                  setWorkingOutline({
-                    ...workingOutline,
-                    sections: newSections
-                  });
-                }}
+                onUpdate={handleUpdateSection}
+                onDelete={() => handleDeleteSection(section.id)}
+                onMoveUp={() => handleMoveSection(section.id, 'up')}
+                onMoveDown={() => handleMoveSection(section.id, 'down')}
                 canMoveUp={index > 0}
                 canMoveDown={index < workingOutline.sections.length - 1}
               />
@@ -395,25 +314,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
             
             <Button
               variant="outline"
-              onClick={() => {
-                if (!workingOutline) return;
-                
-                const newSection: OutlineSection = {
-                  id: `new-${Date.now()}`,
-                  title: 'New Section',
-                  description: '',
-                  projectId,
-                  order: workingOutline.sections.length,
-                  items: [],
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString()
-                };
-                
-                setWorkingOutline({
-                  ...workingOutline,
-                  sections: [...workingOutline.sections, newSection]
-                });
-              }}
+              onClick={handleAddSection}
               className="w-full border-dashed gap-2"
             >
               <PlusCircle size={16} />
