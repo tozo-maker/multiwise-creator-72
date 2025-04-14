@@ -7,7 +7,7 @@ import { ProjectWorkspaceTabs } from '@/components/project/ProjectWorkspaceTabs'
 import { PageBreadcrumbs } from '@/components/navigation/PageBreadcrumbs';
 import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OutlineEditor } from '@/components/outline/OutlineEditor';
 import { ProjectOutline } from '@/types/outline';
@@ -17,6 +17,7 @@ const OutlineWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { toast } = useToast();
   
   const [project, setProject] = useState({
     id: projectId || '',
@@ -86,7 +87,7 @@ const OutlineWorkspace = () => {
     };
     
     fetchProject();
-  }, [projectId]);
+  }, [projectId, toast]);
   
   const breadcrumbItems = [
     { label: 'Projects', path: '/projects' },

@@ -64,4 +64,3 @@ export const KnowledgeBaseContent: React.FC<KnowledgeBaseContentProps> = ({
     </div>
   );
 };
-
