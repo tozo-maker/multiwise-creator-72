@@ -7,9 +7,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
-// Fix lazy-loaded imports to correctly handle default exports
-const ContentQualityMetricsChart = lazy(() => import('@/components/analytics/ContentQualityMetrics').then(module => ({ default: module.default || module })));
-const ProjectComparisonView = lazy(() => import('@/components/analytics/ProjectComparisonTool').then(module => ({ default: module.default || module })));
+// Fix lazy-loaded imports for named exports
+const ContentQualityMetricsChart = lazy(() => import('@/components/analytics/ContentQualityMetrics').then(module => ({ default: module.ContentQualityMetrics })));
+const ProjectComparisonView = lazy(() => import('@/components/analytics/ProjectComparisonTool').then(module => ({ default: module.ProjectComparisonTool })));
 
 export const AnalyticsDetailedView = () => {
   const { projects, isDemo } = useDashboard();
