@@ -17,6 +17,7 @@ import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { DatabaseService } from '@/services/DatabaseService';
 
 export const ConfigurationWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -102,6 +103,13 @@ export const ConfigurationWorkspace = () => {
           
           // Check if project_config table exists and has data for this project
           try {
+            // Check if table exists first
+            const tableExists = await DatabaseService.tableExists('project_config');
+            if (!tableExists) {
+              console.log('project_config table does not exist yet');
+              return;
+            }
+
             // Try direct query for the project config
             const { data: configData, error: configError } = await supabase
               .from('project_config')
@@ -109,8 +117,11 @@ export const ConfigurationWorkspace = () => {
               .eq('project_id', projectId)
               .maybeSingle();
               
-            if (configError && !configError.message.includes('does not exist')) {
-              throw configError;
+            if (configError) {
+              // Only throw if it's not a "relation does not exist" error
+              if (!configError.message.includes('does not exist')) {
+                throw configError;
+              }
             }
             
             if (configData) {

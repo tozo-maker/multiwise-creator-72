@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Save, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { DatabaseService } from '@/services/DatabaseService';
 
 interface SaveConfigurationButtonProps {
   onSave: () => void;
@@ -48,37 +49,31 @@ export const SaveConfigurationButton: React.FC<SaveConfigurationButtonProps> = (
         updated_at: new Date().toISOString(),
       };
 
-      // First check if project_config exists
-      const { data: tableExists, error: tableCheckError } = await supabase
-        .from('project_config')
-        .select('count(*)', { count: 'exact', head: true });
+      // First check if table exists
+      const tableExists = await DatabaseService.tableExists('project_config');
       
-      if (tableCheckError && !tableCheckError.message.includes('relation "project_config" does not exist')) {
-        console.error('Error checking project_config table:', tableCheckError);
-        throw tableCheckError;
+      if (!tableExists) {
+        console.log('project_config table does not exist, creating it first...');
+        const { error: createError } = await supabase.rpc('create_project_config_table_if_not_exists');
+        
+        if (createError) {
+          console.error('Error creating project_config table:', createError);
+          throw createError;
+        }
       }
       
       // Check if config exists for this project
-      const { data: existingConfig, error: checkError } = await supabase
-        .from('project_config')
-        .select('id')
-        .eq('project_id', projectId)
-        .maybeSingle();
-      
-      if (checkError && !checkError.message.includes('relation "project_config" does not exist')) {
-        console.error('Error checking existing config:', checkError);
-        throw checkError;
-      }
+      const configExists = await DatabaseService.projectConfigExists(projectId);
       
       let result;
       
-      if (existingConfig) {
+      if (configExists) {
         // Update existing config
-        console.log('Updating existing config with ID:', existingConfig.id);
+        console.log('Updating existing config for project:', projectId);
         const { data, error } = await supabase
           .from('project_config')
           .update(configToSave)
-          .eq('id', existingConfig.id)
+          .eq('project_id', projectId)
           .select();
           
         if (error) throw error;

@@ -67,10 +67,10 @@ export class DatabaseService {
         throw error;
       }
       
-      return !!data;
+      return !!data; // Return true if data exists, false if null
     } catch (err) {
       console.error('Error checking project config existence:', err);
-      return false;
+      return false; // Return false on any error to be safe
     }
   }
 }
