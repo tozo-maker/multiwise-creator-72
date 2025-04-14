@@ -1,9 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { ProjectOutline, OutlineSection, OutlineItem, OutlineVersion } from '@/types/outline';
 import { AnthropicService } from './AnthropicService';
 import { ConfigData } from '@/components/wizard/types';
+import { DatabaseService } from '@/services/DatabaseService';
 
 export const OutlineService = {
   async getOutlineByProject(projectId: string): Promise<ProjectOutline | null> {
@@ -94,20 +94,10 @@ export const OutlineService = {
       
       // Check if project_config exists
       try {
-        const { count, error: configError } = await supabase
-          .from('project_config')
-          .select('*', { count: 'exact', head: true })
-          .eq('project_id', projectId);
+        const configExists = await DatabaseService.projectConfigExists(projectId);
         
-        if (configError && !configError.message.includes('does not exist')) {
-          throw configError;
-        }
-        
-        if (configError && configError.message.includes('does not exist')) {
-          throw new Error('Project configuration is required. Please configure your project first.');
-        }
-        
-        if (count === 0) {
+        if (!configExists) {
+          console.log('Project configuration does not exist');
           throw new Error('Project configuration is required. Please configure your project first.');
         }
       } catch (error: any) {
@@ -408,17 +398,10 @@ export const OutlineService = {
       
       // Check if project_config exists for this project to make sure config is saved
       try {
-        const { data: configCheck, error: configError } = await supabase
-          .from('project_config')
-          .select('id')
-          .eq('project_id', projectId)
-          .maybeSingle();
+        const configExists = await DatabaseService.projectConfigExists(projectId);
         
-        if (configError && !configError.message.includes('does not exist')) {
-          throw configError;
-        }
-        
-        if (!configCheck) {
+        if (!configExists) {
+          console.log('No configuration exists for project:', projectId);
           throw new Error('Please save your project configuration before generating content');
         }
       } catch (error: any) {
@@ -426,25 +409,43 @@ export const OutlineService = {
         throw error;
       }
       
-      const newOutline = await this.createOutline(
-        projectId,
-        `${projectConfig.name} Outline`,
-        `AI-generated outline for ${projectConfig.name}`
-      );
+      // First try to get any existing outline
+      let newOutline = await this.getOutlineByProject(projectId);
+      
+      // If no outline exists yet, create a new one
+      if (!newOutline) {
+        newOutline = await this.createOutline(
+          projectId,
+          `${projectConfig.name || 'Project'} Outline`,
+          `AI-generated outline for ${projectConfig.name || 'project'}`
+        );
+      }
       
       if (!newOutline) {
         throw new Error("Failed to create initial outline");
       }
       
+      // Build a detailed system prompt based on all configuration parameters
       const systemPrompt = `You are an educational content outline creator. 
-      Create a detailed, well-structured outline for a ${projectConfig.projectType} project.
+      Create a detailed, well-structured outline for a ${projectConfig.projectType || 'educational'} project.
       The outline should be organized into logical sections and subsections.
-      For each section, include brief descriptions of what should be covered.`;
+      For each section, include brief descriptions of what should be covered.
+      The content complexity should be at the ${projectConfig.complexity || 'intermediate'} level.
+      The target audience is ${projectConfig.levels?.join(", ") || "all levels"}.
+      Use ${projectConfig.pedagogy || "standard"} pedagogical methodology.`;
       
-      const userPrompt = `Create an educational outline for a ${projectConfig.projectType} on ${projectConfig.subjects?.join(", ") || "general topics"} 
+      const userPrompt = `Create a detailed educational outline for a ${projectConfig.projectType || 'course'} on ${projectConfig.subjects?.join(", ") || "general topics"} 
       targeting ${projectConfig.levels?.join(", ") || "all levels"} using ${projectConfig.pedagogy || "standard"} methodology.
-      The project name is "${projectConfig.name}" and will be taught in ${projectConfig.targetLanguage || "English"}.
-      The content should be at ${projectConfig.complexity || "intermediate"} complexity level.`;
+      The project name is "${projectConfig.name || 'Educational Project'}" and will be taught in ${projectConfig.targetLanguage || "English"}.
+      The content should be at ${projectConfig.complexity || "intermediate"} complexity level.
+      
+      Include the following sections:
+      1. Introduction/Overview
+      2. Main content sections (3-5 sections)
+      3. Practical applications
+      4. Summary/Conclusion
+      
+      For each section, provide 2-4 subsections with brief descriptions.`;
       
       try {
         const response = await AnthropicService.generateContent({
@@ -460,10 +461,24 @@ export const OutlineService = {
           throw new Error("Failed to generate outline with AI");
         }
         
+        // Parse the AI response into outline sections
         const sections = this.parseAIResponseIntoSections(response.content);
         
+        console.log(`Generated ${sections.length} outline sections`);
+        
+        // Remove any existing sections first
+        const { error: deleteError } = await supabase
+          .from('outline_sections')
+          .delete()
+          .eq('outline_id', newOutline.id);
+          
+        if (deleteError) {
+          console.error('Error deleting existing sections:', deleteError);
+        }
+        
+        // Add the new sections
         for (const [index, section] of sections.entries()) {
-          const { data: sectionData } = await supabase
+          const { data: sectionData, error: sectionError } = await supabase
             .from('outline_sections')
             .insert({
               outline_id: newOutline.id,
@@ -475,8 +490,15 @@ export const OutlineService = {
             .select()
             .single();
             
+          if (sectionError) {
+            console.error('Error creating section:', sectionError);
+            continue;
+          }
+            
+          console.log(`Created section: ${section.title}`);
+            
           for (const [itemIndex, item] of section.items.entries()) {
-            await supabase
+            const { error: itemError } = await supabase
               .from('outline_items')
               .insert({
                 outline_id: newOutline.id,
@@ -487,9 +509,29 @@ export const OutlineService = {
                 order: itemIndex,
                 status: 'not_started'
               });
+              
+            if (itemError) {
+              console.error('Error creating item:', itemError);
+            } else {
+              console.log(`Created item: ${item.title}`);
+            }
           }
         }
         
+        // Update the outline version
+        const { error: updateError } = await supabase
+          .from('project_outlines')
+          .update({
+            version: newOutline.version + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', newOutline.id);
+          
+        if (updateError) {
+          console.error('Error updating outline version:', updateError);
+        }
+        
+        // Return the updated outline
         return this.getOutlineByProject(projectId);
       } catch (error) {
         console.error('Error generating AI content:', error);
@@ -510,22 +552,25 @@ export const OutlineService = {
       let currentItem: any = null;
       
       for (const line of lines) {
-        if (line.startsWith('# ')) {
+        if (line.match(/^#\s+/)) {
+          // Main heading - skip
           continue;
-        } else if (line.startsWith('## ')) {
+        } else if (line.match(/^##\s+/)) {
+          // Section heading
           if (currentSection) {
             sections.push(currentSection);
           }
           currentSection = {
-            title: line.replace('## ', ''),
+            title: line.replace(/^##\s+/, ''),
             description: '',
             items: []
           };
           currentItem = null;
-        } else if (line.startsWith('### ')) {
+        } else if (line.match(/^###\s+/)) {
+          // Subsection heading
           if (currentSection) {
             currentItem = {
-              title: line.replace('### ', ''),
+              title: line.replace(/^###\s+/, ''),
               description: ''
             };
             currentSection.items.push(currentItem);
@@ -544,7 +589,87 @@ export const OutlineService = {
         sections.push(currentSection);
       }
       
+      // If sections is empty, try to parse the response differently 
+      // (sometimes AI doesn't use markdown headers)
       if (sections.length === 0) {
+        console.log('No sections detected with markdown headers, trying alternate parsing');
+        
+        // Look for numbered sections or paragraphs
+        const paragraphs = aiResponse.split('\n\n').filter(p => p.trim().length > 0);
+        
+        if (paragraphs.length > 0) {
+          let currentTitle = 'Introduction';
+          let currentDescription = paragraphs[0];
+          let items: {title: string; description: string}[] = [];
+          
+          // Try to extract main sections from the text
+          const sectionMatches = aiResponse.match(/\d+\.\s+([^\n]+)/g);
+          if (sectionMatches && sectionMatches.length > 0) {
+            sectionMatches.forEach((match, idx) => {
+              const sectionTitle = match.replace(/^\d+\.\s+/, '');
+              const startIdx = aiResponse.indexOf(match);
+              const nextIdx = idx < sectionMatches.length - 1 ? aiResponse.indexOf(sectionMatches[idx + 1]) : aiResponse.length;
+              const sectionContent = aiResponse.substring(startIdx + match.length, nextIdx).trim();
+              
+              // Look for subsections
+              const subItems: {title: string; description: string}[] = [];
+              const subMatches = sectionContent.match(/\d+\.\d+\.\s+([^\n]+)/g);
+              
+              if (subMatches && subMatches.length > 0) {
+                subMatches.forEach((subMatch, subIdx) => {
+                  const itemTitle = subMatch.replace(/^\d+\.\d+\.\s+/, '');
+                  const subStartIdx = sectionContent.indexOf(subMatch);
+                  const subNextIdx = subIdx < subMatches.length - 1 ? sectionContent.indexOf(subMatches[subIdx + 1]) : sectionContent.length;
+                  const itemContent = sectionContent.substring(subStartIdx + subMatch.length, subNextIdx).trim();
+                  
+                  subItems.push({
+                    title: itemTitle,
+                    description: itemContent
+                  });
+                });
+              }
+              
+              sections.push({
+                title: sectionTitle,
+                description: subItems.length > 0 ? '' : sectionContent,
+                items: subItems.length > 0 ? subItems : [{ title: 'Overview', description: sectionContent }]
+              });
+            });
+          }
+          
+          // If still no sections, create a simple structure
+          if (sections.length === 0) {
+            sections.push({
+              title: 'Introduction',
+              description: paragraphs[0],
+              items: [{ title: 'Overview', description: 'Introduction to the topic' }]
+            });
+            
+            if (paragraphs.length > 1) {
+              sections.push({
+                title: 'Main Content',
+                description: 'Key content sections',
+                items: paragraphs.slice(1, -1).map((p, i) => ({
+                  title: `Section ${i + 1}`,
+                  description: p
+                }))
+              });
+            }
+            
+            if (paragraphs.length > 2) {
+              sections.push({
+                title: 'Conclusion',
+                description: paragraphs[paragraphs.length - 1],
+                items: [{ title: 'Summary', description: 'Summary of the main points' }]
+              });
+            }
+          }
+        }
+      }
+      
+      // If still no sections, create a default structure
+      if (sections.length === 0) {
+        console.log('Creating default outline structure');
         sections.push({
           title: 'Introduction',
           description: 'Introduction section generated from AI content',

@@ -19,8 +19,18 @@ export const ProjectConfiguration: React.FC<ProjectConfigurationProps> = ({ data
         </h4>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
+            <div className="text-sm text-muted-foreground">Project Type</div>
+            <div className="text-sm">
+              {data.projectType === 'Custom' ? data.customProjectType : data.projectType || 'Not specified'}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <div className="text-sm text-muted-foreground">Pedagogy</div>
-            <div className="text-sm">{data.pedagogy === 'Custom' ? data.customPedagogy : data.pedagogy}</div>
+            <div className="text-sm">{data.pedagogy === 'Custom' ? data.customPedagogy : data.pedagogy || 'Standard'}</div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="text-sm text-muted-foreground">Word Count</div>
+            <div className="text-sm">{data.wordCount?.toLocaleString() || '5000'} words</div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="text-sm text-muted-foreground">Word Distribution</div>

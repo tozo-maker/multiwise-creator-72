@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { ConfigData } from '@/components/wizard/types';
 
 /**
  * Service for database utility functions
@@ -114,7 +115,7 @@ export class DatabaseService {
    * @param projectId Project ID to get configuration for
    * @returns Promise with the configuration data
    */
-  static async getProjectConfig(projectId: string): Promise<any | null> {
+  static async getProjectConfig(projectId: string): Promise<ConfigData | null> {
     try {
       // First check if the table exists
       const tableExists = await this.tableExists('project_config');
@@ -135,11 +136,139 @@ export class DatabaseService {
         throw error;
       }
       
+      if (!data) {
+        console.log('No configuration found for project', projectId);
+        return null;
+      }
+      
       console.log('Got project config:', data);
-      return data;
+      
+      // Convert database structure to ConfigData structure
+      const configData: ConfigData = {
+        name: data.name || '',
+        quickStart: 'custom',
+        interfaceLanguage: data.interfaceLanguage || 'English',
+        experienceLevel: data.experienceLevel || 'Intermediate',
+        interactionMode: data.interactionMode || 'Guided',
+        outputDetail: data.outputDetail || 'Detailed',
+        systemBehavior: data.systemBehavior || 'Balanced',
+        projectType: data.projectType || 'Textbook',
+        customProjectType: data.customProjectType || '',
+        subjects: data.subjects || [],
+        levels: data.levels || [],
+        pedagogy: data.pedagogy || 'Standard',
+        customPedagogy: data.customPedagogy || '',
+        wordCount: data.wordCount || 5000,
+        wordDistribution: data.wordDistribution || 'balanced',
+        wordEnforcement: data.wordEnforcement || 'flexible',
+        targetLanguage: data.targetLanguage || 'English',
+        goal: data.goal || 'Teaching',
+        complexity: data.complexity || 'Intermediate',
+        culturalIntegration: data.culturalIntegration || 'Standard',
+        terminology: data.terminology || 'Standard',
+        markers: data.markers || 'Standard',
+        standards: data.standards || [],
+        customStandards: data.customStandards || [],
+        structure: data.structure || 'Default',
+        formatting: data.formatting || 'Default',
+        scriptType: data.scriptType || 'Latin',
+        uploadedDocuments: [],
+        needsDocumentUpload: false,
+        projectId: projectId,
+        createdDate: data.created_at || new Date().toISOString(),
+        lastModified: data.updated_at || new Date().toISOString()
+      };
+      
+      return configData;
     } catch (err) {
       console.error('Error getting project config:', err);
       return null;
+    }
+  }
+  
+  /**
+   * Save configuration for a project
+   * @param projectId Project ID to save configuration for
+   * @param configData Configuration data to save
+   * @returns Promise<boolean> indicating success
+   */
+  static async saveProjectConfig(projectId: string, configData: Partial<ConfigData>): Promise<boolean> {
+    try {
+      console.log('Saving project configuration:', projectId, configData);
+      
+      // Ensure the table exists
+      await this.ensureProjectConfigTableExists();
+      
+      // Check if config exists for this project
+      const configExists = await this.projectConfigExists(projectId);
+      
+      // Extract all relevant data from configData
+      const configToSave = {
+        project_id: projectId,
+        name: configData.name,
+        projectType: configData.projectType,
+        customProjectType: configData.customProjectType,
+        targetLanguage: configData.targetLanguage,
+        subjects: configData.subjects,
+        levels: configData.levels,
+        pedagogy: configData.pedagogy,
+        customPedagogy: configData.customPedagogy,
+        complexity: configData.complexity,
+        wordCount: configData.wordCount,
+        wordDistribution: configData.wordDistribution,
+        wordEnforcement: configData.wordEnforcement,
+        goal: configData.goal,
+        culturalIntegration: configData.culturalIntegration,
+        terminology: configData.terminology,
+        markers: configData.markers,
+        standards: configData.standards,
+        customStandards: configData.customStandards,
+        structure: configData.structure,
+        formatting: configData.formatting,
+        scriptType: configData.scriptType,
+        interfaceLanguage: configData.interfaceLanguage,
+        experienceLevel: configData.experienceLevel,
+        interactionMode: configData.interactionMode,
+        outputDetail: configData.outputDetail,
+        systemBehavior: configData.systemBehavior,
+        updated_at: new Date().toISOString(),
+      };
+      
+      let result;
+      
+      if (configExists) {
+        // Update existing config
+        console.log('Updating existing config for project:', projectId);
+        const { data, error } = await supabase
+          .from('project_config')
+          .update(configToSave)
+          .eq('project_id', projectId)
+          .select();
+          
+        if (error) throw error;
+        result = data;
+        
+      } else {
+        // Insert new config
+        console.log('Creating new config for project:', projectId);
+        const { data, error } = await supabase
+          .from('project_config')
+          .insert({
+            ...configToSave,
+            created_at: new Date().toISOString(),
+          })
+          .select();
+          
+        if (error) throw error;
+        result = data;
+      }
+      
+      console.log('Configuration saved successfully:', result);
+      return true;
+      
+    } catch (error: any) {
+      console.error('Error saving configuration:', error);
+      return false;
     }
   }
 }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -15,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, Settings } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DatabaseService } from '@/services/DatabaseService';
+import { ConfigData } from '@/components/wizard/types';
 
 const OutlineWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -36,6 +38,7 @@ const OutlineWorkspace = () => {
   const [error, setError] = useState<string | null>(null);
   const [isCreatingOutline, setIsCreatingOutline] = useState(false);
   const [configMissing, setConfigMissing] = useState(false);
+  const [configData, setConfigData] = useState<ConfigData | null>(null);
   
   useEffect(() => {
     const fetchProject = async () => {
@@ -80,17 +83,19 @@ const OutlineWorkspace = () => {
           });
 
           try {
-            await DatabaseService.ensureProjectConfigTableExists();
+            // Fetch project configuration using the enhanced DatabaseService
+            const projectConfig = await DatabaseService.getProjectConfig(projectId);
             
-            const configExists = await DatabaseService.projectConfigExists(projectId);
-            
-            if (!configExists) {
+            if (!projectConfig) {
               console.log('No configuration found for this project');
               setConfigMissing(true);
+              setConfigData(null);
             } else {
-              console.log('Project configuration found');
+              console.log('Project configuration found:', projectConfig);
               setConfigMissing(false);
+              setConfigData(projectConfig);
               
+              // Fetch outline if config exists
               const outlineData = await OutlineService.getOutlineByProject(projectData.id);
               
               if (outlineData) {
@@ -240,7 +245,7 @@ const OutlineWorkspace = () => {
   
   const handleGenerateOutline = async () => {
     try {
-      if (configMissing) {
+      if (configMissing || !configData) {
         toast({
           title: 'Configuration Required',
           description: 'Please set up project configuration first before generating content.',
@@ -261,43 +266,17 @@ const OutlineWorkspace = () => {
         throw new Error('Missing project ID');
       }
       
-      const { data: configData, error: configError } = await supabase
-        .from('project_config')
-        .select('*')
-        .eq('project_id', project.id)
-        .maybeSingle();
-        
-      if (configError && !configError.message.includes('does not exist')) {
-        console.error('Error fetching project config:', configError);
-        toast({
-          title: 'Error',
-          description: 'Failed to load project configuration for AI generation',
-          variant: 'destructive'
-        });
-        throw configError;
-      }
-      
-      if (!configData) {
-        toast({
-          title: 'Missing configuration',
-          description: 'Project configuration is required to generate an outline. Please configure your project first.',
-          variant: 'destructive'
-        });
-        
-        navigate(`/projects/${project.id}/configuration`);
-        return;
-      }
-      
-      console.log('Generating outline with config:', configData);
+      // We already have the config data loaded, use it directly
+      console.log('Using loaded config data for AI generation:', configData);
       
       const enhancedConfig = {
         name: project.name,
         projectType: project.type || 'course',
         targetLanguage: project.targetLanguage || 'English',
-        subjects: ['General'],
-        levels: ['Beginner'],
-        pedagogy: 'Standard',
-        complexity: 'Intermediate',
+        subjects: configData.subjects || ['General'],
+        levels: configData.levels || ['Beginner'],
+        pedagogy: configData.pedagogy || 'Standard',
+        complexity: configData.complexity || 'Intermediate',
         ...configData
       };
       
