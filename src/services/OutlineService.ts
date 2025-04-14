@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ProjectOutline, OutlineSection, OutlineItem, OutlineVersion } from '@/types/outline';
 import { AnthropicService } from './AnthropicService';
 import { ConfigData } from '@/components/wizard/types';
@@ -17,6 +18,10 @@ export const OutlineService = {
         .maybeSingle();
       
       if (error) {
+        if (error.message.includes('does not exist')) {
+          console.log('project_outlines table does not exist yet');
+          return null;
+        }
         console.error('Error in getOutlineByProject:', error);
         throw error;
       }
@@ -43,7 +48,15 @@ export const OutlineService = {
         .order('order', { ascending: true });
       
       if (error) {
+        if (error.message.includes('does not exist')) {
+          console.log('outline_sections table does not exist yet');
+          return [];
+        }
         throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        return [];
       }
       
       return data.map((section: any) => ({
@@ -52,7 +65,7 @@ export const OutlineService = {
         description: section.description,
         projectId: section.project_id,
         order: section.order,
-        items: section.outline_items.map((item: any) => ({
+        items: (section.outline_items || []).map((item: any) => ({
           id: item.id,
           title: item.title,
           description: item.description,
@@ -79,6 +92,30 @@ export const OutlineService = {
     try {
       console.log('Creating outline with project ID:', projectId, 'title:', title);
       
+      // Check if project_config exists
+      try {
+        const { count, error: configError } = await supabase
+          .from('project_config')
+          .select('*', { count: 'exact', head: true })
+          .eq('project_id', projectId);
+        
+        if (configError && !configError.message.includes('does not exist')) {
+          throw configError;
+        }
+        
+        if (configError && configError.message.includes('does not exist')) {
+          throw new Error('Project configuration is required. Please configure your project first.');
+        }
+        
+        if (count === 0) {
+          throw new Error('Project configuration is required. Please configure your project first.');
+        }
+      } catch (error: any) {
+        console.error('Error checking project config:', error);
+        throw error;
+      }
+
+      // Create outline if config exists
       const { data, error } = await supabase
         .from('project_outlines')
         .insert({
@@ -369,6 +406,26 @@ export const OutlineService = {
       console.log('Generating outline with AI for project:', projectId);
       console.log('Using project config:', projectConfig);
       
+      // Check if project_config exists for this project to make sure config is saved
+      try {
+        const { data: configCheck, error: configError } = await supabase
+          .from('project_config')
+          .select('id')
+          .eq('project_id', projectId)
+          .maybeSingle();
+        
+        if (configError && !configError.message.includes('does not exist')) {
+          throw configError;
+        }
+        
+        if (!configCheck) {
+          throw new Error('Please save your project configuration before generating content');
+        }
+      } catch (error: any) {
+        console.error('Error checking project config:', error);
+        throw error;
+      }
+      
       const newOutline = await this.createOutline(
         projectId,
         `${projectConfig.name} Outline`,
@@ -389,50 +446,55 @@ export const OutlineService = {
       The project name is "${projectConfig.name}" and will be taught in ${projectConfig.targetLanguage || "English"}.
       The content should be at ${projectConfig.complexity || "intermediate"} complexity level.`;
       
-      const response = await AnthropicService.generateContent({
-        prompt: userPrompt,
-        systemPrompt,
-        projectId,
-        language: projectConfig.targetLanguage || "English",
-        audience: projectConfig.levels?.join(", ") || "general",
-        complexity: projectConfig.complexity || "intermediate"
-      });
-      
-      if (!response || !response.content) {
-        throw new Error("Failed to generate outline with AI");
-      }
-      
-      const sections = this.parseAIResponseIntoSections(response.content);
-      
-      for (const [index, section] of sections.entries()) {
-        const { data: sectionData } = await supabase
-          .from('outline_sections')
-          .insert({
-            outline_id: newOutline.id,
-            project_id: projectId,
-            title: section.title,
-            description: section.description,
-            order: index
-          })
-          .select()
-          .single();
-          
-        for (const [itemIndex, item] of section.items.entries()) {
-          await supabase
-            .from('outline_items')
+      try {
+        const response = await AnthropicService.generateContent({
+          prompt: userPrompt,
+          systemPrompt,
+          projectId,
+          language: projectConfig.targetLanguage || "English",
+          audience: projectConfig.levels?.join(", ") || "general",
+          complexity: projectConfig.complexity || "intermediate"
+        });
+        
+        if (!response || !response.content) {
+          throw new Error("Failed to generate outline with AI");
+        }
+        
+        const sections = this.parseAIResponseIntoSections(response.content);
+        
+        for (const [index, section] of sections.entries()) {
+          const { data: sectionData } = await supabase
+            .from('outline_sections')
             .insert({
               outline_id: newOutline.id,
-              section_id: sectionData.id,
               project_id: projectId,
-              title: item.title,
-              description: item.description,
-              order: itemIndex,
-              status: 'not_started'
-            });
+              title: section.title,
+              description: section.description,
+              order: index
+            })
+            .select()
+            .single();
+            
+          for (const [itemIndex, item] of section.items.entries()) {
+            await supabase
+              .from('outline_items')
+              .insert({
+                outline_id: newOutline.id,
+                section_id: sectionData.id,
+                project_id: projectId,
+                title: item.title,
+                description: item.description,
+                order: itemIndex,
+                status: 'not_started'
+              });
+          }
         }
+        
+        return this.getOutlineByProject(projectId);
+      } catch (error) {
+        console.error('Error generating AI content:', error);
+        throw new Error('Failed to generate AI content for outline');
       }
-      
-      return this.getOutlineByProject(projectId);
     } catch (error: any) {
       console.error('Error generating AI outline:', error);
       throw error;

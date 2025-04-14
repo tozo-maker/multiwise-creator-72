@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProjectBreadcrumbs } from '@/components/project/ProjectBreadcrumbs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export const ConfigurationWorkspace = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -23,6 +24,7 @@ export const ConfigurationWorkspace = () => {
   const { toast } = useToast();
   const isDark = theme === 'dark';
   const [isLoading, setIsLoading] = useState(true);
+  const [saveError, setSaveError] = useState<string | null>(null);
   
   const [project, setProject] = useState({
     id: projectId || '',
@@ -75,6 +77,8 @@ export const ConfigurationWorkspace = () => {
       if (!projectId) return;
       
       setIsLoading(true);
+      setSaveError(null);
+      
       try {
         // Fetch project data
         const { data: projectData, error: projectError } = await supabase
@@ -93,53 +97,61 @@ export const ConfigurationWorkspace = () => {
             targetLanguage: projectData.target_language
           });
           
-          // Try to fetch existing configuration
+          // Verify if project_config table exists
           try {
-            const { data: configData, error: configError } = await supabase
+            const { count, error } = await supabase
               .from('project_config')
-              .select('*')
-              .eq('project_id', projectId)
-              .maybeSingle();
-              
-            if (configError && !configError.message.includes('does not exist')) {
-              throw configError;
-            }
-            
-            if (configData) {
-              // Update state with existing configuration
-              setConfigData(prevData => ({
-                ...prevData,
-                name: projectData.name,
-                projectType: configData.projectType || projectData.type,
-                targetLanguage: configData.targetLanguage || projectData.target_language,
-                subjects: configData.subjects || [],
-                levels: configData.levels || ['Secondary', 'High School'],
-                pedagogy: configData.pedagogy || 'Standard',
-                complexity: configData.complexity || 'Intermediate',
-                lastModified: configData.updated_at || new Date().toISOString()
-              }));
-              
-              console.log('Loaded existing project configuration:', configData);
+              .select('*', { count: 'exact', head: true });
+
+            if (error) {
+              if (error.message.includes('does not exist')) {
+                console.log('project_config table does not exist yet');
+              } else {
+                console.error('Error checking table existence:', error);
+              }
             } else {
-              // Just set basic project info
-              setConfigData(prevData => ({
-                ...prevData,
-                name: projectData.name,
-                projectType: projectData.type,
-                targetLanguage: projectData.target_language
-              }));
+              console.log('project_config table exists, checking for config data');
               
-              console.log('No existing configuration found, using project defaults');
+              // Try to fetch existing configuration
+              const { data: configData, error: configError } = await supabase
+                .from('project_config')
+                .select('*')
+                .eq('project_id', projectId)
+                .maybeSingle();
+                
+              if (configError && !configError.message.includes('does not exist')) {
+                throw configError;
+              }
+              
+              if (configData) {
+                // Update state with existing configuration
+                setConfigData(prevData => ({
+                  ...prevData,
+                  name: projectData.name,
+                  projectType: configData.projectType || projectData.type,
+                  targetLanguage: configData.targetLanguage || projectData.target_language,
+                  subjects: configData.subjects || [],
+                  levels: configData.levels || ['Secondary', 'High School'],
+                  pedagogy: configData.pedagogy || 'Standard',
+                  complexity: configData.complexity || 'Intermediate',
+                  lastModified: configData.updated_at || new Date().toISOString()
+                }));
+                
+                console.log('Loaded existing project configuration:', configData);
+              } else {
+                // Just set basic project info
+                setConfigData(prevData => ({
+                  ...prevData,
+                  name: projectData.name,
+                  projectType: projectData.type,
+                  targetLanguage: projectData.target_language
+                }));
+                
+                console.log('No existing configuration found, using project defaults');
+              }
             }
-          } catch (configError) {
-            console.error('Error loading configuration:', configError);
-            // Still set basic project info even if config fails
-            setConfigData(prevData => ({
-              ...prevData,
-              name: projectData.name,
-              projectType: projectData.type,
-              targetLanguage: projectData.target_language
-            }));
+          } catch (err) {
+            console.error('Error checking config table:', err);
           }
         }
       } catch (error) {
@@ -159,6 +171,7 @@ export const ConfigurationWorkspace = () => {
 
   const updateConfigData = (data: Partial<ConfigData>) => {
     setConfigData({ ...configData, ...data });
+    setSaveError(null); // Clear any previous save errors when making changes
   };
 
   const handleSaveChanges = () => {
@@ -191,6 +204,13 @@ export const ConfigurationWorkspace = () => {
         />
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="configuration" />
+        
+        {saveError && (
+          <Alert variant="destructive">
+            <AlertTitle>Error saving configuration</AlertTitle>
+            <AlertDescription>{saveError}</AlertDescription>
+          </Alert>
+        )}
         
         <Card className={isDark 
           ? 'bg-slate-800 border-slate-700' 

@@ -13,7 +13,7 @@ import { OutlineEditor } from '@/components/outline/OutlineEditor';
 import { ProjectOutline } from '@/types/outline';
 import { OutlineService } from '@/services/OutlineService';
 import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Settings } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const OutlineWorkspace = () => {
@@ -35,6 +35,7 @@ const OutlineWorkspace = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreatingOutline, setIsCreatingOutline] = useState(false);
+  const [configMissing, setConfigMissing] = useState(false);
   
   useEffect(() => {
     const fetchProject = async () => {
@@ -48,6 +49,7 @@ const OutlineWorkspace = () => {
         console.log('Fetching project with ID:', projectId);
         setIsLoading(true);
         setError(null);
+        setConfigMissing(false);
         
         // First fetch the basic project details
         const { data: projectData, error: projectError } = await supabase
@@ -78,6 +80,32 @@ const OutlineWorkspace = () => {
             targetLanguage: projectData.target_language,
             config: null
           });
+
+          // Check if project configuration exists
+          try {
+            const { data: configData, error: configError } = await supabase
+              .from('project_config')
+              .select('*')
+              .eq('project_id', projectData.id)
+              .maybeSingle();
+
+            if (configError) {
+              if (configError.message.includes('does not exist')) {
+                console.log('project_config table does not exist');
+                setConfigMissing(true);
+              } else {
+                console.error('Error fetching project config:', configError);
+              }
+            } else if (!configData) {
+              console.log('No configuration found for this project');
+              setConfigMissing(true);
+            } else {
+              console.log('Project configuration found:', configData);
+              setConfigMissing(false);
+            }
+          } catch (configError) {
+            console.error('Error checking project configuration:', configError);
+          }
           
           // Fetch outline
           console.log('Fetching outline for project:', projectData.id);
@@ -124,6 +152,16 @@ const OutlineWorkspace = () => {
   
   const handleSaveOutline = async (updatedOutline: ProjectOutline) => {
     try {
+      if (configMissing) {
+        toast({
+          title: 'Configuration Required',
+          description: 'Please set up project configuration first before creating an outline',
+          variant: 'destructive'
+        });
+        navigate(`/projects/${projectId}/configuration`);
+        return;
+      }
+      
       console.log('Saving outline:', updatedOutline);
       const savedOutline = await OutlineService.updateOutline(updatedOutline);
       if (savedOutline) {
@@ -154,6 +192,16 @@ const OutlineWorkspace = () => {
   
   const handleCreateOutline = async () => {
     try {
+      if (configMissing) {
+        toast({
+          title: 'Configuration Required',
+          description: 'Please set up project configuration first before creating an outline',
+          variant: 'destructive'
+        });
+        navigate(`/projects/${projectId}/configuration`);
+        return;
+      }
+      
       setIsCreatingOutline(true);
       console.log('Creating new outline manually for project:', projectId);
       
@@ -203,6 +251,16 @@ const OutlineWorkspace = () => {
   
   const handleGenerateOutline = async () => {
     try {
+      if (configMissing) {
+        toast({
+          title: 'Configuration Required',
+          description: 'Please set up project configuration first before generating content.',
+          variant: 'destructive'
+        });
+        navigate(`/projects/${projectId}/configuration`);
+        return;
+      }
+      
       setIsCreatingOutline(true);
       console.log('Starting AI outline generation');
       if (!project.id) {
@@ -214,41 +272,7 @@ const OutlineWorkspace = () => {
         throw new Error('Missing project ID');
       }
       
-      // Check if project_config table exists
-      try {
-        const { count, error } = await supabase
-          .from('project_config')
-          .select('*', { count: 'exact', head: true })
-          .eq('project_id', project.id);
-          
-        if (error) {
-          if (error.message.includes('does not exist')) {
-            toast({
-              title: 'Configuration Required',
-              description: 'Please set up your project configuration first before generating content.',
-              variant: 'destructive'
-            });
-            navigate(`/projects/${project.id}/configuration`);
-            return;
-          } else {
-            throw error;
-          }
-        }
-      } catch (error: any) {
-        if (error.message.includes('does not exist')) {
-          toast({
-            title: 'Configuration Required',
-            description: 'Project configuration is necessary to generate an outline. Please set up your project configuration first.',
-            variant: 'destructive'
-          });
-          navigate(`/projects/${project.id}/configuration`);
-          return;
-        } else {
-          throw error;
-        }
-      }
-      
-      // Fetch project_config separately for AI outline generation
+      // Fetch project_config for AI outline generation
       const { data: configData, error: configError } = await supabase
         .from('project_config')
         .select('*')
@@ -362,6 +386,44 @@ const OutlineWorkspace = () => {
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-12 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (configMissing) {
+    return (
+      <DashboardLayout contentWidth="wide">
+        <div className="pt-4">
+          <PageBreadcrumbs items={breadcrumbItems} />
+        </div>
+        
+        <ProjectWorkspaceHeader 
+          projectName={project.name}
+          projectType={project.type}
+          targetLanguage={project.targetLanguage}
+        />
+        
+        <ProjectWorkspaceTabs projectId={project.id} activeTab="outline" />
+        
+        <div className="mt-8">
+          <Alert variant="default" className="bg-amber-50 border-amber-200">
+            <AlertCircle className="h-4 w-4 text-amber-500" />
+            <AlertTitle className="text-amber-800">Configuration Required</AlertTitle>
+            <AlertDescription className="text-amber-700">
+              Please set up your project configuration first before creating an outline.
+            </AlertDescription>
+          </Alert>
+          
+          <div className="mt-6 flex justify-center">
+            <Button 
+              onClick={() => navigate(`/projects/${projectId}/configuration`)}
+              className="gap-2"
+            >
+              <Settings size={16} />
+              Go to Project Configuration
+            </Button>
+          </div>
         </div>
       </DashboardLayout>
     );
