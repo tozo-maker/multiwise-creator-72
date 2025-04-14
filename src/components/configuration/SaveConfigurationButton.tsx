@@ -20,6 +20,15 @@ export const SaveConfigurationButton: React.FC<SaveConfigurationButtonProps> = (
   const { toast } = useToast();
 
   const handleSave = async () => {
+    if (!projectId) {
+      toast({
+        title: "Missing project ID",
+        description: "Project ID is required to save configuration",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSaving(true);
     
     try {
@@ -38,74 +47,67 @@ export const SaveConfigurationButton: React.FC<SaveConfigurationButtonProps> = (
         complexity: configData.complexity || 'Intermediate',
         updated_at: new Date().toISOString(),
       };
+
+      // First check if project_config exists
+      const { data: tableExists, error: tableCheckError } = await supabase
+        .from('project_config')
+        .select('count(*)', { count: 'exact', head: true });
       
-      // First check if project_config table exists
-      try {
-        const { count, error: tableCheckError } = await supabase
-          .from('project_config')
-          .select('*', { count: 'exact', head: true })
-          .limit(1);
-        
-        // If table exists (no error), proceed with config check
-        if (!tableCheckError) {
-          // Check if config exists for this project
-          const { data: existingConfig, error: checkError } = await supabase
-            .from('project_config')
-            .select('id')
-            .eq('project_id', projectId)
-            .maybeSingle();
-          
-          if (checkError) {
-            console.error('Error checking existing config:', checkError);
-            throw checkError;
-          }
-          
-          let result;
-          
-          if (existingConfig) {
-            // Update existing config
-            console.log('Updating existing config with ID:', existingConfig.id);
-            const { data, error } = await supabase
-              .from('project_config')
-              .update(configToSave)
-              .eq('id', existingConfig.id)
-              .select();
-              
-            if (error) throw error;
-            result = data;
-            
-          } else {
-            // Insert new config
-            console.log('Creating new config for project:', projectId);
-            const { data, error } = await supabase
-              .from('project_config')
-              .insert({
-                ...configToSave,
-                created_at: new Date().toISOString(),
-              })
-              .select();
-              
-            if (error) throw error;
-            result = data;
-          }
-          
-          console.log('Configuration saved successfully:', result);
-          
-          toast({
-            title: "Configuration saved",
-            description: "Project settings have been updated successfully",
-          });
-          
-          // Call the parent onSave callback
-          onSave();
-        } else {
-          console.error('Error checking project_config table:', tableCheckError);
-          throw new Error('Project configuration table does not exist or is not accessible');
-        }
-      } catch (error: any) {
-        console.error('Error saving configuration:', error);
-        throw error;
+      if (tableCheckError && !tableCheckError.message.includes('relation "project_config" does not exist')) {
+        console.error('Error checking project_config table:', tableCheckError);
+        throw tableCheckError;
       }
+      
+      // Check if config exists for this project
+      const { data: existingConfig, error: checkError } = await supabase
+        .from('project_config')
+        .select('id')
+        .eq('project_id', projectId)
+        .maybeSingle();
+      
+      if (checkError && !checkError.message.includes('relation "project_config" does not exist')) {
+        console.error('Error checking existing config:', checkError);
+        throw checkError;
+      }
+      
+      let result;
+      
+      if (existingConfig) {
+        // Update existing config
+        console.log('Updating existing config with ID:', existingConfig.id);
+        const { data, error } = await supabase
+          .from('project_config')
+          .update(configToSave)
+          .eq('id', existingConfig.id)
+          .select();
+          
+        if (error) throw error;
+        result = data;
+        
+      } else {
+        // Insert new config
+        console.log('Creating new config for project:', projectId);
+        const { data, error } = await supabase
+          .from('project_config')
+          .insert({
+            ...configToSave,
+            created_at: new Date().toISOString(),
+          })
+          .select();
+          
+        if (error) throw error;
+        result = data;
+      }
+      
+      console.log('Configuration saved successfully:', result);
+      
+      toast({
+        title: "Configuration saved",
+        description: "Project settings have been updated successfully",
+      });
+      
+      // Call the parent onSave callback
+      onSave();
       
     } catch (error: any) {
       console.error('Error saving configuration:', error);

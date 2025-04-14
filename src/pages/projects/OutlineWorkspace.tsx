@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -80,43 +79,7 @@ const OutlineWorkspace = () => {
           });
 
           try {
-            // First check if project_config table exists
-            try {
-              const { count, error: tableCheckError } = await supabase
-                .rpc('does_table_exist', { table_name: 'project_config' });
-              
-              if (tableCheckError) {
-                console.log('Error checking table existence, assuming it does not exist:', tableCheckError);
-                setConfigMissing(true);
-                return;
-              }
-              
-              if (!count || count === 0) {
-                console.log('project_config table does not exist');
-                setConfigMissing(true);
-                return;
-              }
-            } catch (tableError) {
-              // If RPC fails or is not available, try direct query
-              try {
-                const { count, error: directTableCheckError } = await supabase
-                  .from('project_config')
-                  .select('*', { count: 'exact', head: true })
-                  .limit(1);
-                  
-                if (directTableCheckError && 
-                    (directTableCheckError.message.includes('does not exist') || 
-                     directTableCheckError.code === '42P01')) {
-                  console.log('project_config table does not exist (direct check)');
-                  setConfigMissing(true);
-                  return;
-                }
-              } catch (directError) {
-                console.error('Error with direct table check:', directError);
-              }
-            }
-            
-            // Try to fetch config 
+            // Try to fetch config directly 
             const { data: configData, error: configError } = await supabase
               .from('project_config')
               .select('*')
@@ -152,7 +115,9 @@ const OutlineWorkspace = () => {
             }
           } catch (configError: any) {
             console.error('Error checking project configuration:', configError);
-            setError(`Error checking project configuration: ${configError.message}`);
+            // If we get an error about table not existing, or any other error checking configs,
+            // don't treat it as a fatal error, just mark config as missing
+            setConfigMissing(true);
           }
         } else {
           console.error('No project data returned');

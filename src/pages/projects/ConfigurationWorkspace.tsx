@@ -34,16 +34,14 @@ export const ConfigurationWorkspace = () => {
   });
   
   const [configData, setConfigData] = useState<ConfigData>({
-    name: project.name,
+    name: '',
     quickStart: 'custom',
-    
     interfaceLanguage: 'English',
     experienceLevel: 'Intermediate',
     interactionMode: 'Guided',
     outputDetail: 'Detailed',
     systemBehavior: 'Balanced',
-    
-    projectType: project.type,
+    projectType: '',
     customProjectType: '',
     subjects: [],
     levels: ['Secondary', 'High School'],
@@ -52,8 +50,7 @@ export const ConfigurationWorkspace = () => {
     wordCount: 5000,
     wordDistribution: 'balanced',
     wordEnforcement: 'flexible',
-    
-    targetLanguage: project.targetLanguage,
+    targetLanguage: '',
     goal: 'Teaching',
     complexity: 'Intermediate',
     culturalIntegration: 'Moderate',
@@ -64,10 +61,8 @@ export const ConfigurationWorkspace = () => {
     structure: 'Default',
     formatting: 'Default',
     scriptType: 'Latin',
-    
     uploadedDocuments: [],
     needsDocumentUpload: false,
-    
     createdDate: new Date().toISOString(),
     lastModified: new Date().toISOString()
   });
@@ -105,41 +100,9 @@ export const ConfigurationWorkspace = () => {
             targetLanguage: projectData.target_language
           }));
           
-          // Check if project_config table exists first
+          // Check if project_config table exists and has data for this project
           try {
-            // Try RPC method first
-            const { count, error: rpcError } = await supabase
-              .rpc('does_table_exist', { table_name: 'project_config' });
-            
-            // If RPC failed (function doesn't exist), try direct query 
-            if (rpcError) {
-              console.log('RPC function not available, trying direct query');
-              const { count: directCount, error: directError } = await supabase
-                .from('project_config')
-                .select('*', { count: 'exact', head: true })
-                .limit(1);
-              
-              // If there's an error that's not related to missing table
-              if (directError && 
-                  !directError.message.includes('does not exist') && 
-                  !directError.message.includes('relation')) {
-                throw directError;
-              }
-              
-              // If table doesn't exist, don't try to fetch config
-              if (directError && 
-                  (directError.message.includes('does not exist') || 
-                   directError.message.includes('relation'))) {
-                console.log('project_config table does not exist (direct check)');
-                return;
-              }
-            } else if (!count || count === 0) {
-              // RPC worked but table doesn't exist
-              console.log('project_config table does not exist (RPC check)');
-              return;
-            }
-            
-            // If we get here, table exists, try to fetch config
+            // Try direct query for the project config
             const { data: configData, error: configError } = await supabase
               .from('project_config')
               .select('*')
@@ -152,6 +115,7 @@ export const ConfigurationWorkspace = () => {
             
             if (configData) {
               // Update state with existing configuration
+              console.log('Found existing configuration:', configData);
               setConfigData(prevData => ({
                 ...prevData,
                 name: projectData.name,
@@ -163,14 +127,11 @@ export const ConfigurationWorkspace = () => {
                 complexity: configData.complexity || 'Intermediate',
                 lastModified: configData.updated_at || new Date().toISOString()
               }));
-              
-              console.log('Loaded existing project configuration:', configData);
             } else {
               console.log('No existing configuration found, using project defaults');
             }
           } catch (err: any) {
             console.error('Error checking config:', err);
-            // Don't set error if we're just missing the table
             if (!err.message.includes('does not exist') && !err.message.includes('relation')) {
               setSaveError(`Error checking configuration: ${err.message}`);
             }
