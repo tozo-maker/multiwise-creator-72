@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DocumentInsight, ProcessDocumentOptions } from '@/services/document-insights/types';
 import { DocumentProcessor } from '@/services/document-insights/processor';
+import { DocumentInsightQuery } from '@/services/document-insights/query';
 
 /**
  * Service for managing document insights
@@ -71,6 +72,19 @@ export const DocumentInsightService = {
       console.error('Error in getInsightsForProject:', error);
       return [];
     }
+  },
+  
+  /**
+   * Get document insight by file ID (alias for query function)
+   */
+  async getByFileId(fileId: string): Promise<DocumentInsight | null> {
+    return DocumentInsightQuery.getByFileId(fileId);
+  },
+  
+  /**
+   * Get document insights by project ID (alias for query function)
+   */
+  async getByProjectId(projectId: string): Promise<DocumentInsight[]> {
+    return DocumentInsightQuery.getByProjectId(projectId);
   }
 };
-

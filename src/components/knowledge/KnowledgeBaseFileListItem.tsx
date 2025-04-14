@@ -86,6 +86,13 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
     }
   };
 
+  // Convert projectFiles to have the correct type structure if they don't match
+  const formattedProjectFiles = projectFiles.map(pf => ({
+    id: pf.id,
+    name: pf.name,
+    type: pf.fileType || pf.type || ''
+  }));
+
   return (
     <>
       <tr className="border-b border-slate-200 dark:border-slate-700">
@@ -114,11 +121,11 @@ export const KnowledgeBaseFileListItem: React.FC<KnowledgeBaseFileListItemProps>
                 <BrainIcon className="h-4 w-4" />
               </Button>
             )}
-            {projectId && projectFiles.length > 0 && (
+            {projectId && formattedProjectFiles.length > 0 && (
               <DocumentRelationshipManager 
                 fileId={file.id}
                 projectId={projectId}
-                projectFiles={projectFiles}
+                projectFiles={formattedProjectFiles}
                 onRelationshipsUpdated={handleRelationshipsUpdated}
               />
             )}
