@@ -107,6 +107,7 @@ export const KnowledgeBaseTabContent: React.FC<KnowledgeBaseTabContentProps> = (
                 onEdit={onEditFile}
                 onPreview={onPreviewFile}
                 onDownload={onDownloadFile}
+                onUpload={() => {}} // Add dummy function for onUpload
                 categories={categories.map(c => c.name)}
               />
             )}
@@ -133,6 +134,7 @@ export const KnowledgeBaseTabContent: React.FC<KnowledgeBaseTabContentProps> = (
                   onEdit={onEditFile}
                   onPreview={onPreviewFile}
                   onDownload={onDownloadFile}
+                  onUpload={() => {}} // Add dummy function for onUpload
                   categories={categories.map(c => c.name)}
                 />
               ) : (
@@ -162,6 +164,7 @@ export const KnowledgeBaseTabContent: React.FC<KnowledgeBaseTabContentProps> = (
                   onEdit={onEditFile}
                   onPreview={onPreviewFile}
                   onDownload={onDownloadFile}
+                  onUpload={() => {}} // Add dummy function for onUpload
                   categories={categories.map(c => c.name)}
                 />
               ) : (

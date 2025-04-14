@@ -58,6 +58,7 @@ export const KnowledgeBaseFileSection: React.FC<KnowledgeBaseFileSectionProps> =
             onEdit={onEditFile}
             onPreview={onPreviewFile}
             onDownload={onDownloadFile}
+            onUpload={() => {}} // Add dummy function for onUpload
             categories={categories.map(c => c.name)}
           />
         )}

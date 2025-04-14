@@ -1,93 +1,67 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusIcon, FolderIcon } from 'lucide-react';
 import { KnowledgeBaseFileListItem } from './KnowledgeBaseFileListItem';
-import { KBFile } from './KnowledgeBaseFileList';
+import { KBFile, KnowledgeBaseFileList } from './KnowledgeBaseFileList';
+import { KnowledgeBaseUpload } from './KnowledgeBaseUpload';
+import { Dialog } from '@/components/ui/dialog';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 
-interface KnowledgeBaseFileListProps {
+interface KnowledgeBaseContentProps {
   files: KBFile[];
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onPreview: (id: string) => void;
-  onDownload: (id: string) => void;
-  onUpload: () => void;
-  isLoading?: boolean;
+  isLoading: boolean;
+  onDeleteFile: (id: string) => void;
+  onEditDescription: (id: string) => void;
+  onPreviewFile: (id: string) => void;
+  onDownloadFile: (id: string) => void;
+  onFilesUploaded: (files: { file: File; description: string }[]) => void;
   projectId?: string;
-  projectFiles?: KBFile[];
 }
 
-export const KnowledgeBaseFileList: React.FC<KnowledgeBaseFileListProps> = ({
+export const KnowledgeBaseContent: React.FC<KnowledgeBaseContentProps> = ({
   files,
-  onEdit,
-  onDelete,
-  onPreview,
-  onDownload,
-  onUpload,
-  isLoading = false,
-  projectId,
-  projectFiles = []
+  isLoading,
+  onDeleteFile,
+  onEditDescription,
+  onPreviewFile,
+  onDownloadFile,
+  onFilesUploaded,
+  projectId
 }) => {
-  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+
+  const handleUpload = () => {
+    setUploadDialogOpen(true);
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Knowledge Base Files</h2>
-        <Button onClick={onUpload}>
-          <PlusIcon className="mr-2 h-4 w-4" />
-          Upload File
-        </Button>
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="p-6">
+          <KnowledgeBaseFileList
+            files={files}
+            onEdit={onEditDescription}
+            onDelete={onDeleteFile}
+            onPreview={onPreviewFile}
+            onDownload={onDownloadFile}
+            onUpload={handleUpload}
+            isLoading={isLoading}
+            projectId={projectId}
+            projectFiles={[]}
+          />
+        </div>
       </div>
-      
-      {isLoading ? (
-        <div className="text-slate-500 dark:text-slate-400">Loading files...</div>
-      ) : files.length === 0 ? (
-        <div className="text-slate-500 dark:text-slate-400">
-          <FolderIcon className="mr-2 inline-block h-5 w-5" />
-          No files in knowledge base yet.
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-800">
-              <tr>
-                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200">
-                  File Name
-                </th>
-                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
-                  Category
-                </th>
-                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
-                  Type
-                </th>
-                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
-                  Size
-                </th>
-                <th className="py-3.5 px-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-200 hidden md:table-cell">
-                  Upload Date
-                </th>
-                <th className="py-3.5 px-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-200">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
-              {files.map((file) => (
-                <KnowledgeBaseFileListItem
-                  key={file.id}
-                  file={file}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onPreview={onPreview}
-                  onDownload={onDownload}
-                  projectId={projectId}
-                  projectFiles={projectFiles}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <KnowledgeBaseUpload
+          onFilesUploaded={(files) => {
+            onFilesUploaded(files);
+            setUploadDialogOpen(false);
+          }}
+        />
+      </Dialog>
     </div>
   );
 };
+

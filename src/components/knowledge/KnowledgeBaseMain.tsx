@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,7 @@ export const KnowledgeBaseMain: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('date');
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
   
   useEffect(() => {
     refreshFiles();
@@ -89,6 +91,10 @@ export const KnowledgeBaseMain: React.FC = () => {
     // Default: date
     return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
   });
+
+  const handleUpload = () => {
+    setShowUploadDialog(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -150,7 +156,7 @@ export const KnowledgeBaseMain: React.FC = () => {
             document.body.removeChild(link);
           }
         }}
-        onUpload={() => {}}
+        onUpload={handleUpload}
       />
       
       {sortedFiles.length === 0 && (
