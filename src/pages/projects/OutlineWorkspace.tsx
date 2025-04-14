@@ -48,15 +48,16 @@ const OutlineWorkspace = () => {
         setIsLoading(true);
         setError(null);
         
-        const { data, error } = await supabase
+        // First fetch the basic project details without joining project_config
+        const { data: projectData, error: projectError } = await supabase
           .from('projects')
-          .select('*, project_config(*)')
+          .select('*')
           .eq('id', projectId)
           .single();
           
-        if (error) {
-          console.error('Error fetching project:', error);
-          setError(`Could not load project details: ${error.message}`);
+        if (projectError) {
+          console.error('Error fetching project:', projectError);
+          setError(`Could not load project details: ${projectError.message}`);
           toast({
             title: 'Error loading project',
             description: 'Could not load project details',
@@ -65,19 +66,21 @@ const OutlineWorkspace = () => {
           return;
         }
         
-        if (data) {
-          console.log('Project data loaded:', data.name);
+        if (projectData) {
+          console.log('Project data loaded:', projectData.name);
+          
+          // Set basic project info first
           setProject({
-            id: data.id,
-            name: data.name,
-            type: data.type,
-            targetLanguage: data.target_language,
-            config: data.project_config
+            id: projectData.id,
+            name: projectData.name,
+            type: projectData.type,
+            targetLanguage: projectData.target_language,
+            config: null // We'll fetch config separately if needed
           });
           
           // Fetch outline
-          console.log('Fetching outline for project:', data.id);
-          const outlineData = await OutlineService.getOutlineByProject(data.id);
+          console.log('Fetching outline for project:', projectData.id);
+          const outlineData = await OutlineService.getOutlineByProject(projectData.id);
           
           if (outlineData) {
             console.log('Outline found, fetching sections');
@@ -146,10 +149,36 @@ const OutlineWorkspace = () => {
   
   const handleGenerateOutline = async () => {
     try {
-      if (!project.config) {
+      if (!project.id) {
+        toast({
+          title: 'Missing project ID',
+          description: 'Project ID is required to generate an outline',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Fetch project_config separately for AI outline generation
+      const { data: configData, error: configError } = await supabase
+        .from('project_config')
+        .select('*')
+        .eq('project_id', project.id)
+        .maybeSingle();
+        
+      if (configError) {
+        console.error('Error fetching project config:', configError);
+        toast({
+          title: 'Error',
+          description: 'Failed to load project configuration for AI generation',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      if (!configData) {
         toast({
           title: 'Missing configuration',
-          description: 'Project configuration is required to generate an outline',
+          description: 'Project configuration is required to generate an outline. Please configure your project first.',
           variant: 'destructive'
         });
         return;
@@ -157,7 +186,7 @@ const OutlineWorkspace = () => {
       
       const generatedOutline = await OutlineService.generateOutlineWithAI(
         project.id, 
-        project.config
+        configData
       );
       
       if (generatedOutline) {
