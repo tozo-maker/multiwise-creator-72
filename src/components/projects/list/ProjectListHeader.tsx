@@ -33,7 +33,7 @@ export const ProjectListHeader: React.FC<ProjectListHeaderProps> = React.memo(({
   
   // Get unique project types for filter
   const projectTypes = useMemo(() => {
-    const types = ['All Types'];
+    const types = ['all_types']; // Changed from 'All Types' to 'all_types' to avoid empty string issues
     const uniqueTypes = new Set<string>();
     
     projects.forEach(project => {
@@ -56,15 +56,15 @@ export const ProjectListHeader: React.FC<ProjectListHeaderProps> = React.memo(({
             Filter by Type
           </Label>
           <Select 
-            value={filterType || 'All Types'} 
-            onValueChange={(value) => setFilterType(value === 'All Types' ? null : value)}
+            value={filterType || 'all_types'} 
+            onValueChange={(value) => setFilterType(value === 'all_types' ? null : value)}
           >
             <SelectTrigger id="filter-type" className="h-9">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
               {projectTypes.map(type => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
+                <SelectItem key={type} value={type}>{type === 'all_types' ? 'All Types' : type}</SelectItem>
               ))}
             </SelectContent>
           </Select>

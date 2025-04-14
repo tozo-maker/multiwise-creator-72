@@ -25,6 +25,12 @@ export const StyledSelect: React.FC<StyledSelectProps> = ({
   onChange,
   options
 }) => {
+  // Ensure no option has an empty value
+  const validOptions = options.map(option => ({
+    ...option,
+    value: option.value || `option_${option.label.toLowerCase().replace(/\s+/g, '_')}`
+  }));
+
   return (
     <div className="space-y-2">
       <TooltipLabel 
@@ -40,7 +46,7 @@ export const StyledSelect: React.FC<StyledSelectProps> = ({
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
         </SelectTrigger>
         <SelectContent>
-          {options.map((option) => (
+          {validOptions.map((option) => (
             <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
           ))}
         </SelectContent>

@@ -319,11 +319,11 @@ export const CustomReportBuilder = () => {
                 <ul className="list-disc list-inside space-y-1 text-sm">
                   {selectedProjects.map(id => {
                     const project = projects.find(p => p.id === id);
-                    return (
+                    return project ? (
                       <li key={id}>
-                        {project?.name} <span className="text-slate-500">({project?.type})</span>
+                        {project.name} <span className="text-slate-500">({project.type || 'No type'})</span>
                       </li>
-                    );
+                    ) : null;
                   })}
                 </ul>
               </div>
