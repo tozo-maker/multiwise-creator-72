@@ -25,6 +25,7 @@ export const ConfigurationWorkspace = () => {
   const isDark = theme === 'dark';
   const [isLoading, setIsLoading] = useState(true);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [tableExists, setTableExists] = useState(true);
   
   const [project, setProject] = useState({
     id: projectId || '',
@@ -97,49 +98,23 @@ export const ConfigurationWorkspace = () => {
             targetLanguage: projectData.target_language
           });
           
-          // Verify if project_config table exists
+          // Check if project_config table exists
           try {
-            const { count, error } = await supabase
+            const { error: tableCheckError } = await supabase
               .from('project_config')
-              .select('*', { count: 'exact', head: true });
-
-            if (error) {
-              if (error.message.includes('does not exist')) {
+              .select('count(*)', { count: 'exact', head: true });
+              
+            if (tableCheckError) {
+              console.error('Error checking if table exists:', tableCheckError);
+              if (tableCheckError.message.includes('does not exist') || 
+                  tableCheckError.message.includes('relation') ||
+                  tableCheckError.code === '42P01') {
+                
                 console.log('project_config table does not exist yet');
-              } else {
-                console.error('Error checking table existence:', error);
-              }
-            } else {
-              console.log('project_config table exists, checking for config data');
-              
-              // Try to fetch existing configuration
-              const { data: configData, error: configError } = await supabase
-                .from('project_config')
-                .select('*')
-                .eq('project_id', projectId)
-                .maybeSingle();
+                setTableExists(false);
+                setSaveError("The project_config table doesn't exist yet. Please run the database migration.");
                 
-              if (configError && !configError.message.includes('does not exist')) {
-                throw configError;
-              }
-              
-              if (configData) {
-                // Update state with existing configuration
-                setConfigData(prevData => ({
-                  ...prevData,
-                  name: projectData.name,
-                  projectType: configData.projectType || projectData.type,
-                  targetLanguage: configData.targetLanguage || projectData.target_language,
-                  subjects: configData.subjects || [],
-                  levels: configData.levels || ['Secondary', 'High School'],
-                  pedagogy: configData.pedagogy || 'Standard',
-                  complexity: configData.complexity || 'Intermediate',
-                  lastModified: configData.updated_at || new Date().toISOString()
-                }));
-                
-                console.log('Loaded existing project configuration:', configData);
-              } else {
-                // Just set basic project info
+                // Set basic project info anyway
                 setConfigData(prevData => ({
                   ...prevData,
                   name: projectData.name,
@@ -147,20 +122,61 @@ export const ConfigurationWorkspace = () => {
                   targetLanguage: projectData.target_language
                 }));
                 
-                console.log('No existing configuration found, using project defaults');
+                return;
               }
+            }
+            
+            setTableExists(true);
+            // Try to fetch existing configuration
+            const { data: configData, error: configError } = await supabase
+              .from('project_config')
+              .select('*')
+              .eq('project_id', projectId)
+              .maybeSingle();
+              
+            if (configError && !configError.message.includes('does not exist')) {
+              throw configError;
+            }
+            
+            if (configData) {
+              // Update state with existing configuration
+              setConfigData(prevData => ({
+                ...prevData,
+                name: projectData.name,
+                projectType: configData.projectType || projectData.type,
+                targetLanguage: configData.targetLanguage || projectData.target_language,
+                subjects: configData.subjects || [],
+                levels: configData.levels || ['Secondary', 'High School'],
+                pedagogy: configData.pedagogy || 'Standard',
+                complexity: configData.complexity || 'Intermediate',
+                lastModified: configData.updated_at || new Date().toISOString()
+              }));
+              
+              console.log('Loaded existing project configuration:', configData);
+            } else {
+              // Just set basic project info
+              setConfigData(prevData => ({
+                ...prevData,
+                name: projectData.name,
+                projectType: projectData.type,
+                targetLanguage: projectData.target_language
+              }));
+              
+              console.log('No existing configuration found, using project defaults');
             }
           } catch (err) {
             console.error('Error checking config table:', err);
+            setSaveError("Error checking configuration table status.");
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading project:', error);
         toast({
           title: 'Error loading project',
           description: 'Failed to load project data',
           variant: 'destructive'
         });
+        setSaveError(`Error loading project: ${error.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -204,6 +220,16 @@ export const ConfigurationWorkspace = () => {
         />
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="configuration" />
+        
+        {!tableExists && (
+          <Alert variant="destructive">
+            <AlertTitle>Database setup required</AlertTitle>
+            <AlertDescription>
+              The project_config table doesn't exist yet. Please run the database migration in 
+              supabase/migrations/20250414001000_create_project_config.sql
+            </AlertDescription>
+          </Alert>
+        )}
         
         {saveError && (
           <Alert variant="destructive">

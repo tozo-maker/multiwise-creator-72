@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -81,48 +80,65 @@ const OutlineWorkspace = () => {
             config: null
           });
 
-          // Check if project configuration exists
+          // Check if project_config table exists first
           try {
+            const { error: tableCheckError } = await supabase
+              .from('project_config')
+              .select('count(*)', { count: 'exact', head: true });
+              
+            if (tableCheckError) {
+              console.error('Error checking if table exists:', tableCheckError);
+              if (tableCheckError.message.includes('does not exist') || 
+                  tableCheckError.message.includes('relation') ||
+                  tableCheckError.code === '42P01') {
+                
+                console.log('The project_config table doesnt exist yet');
+                setConfigMissing(true);
+                setIsLoading(false);
+                return;
+              }
+            }
+            
+            // Now check if project configuration exists
             const { data: configData, error: configError } = await supabase
               .from('project_config')
               .select('*')
               .eq('project_id', projectData.id)
               .maybeSingle();
 
-            if (configError) {
-              if (configError.message.includes('does not exist')) {
-                console.log('project_config table does not exist');
-                setConfigMissing(true);
-              } else {
-                console.error('Error fetching project config:', configError);
-              }
-            } else if (!configData) {
+            if (configError && !configError.message.includes('does not exist')) {
+              console.error('Error fetching project config:', configError);
+              throw configError;
+            }
+            
+            if (!configData) {
               console.log('No configuration found for this project');
               setConfigMissing(true);
             } else {
               console.log('Project configuration found:', configData);
               setConfigMissing(false);
+              
+              // Fetch outline
+              console.log('Fetching outline for project:', projectData.id);
+              const outlineData = await OutlineService.getOutlineByProject(projectData.id);
+              
+              if (outlineData) {
+                console.log('Outline found, fetching sections');
+                // Fetch sections and items for the outline
+                const sections = await OutlineService.getSectionsByOutline(outlineData.id);
+                setOutline({
+                  ...outlineData,
+                  sections
+                });
+                console.log('Outline sections loaded:', sections.length);
+              } else {
+                console.log('No outline exists yet for this project');
+                setOutline(null);
+              }
             }
-          } catch (configError) {
+          } catch (configError: any) {
             console.error('Error checking project configuration:', configError);
-          }
-          
-          // Fetch outline
-          console.log('Fetching outline for project:', projectData.id);
-          const outlineData = await OutlineService.getOutlineByProject(projectData.id);
-          
-          if (outlineData) {
-            console.log('Outline found, fetching sections');
-            // Fetch sections and items for the outline
-            const sections = await OutlineService.getSectionsByOutline(outlineData.id);
-            setOutline({
-              ...outlineData,
-              sections
-            });
-            console.log('Outline sections loaded:', sections.length);
-          } else {
-            console.log('No outline exists yet for this project');
-            setOutline(null);
+            setError(`Error checking project configuration: ${configError.message}`);
           }
         } else {
           console.error('No project data returned');
@@ -412,6 +428,7 @@ const OutlineWorkspace = () => {
             <AlertTitle className="text-amber-800">Configuration Required</AlertTitle>
             <AlertDescription className="text-amber-700">
               Please set up your project configuration first before creating an outline.
+              The project_config table may not exist yet. Please run the database migration or go to configuration page.
             </AlertDescription>
           </Alert>
           
@@ -437,7 +454,11 @@ const OutlineWorkspace = () => {
     >
       <div className="space-y-6">
         <div className="pt-4">
-          <PageBreadcrumbs items={breadcrumbItems} />
+          <PageBreadcrumbs items={[
+            { label: 'Projects', path: '/projects' },
+            { label: project.name, path: `/projects/${projectId}` },
+            { label: 'Outline', path: `/projects/${projectId}/outline` }
+          ]} />
         </div>
         
         <ProjectWorkspaceHeader 
@@ -448,23 +469,49 @@ const OutlineWorkspace = () => {
         
         <ProjectWorkspaceTabs projectId={project.id} activeTab="outline" />
         
-        <div className="mb-6">
-          <h2 className={`text-xl font-semibold mb-2 ${
-            isDark ? 'text-slate-100' : 'text-slate-900'
-          }`}>
-            Project Outline
-          </h2>
-          <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-            Create and manage the structure of your project content
-          </p>
-        </div>
-        
-        <OutlineEditor 
-          outline={outline} 
-          projectId={project.id}
-          onSave={handleSaveOutline}
-          onGenerateOutline={handleGenerateOutline}
-        />
+        {configMissing ? (
+          <div className="mt-8">
+            <Alert variant="default" className="bg-amber-50 border-amber-200">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              <AlertTitle className="text-amber-800">Configuration Required</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                Please set up your project configuration first before creating an outline.
+                The project_config table may not exist yet. Please run the database migration or go to configuration page.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="mt-6 flex justify-center">
+              <Button 
+                onClick={() => navigate(`/projects/${projectId}/configuration`)}
+                className="gap-2"
+              >
+                <Settings size={16} />
+                Go to Project Configuration
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-6">
+              <h2 className={`text-xl font-semibold mb-2 ${
+                isDark ? 'text-slate-100' : 'text-slate-900'
+              }`}>
+                Project Outline
+              </h2>
+              <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+                Create and manage the structure of your project content
+              </p>
+            </div>
+            
+            <OutlineEditor 
+              outline={outline} 
+              projectId={project.id}
+              onSave={handleSaveOutline}
+              onGenerateOutline={handleGenerateOutline}
+              onCreateOutline={handleCreateOutline}
+            />
+          </>
+        )}
       </div>
     </DashboardLayout>
   );
