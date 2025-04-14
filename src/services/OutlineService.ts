@@ -1,10 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { ProjectOutline, OutlineSection, OutlineItem, OutlineVersion } from '@/types/outline';
 import { AnthropicService } from './AnthropicService';
 import { ConfigData } from '@/components/wizard/types';
-
-const { toast } = useToast();
 
 export const OutlineService = {
   async getOutlineByProject(projectId: string): Promise<ProjectOutline | null> {
