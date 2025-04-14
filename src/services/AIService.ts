@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface ContentGenerationInput {
   prompt: string;
   contentType: string;
+  systemPrompt?: string;
   language?: string;
   audience?: string;
   complexity?: string;

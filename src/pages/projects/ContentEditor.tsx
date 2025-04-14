@@ -21,6 +21,7 @@ import { ContentTaggingSystem } from '@/components/content/ContentTaggingSystem'
 import { FeedbackRefinementPanel } from '@/components/content/FeedbackRefinementPanel';
 import { OutlineNavigation } from '@/components/outline/OutlineNavigation';
 import { ContentVersionHistory } from '@/components/content/ContentVersionHistory';
+import { ContentInsights } from '@/components/content/ContentInsights';
 import { ArrowLeft, Save, FilePlus2 } from 'lucide-react';
 import { OutlineItem } from '@/types/outline';
 
@@ -49,6 +50,11 @@ const ContentEditor = () => {
   });
   
   const [relatedOutlineItem, setRelatedOutlineItem] = useState<any>(null);
+  const [learningObjectives, setLearningObjectives] = useState<Array<{id: string, text: string}>>([
+    { id: 'obj-1', text: 'Understand key concepts of the subject matter' },
+    { id: 'obj-2', text: 'Apply theoretical knowledge to practical scenarios' },
+    { id: 'obj-3', text: 'Evaluate evidence and form informed conclusions' }
+  ]);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -57,7 +63,6 @@ const ContentEditor = () => {
       try {
         setIsLoading(true);
         
-        // Fetch project data
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
           .select('*')
@@ -75,7 +80,6 @@ const ContentEditor = () => {
           });
         }
         
-        // If contentId is provided, fetch content data
         if (contentId !== 'create') {
           const contentData = await ContentService.getById(contentId!);
           if (contentData) {
@@ -83,17 +87,14 @@ const ContentEditor = () => {
             setTitle(contentData.title);
             setContentType(contentData.content_type || contentData.type || 'lesson');
             
-            // Extract tags from metadata if available
             if (contentData.metadata?.tags) {
               setTags(contentData.metadata.tags);
             }
             
-            // Extract category from metadata if available
             if (contentData.metadata?.category) {
               setCategory(contentData.metadata.category);
             }
             
-            // Extract complexity and audience
             if (contentData.metadata?.difficultyLevel) {
               setComplexity(contentData.metadata.difficultyLevel);
             }
@@ -102,15 +103,12 @@ const ContentEditor = () => {
               setAudience(contentData.metadata.audience);
             }
             
-            // Check if this content is related to an outline item
             const outlineItemId = contentData.metadata?.custom?.outlineItemId;
             if (outlineItemId) {
-              // Fetch outline to find the related item
               const outlineData = await OutlineService.getOutlineByProject(projectId);
               if (outlineData) {
                 const sections = await OutlineService.getSectionsByOutline(outlineData.id);
                 
-                // Find the related outline item
                 for (const section of sections) {
                   const item = section.items.find(i => i.id === outlineItemId);
                   if (item) {
@@ -125,7 +123,6 @@ const ContentEditor = () => {
             }
           }
         } else {
-          // Check if outline item ID is in query params for new content
           const searchParams = new URLSearchParams(location.search);
           const outlineItemId = searchParams.get('outlineItemId');
           
@@ -134,7 +131,6 @@ const ContentEditor = () => {
             if (outlineData) {
               const sections = await OutlineService.getSectionsByOutline(outlineData.id);
               
-              // Find the related outline item
               for (const section of sections) {
                 const item = section.items.find(i => i.id === outlineItemId);
                 if (item) {
@@ -143,7 +139,6 @@ const ContentEditor = () => {
                     sectionTitle: section.title
                   });
                   
-                  // Pre-fill form with outline item data
                   setTitle(item.title);
                   break;
                 }
@@ -183,7 +178,6 @@ const ContentEditor = () => {
       };
       
       if (contentId && contentId !== 'create') {
-        // Update existing content
         const contentItem = await ContentService.update(contentId, {
           title,
           content,
@@ -191,7 +185,6 @@ const ContentEditor = () => {
           metadata
         });
         
-        // Create version record
         await VersionService.createVersion(
           contentId,
           content,
@@ -201,14 +194,11 @@ const ContentEditor = () => {
           'Manual update'
         );
         
-        // Update outline item if related
         if (relatedOutlineItem?.id) {
-          // Get the outline where this item exists
           const outlineData = await OutlineService.getOutlineByProject(projectId);
           if (outlineData) {
             const sections = await OutlineService.getSectionsByOutline(outlineData.id);
             
-            // Find and update the related section and item
             for (const section of sections) {
               const itemIndex = section.items.findIndex(i => i.id === relatedOutlineItem.id);
               if (itemIndex >= 0) {
@@ -220,7 +210,6 @@ const ContentEditor = () => {
                 
                 section.items[itemIndex] = updatedItem;
                 
-                // Update outline sections
                 await OutlineService.updateOutlineSections(outlineData);
                 break;
               }
@@ -233,7 +222,6 @@ const ContentEditor = () => {
           description: 'Your content has been updated successfully'
         });
       } else {
-        // Create new content
         const contentItem = await ContentService.create({
           title,
           content,
@@ -244,12 +232,10 @@ const ContentEditor = () => {
         });
         
         if (contentItem && relatedOutlineItem?.id) {
-          // Update outline item with new content ID
           const outlineData = await OutlineService.getOutlineByProject(projectId);
           if (outlineData) {
             const sections = await OutlineService.getSectionsByOutline(outlineData.id);
             
-            // Find and update the related section and item
             for (const section of sections) {
               const itemIndex = section.items.findIndex(i => i.id === relatedOutlineItem.id);
               if (itemIndex >= 0) {
@@ -261,7 +247,6 @@ const ContentEditor = () => {
                 
                 section.items[itemIndex] = updatedItem;
                 
-                // Update outline sections
                 await OutlineService.updateOutlineSections(outlineData);
                 break;
               }
@@ -274,7 +259,6 @@ const ContentEditor = () => {
           description: 'Your content has been created successfully'
         });
         
-        // Redirect to the new content page
         if (contentItem) {
           navigate(`/projects/${projectId}/content/${contentItem.id}`);
         }
@@ -426,6 +410,7 @@ const ContentEditor = () => {
               <TabsList className="mb-4">
                 <TabsTrigger value="editor">Editor</TabsTrigger>
                 <TabsTrigger value="refinement">AI Refinement</TabsTrigger>
+                <TabsTrigger value="insights">Content Insights</TabsTrigger>
               </TabsList>
               
               <TabsContent value="editor">
@@ -443,6 +428,17 @@ const ContentEditor = () => {
                   audience={audience}
                   onUpdateContent={setContent}
                   projectId={projectId!}
+                />
+              </TabsContent>
+              
+              <TabsContent value="insights">
+                <ContentInsights
+                  content={content}
+                  contentId={contentId || 'temp-new-content'}
+                  projectId={projectId!}
+                  contentType={contentType}
+                  learningObjectives={learningObjectives}
+                  onUpdateContent={setContent}
                 />
               </TabsContent>
             </Tabs>
