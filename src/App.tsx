@@ -1,7 +1,7 @@
 
 import { Routes, Route } from 'react-router-dom'
 import Index from './pages/Index'
-import NotFound from './pages/NotFound'
+import NotFound from './pages/error/NotFound'
 import Dashboard from './pages/dashboard/Dashboard'
 import Analytics from './pages/analytics/Analytics'
 import Projects from './pages/projects/Projects'
@@ -21,6 +21,8 @@ import KnowledgeBasePage from './pages/knowledge/KnowledgeBasePage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { PrivateRoute } from './components/auth/PrivateRoute'
+import UserProfile from './pages/profile/UserProfile'
+import Settings from './pages/settings/Settings'
 
 function App() {
   // Handler for project creation completion
@@ -59,6 +61,8 @@ function App() {
         <Route path="/projects/:projectId/outline" element={<OutlineWorkspace />} />
         <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
         <Route path="/help" element={<Help />} />
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
       
       <Route path="*" element={<NotFound />} />
